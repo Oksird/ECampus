@@ -8,13 +8,34 @@
     <artifactId>school-console-application</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <ibatis.version>2.3.4.726</ibatis.version>
+        <postgresql.driver.version>42.6.0</postgresql.driver.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.ibatis</groupId>
             <artifactId>ibatis-sqlmap</artifactId>
-            <version>2.3.4.726</version>
+            <version>${ibatis.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.driver.version}</version>
+        </dependency>
     </dependencies>
-    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

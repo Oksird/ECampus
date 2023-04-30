@@ -1,9 +1,14 @@
 package ua.foxminded.muzychenko.dao;
 
+import java.util.Optional;
 import ua.foxminded.muzychenko.entity.StudentEntity;
 
-import java.util.Optional;
-
 public interface StudentDao extends CrudDao<StudentEntity, Long> {
+
     Optional<StudentEntity> findByCourse(String nameOfCourse);
+
+    @Override
+    void deleteById(Long id);
+
+    void addToCourse(StudentEntity entity, String nameOfCourse);
 }

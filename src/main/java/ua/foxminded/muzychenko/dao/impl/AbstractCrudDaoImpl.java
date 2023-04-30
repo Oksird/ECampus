@@ -1,9 +1,5 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import ua.foxminded.muzychenko.DBConnector;
-import ua.foxminded.muzychenko.dao.CrudDao;
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,37 +8,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import ua.foxminded.muzychenko.DBConnector;
+import ua.foxminded.muzychenko.dao.CrudDao;
+import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
 
 public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
-    private static final BiConsumer<PreparedStatement, String> STRING_CONSUMER
-        = (PreparedStatement preparedStatement, String param) -> {
-        try {
-            preparedStatement.setString(1, param);
-        } catch (SQLException e) {
-            throw new DataBaseRunTimeException(e);
-        }
-    };
 
-    private static final BiConsumer<PreparedStatement, Long> LONG_CONSUMER
-        = (PreparedStatement preparedStatement, Long param) -> {
-        try {
-            preparedStatement.setLong(1, param);
-        } catch (SQLException e) {
-            throw new DataBaseRunTimeException(e);
-        }
-    };
+    private static final BiConsumer<PreparedStatement, String> STRING_CONSUMER =
+        (PreparedStatement preparedStatement, String param) -> {
+            try {
+                preparedStatement.setString(1, param);
+            } catch (SQLException e) {
+                throw new DataBaseRunTimeException(e);
+            }
+        };
+
+    private static final BiConsumer<PreparedStatement, Long> LONG_CONSUMER =
+        (PreparedStatement preparedStatement, Long param) -> {
+            try {
+                preparedStatement.setLong(1, param);
+            } catch (SQLException e) {
+                throw new DataBaseRunTimeException(e);
+            }
+        };
 
     private final DBConnector connector;
-    private final String saveQuery;
+    private final String createQuery;
     private final String findByIdQuery;
     private final String findAllQuery;
     private final String updateQuery;
     private final String deleteByIdQuery;
 
-    protected AbstractCrudDaoImpl(DBConnector connector, String saveQuery, String findByIdQuery,
-                               String findAllQuery, String updateQuery, String deleteByIdQuery) {
+    protected AbstractCrudDaoImpl(DBConnector connector, String createQuery, String findByIdQuery,
+        String findAllQuery, String updateQuery, String deleteByIdQuery) {
         this.connector = connector;
-        this.saveQuery = saveQuery;
+        this.createQuery = createQuery;
         this.findByIdQuery = findByIdQuery;
         this.findAllQuery = findAllQuery;
         this.updateQuery = updateQuery;
@@ -52,7 +52,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     @Override
     public void create(E entity) {
         try (Connection connection = connector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(saveQuery)) {
+            PreparedStatement preparedStatement = connection.prepareStatement(createQuery)) {
 
             insert(preparedStatement, entity);
             preparedStatement.executeUpdate();
@@ -69,7 +69,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     @Override
     public List<E> findAll() {
         try (Connection connection = connector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(findAllQuery)) {
+            PreparedStatement preparedStatement = connection.prepareStatement(findAllQuery)) {
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
                 List<E> entities = new ArrayList<>();
                 while (resultSet.next()) {
@@ -85,7 +85,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     @Override
     public void update(E entity) {
         try (Connection connection = connector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+            PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
 
             updateValues(preparedStatement, entity);
 
@@ -98,7 +98,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     @Override
     public void deleteById(Long id) {
         try (Connection connection = connector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(deleteByIdQuery)) {
+            PreparedStatement preparedStatement = connection.prepareStatement(deleteByIdQuery)) {
 
             deleteById(preparedStatement, id);
 
@@ -116,24 +116,49 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
         return findByParam(param, query, STRING_CONSUMER);
     }
 
-    private <P> Optional<E> findByParam(P param, String query, BiConsumer<PreparedStatement, P> consumer) {
+    private <P> Optional<E> findByParam(P param, String query,
+        BiConsumer<PreparedStatement, P> consumer) {
         try (Connection connection = connector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             consumer.accept(preparedStatement, param);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next() ? Optional.ofNullable(mapResultSetToEntity(resultSet)) : Optional.empty();
+                return resultSet.next() ? Optional.ofNullable(mapResultSetToEntity(resultSet))
+                    : Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataBaseRunTimeException(e);
         }
     }
 
+    protected void addSpecificData(String query, Object... params) {
+        try (Connection connection = connector.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
+            for (int i = 0; i < params.length; i++) {
+                Object param = params[i];
+                if (param instanceof String string) {
+                    statement.setString(i + 1, string);
+                } else if (param instanceof Long number) {
+                    statement.setLong(i + 1, number);
+                } else {
+                    throw new IllegalArgumentException(
+                        "Unsupported parameter type: " + param.getClass().getSimpleName());
+                }
+            }
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataBaseRunTimeException("Failed to execute statement: " + query, e);
+        }
+    }
+
     protected abstract E mapResultSetToEntity(ResultSet resultSet) throws SQLException;
 
-    protected abstract void insert(PreparedStatement preparedStatement, E entity) throws SQLException;
+    protected abstract void insert(PreparedStatement preparedStatement, E entity)
+        throws SQLException;
 
-    protected abstract void updateValues(PreparedStatement preparedStatement, E entity) throws SQLException;
+    protected abstract void updateValues(PreparedStatement preparedStatement, E entity)
+        throws SQLException;
 
-    protected abstract void deleteById(PreparedStatement preparedStatement, Long id) throws SQLException;
+    protected abstract void deleteById(PreparedStatement preparedStatement, Long id)
+        throws SQLException;
 
 }

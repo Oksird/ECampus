@@ -1,26 +1,24 @@
 package ua.foxminded.muzychenko;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ResourceBundle;
 import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
 
 public class DBConnector {
-    private final String url;
-    private final String user;
-    private final String password;
+
+    private final HikariDataSource dataSource;
 
     public DBConnector(String fileConfigName) {
-        ResourceBundle resource = ResourceBundle.getBundle(fileConfigName);
-        this.url = resource.getString("db.url");
-        this.user = resource.getString("db.user");
-        this.password = resource.getString("db.password");
+        HikariConfig hikariConfig = new HikariConfig(fileConfigName);
+        dataSource = new HikariDataSource(hikariConfig);
+
     }
 
     public Connection getConnection() {
         try {
-            return DriverManager.getConnection(url, user, password);
+            return dataSource.getConnection();
         } catch (SQLException e) {
             throw new DataBaseRunTimeException(e);
         }

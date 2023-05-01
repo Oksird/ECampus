@@ -11,4 +11,6 @@ public interface StudentDao extends CrudDao<StudentEntity, Long> {
     void deleteById(Long id);
 
     void addToCourse(StudentEntity entity, String nameOfCourse);
+
+    void removeFromCourse(StudentEntity entity, String nameOfCourse);
 }

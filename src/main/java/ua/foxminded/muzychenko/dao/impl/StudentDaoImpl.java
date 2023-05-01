@@ -26,11 +26,16 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
             + " SELECT s.student_id, c.course_id FROM students s"
             + " JOIN (SELECT course_id FROM courses WHERE course_name = ?) c ON true"
             + " WHERE s.student_id = ?;";
+    private static final String REMOVE_FROM_COURSE_QUERY =
+        "DELETE FROM student_courses WHERE student_id = ?"
+            + " AND course_id = (SELECT course_id FROM courses WHERE course_name = ?)";
+    private static final String FIND_ALL_BY_PAGE_QUERY =
+        "SELECT * FROM students ORDER BY student_id DESC OFFSET ? LIMIT ?";
 
 
     public StudentDaoImpl(DBConnector connector) {
         super(connector, SAVE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, UPDATE_QUERY,
-            DELETE_BY_ID_QUERY);
+            DELETE_BY_ID_QUERY, FIND_ALL_BY_PAGE_QUERY);
     }
 
     @Override
@@ -41,6 +46,11 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
     @Override
     public void addToCourse(StudentEntity student, String nameOfCourse) {
         addSpecificData(ADD_TO_COURSE_QUERY, nameOfCourse, student.studentId());
+    }
+
+    @Override
+    public void removeFromCourse(StudentEntity entity, String nameOfCourse) {
+        removeSpecificData(REMOVE_FROM_COURSE_QUERY, entity.studentId(), nameOfCourse);
     }
 
     @Override

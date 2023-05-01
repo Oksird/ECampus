@@ -22,10 +22,12 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements Gr
         + "LEFT JOIN students s ON g.group_id = s.group_id GROUP BY g.group_id, g.group_name ) "
         + "SELECT group_id, group_name, student_count"
         + " FROM group_counts WHERE student_count <= ?";
+    private static final String FIND_ALL_BY_PAGE_QUERY
+        = "SELECT * FROM groups ORDER BY group_id DESC OFFSET ? LIMIT ?";
 
     public GroupDaoImpl(DBConnector connector) {
         super(connector, SAVE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, UPDATE_QUERY,
-            DELETE_BY_ID_QUERY);
+            DELETE_BY_ID_QUERY, FIND_ALL_BY_PAGE_QUERY);
     }
 
     @Override

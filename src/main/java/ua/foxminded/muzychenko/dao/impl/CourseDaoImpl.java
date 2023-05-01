@@ -16,10 +16,12 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<CourseEntity> implements 
     private static final String UPDATE_QUERY
         = "UPDATE courses SET course_name =?, course_description=? WHERE course_id = ?";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM courses WHERE course_id = ?";
+    private static final String FIND_ALL_BY_PAGE_QUERY
+        = "SELECT * FROM courses ORDER BY course_id DESC OFFSET ? LIMIT ?";
 
     public CourseDaoImpl(DBConnector connector) {
         super(connector, SAVE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, UPDATE_QUERY,
-            DELETE_BY_ID_QUERY);
+            DELETE_BY_ID_QUERY, FIND_ALL_BY_PAGE_QUERY);
     }
 
     @Override

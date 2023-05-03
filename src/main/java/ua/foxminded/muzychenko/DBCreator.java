@@ -1,17 +1,14 @@
 package ua.foxminded.muzychenko;
 
-import com.ibatis.common.jdbc.ScriptRunner;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
+
 import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
 
 public class DBCreator {
@@ -56,11 +53,10 @@ public class DBCreator {
         }
     }
 
-
     public static void createDB() {
         DBConnector dbConnector = new DBConnector();
         try (Connection postgresConnection = dbConnector.getConnection();
-            Statement postgresStatement = postgresConnection.createStatement()) {
+             Statement postgresStatement = postgresConnection.createStatement()) {
             postgresStatement.execute(CLOSE_CONNECTION);
             postgresStatement.executeUpdate(DROP_DATABASE_QUERY);
             postgresStatement.executeUpdate(REVOKE_ALL_PRIVILEGES);
@@ -75,7 +71,7 @@ public class DBCreator {
                     stringBuilder.append(line).append(System.lineSeparator());
                 }
                 String[] queries = stringBuilder.toString().trim().split(System.lineSeparator());
-                for (String query: queries) {
+                for (String query : queries) {
                     postgresStatement.executeUpdate(query);
                 }
             }
@@ -85,21 +81,5 @@ public class DBCreator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private String loadSqlScriptFromFile(String filePath) {
-        StringBuilder sb = new StringBuilder();
-
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(filePath))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-                sb.append(System.lineSeparator());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return sb.toString();
     }
 }

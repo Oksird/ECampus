@@ -9,6 +9,7 @@ import ua.foxminded.muzychenko.entity.StudentEntity;
 
 public class StudentsGeneratorImpl implements StudentsGenerator {
 
+    private static final int COUNT_OF_STUDENTS = 200;
     private final StudentDao studentDao;
     private final Random random = new Random();
     private final List<String> firstNames = new ArrayList<>(
@@ -27,7 +28,7 @@ public class StudentsGeneratorImpl implements StudentsGenerator {
     @Override
     public List<StudentEntity> generateData() {
         List<StudentEntity> students = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < COUNT_OF_STUDENTS; i++) {
             students.add(
                 new StudentEntity(
                     i + 1L,

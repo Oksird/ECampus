@@ -9,7 +9,7 @@ import ua.foxminded.muzychenko.entity.GroupEntity;
 
 public class GroupsGeneratorImpl implements GroupsGenerator {
 
-    private static final char[] ALPHABET = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+    private static final char[] ALPHABET = "abcdefghijklmnopqrstuvwxyz".toUpperCase().toCharArray();
     private static final char[] NUMBERS = "0123456789".toCharArray();
     private static final char HYPHEN = '-';
     private final GroupDao groupDao;
@@ -26,9 +26,9 @@ public class GroupsGeneratorImpl implements GroupsGenerator {
         for (int i = 0; i < 10; i++) {
             groups.add(
                 new GroupEntity(i + 1L,
-                    ALPHABET[random.nextInt(ALPHABET.length)] + ALPHABET[random.nextInt(
+                    String.valueOf(ALPHABET[random.nextInt(ALPHABET.length)]) + ALPHABET[random.nextInt(
                         ALPHABET.length)] + HYPHEN + NUMBERS[random.nextInt(NUMBERS.length)]
-                        + String.valueOf(NUMBERS[random.nextInt(NUMBERS.length)]) + "-" + i)
+                        + NUMBERS[random.nextInt(NUMBERS.length)])
             );
         }
         return groups;

@@ -13,7 +13,14 @@ public class DBConnector {
     public DBConnector(String fileConfigName) {
         HikariConfig hikariConfig = new HikariConfig(fileConfigName);
         dataSource = new HikariDataSource(hikariConfig);
+    }
 
+    public DBConnector() {
+        HikariConfig postgresConfig = new HikariConfig();
+        postgresConfig.setJdbcUrl("jdbc:postgresql://localhost:5432/postgres");
+        postgresConfig.setUsername("postgres");
+        postgresConfig.setPassword("password");
+        dataSource = new HikariDataSource(postgresConfig);
     }
 
     public Connection getConnection() {
@@ -23,4 +30,9 @@ public class DBConnector {
             throw new DataBaseRunTimeException(e);
         }
     }
+
+    public void closeConnection() {
+        dataSource.close();
+    }
+    
 }

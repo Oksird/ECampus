@@ -16,7 +16,10 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
     private static final String FIND_ALL_QUERY = "SELECT * FROM students";
     private static final String UPDATE_QUERY
         = "UPDATE students SET group_id =?, first_name=?, last_name=? WHERE student_id = ?";
-    private static final String DELETE_BY_ID_QUERY = "DELETE FROM students WHERE student_id = ?";
+    private static final String DELETE_BY_ID_QUERY =
+        "DELETE FROM student_courses WHERE student_id = ?;"
+            + "DELETE FROM students WHERE student_id = ?;";
+
     private static final String FIND_BY_COURSE_QUERY
         = "SELECT * FROM students st JOIN student_courses sc on st.student_id = sc.student_id "
         + "Join courses c on c.course_id = sc.course_id WHERE c.course_name = ?";
@@ -80,6 +83,7 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
     @Override
     protected void deleteById(PreparedStatement preparedStatement, Long id) throws SQLException {
         preparedStatement.setLong(1, id);
+        preparedStatement.setLong(2, id);
     }
 
 }

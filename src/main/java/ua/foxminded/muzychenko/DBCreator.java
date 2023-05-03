@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,6 +17,7 @@ import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
 public class DBCreator {
 
     private static final String DROP_DATABASE_QUERY = "DROP DATABASE IF EXISTS school";
+    private static final String REVOKE_ALL_PRIVILEGES = "REVOKE ALL PRIVILEGES ON SCHEMA public FROM fox;";
     private static final String DROP_USER_QUERY = "DROP USER IF EXISTS fox";
     private static final String CLOSE_CONNECTION =
         "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'school';";
@@ -25,13 +28,26 @@ public class DBCreator {
     }
 
     public void createTables() {
-        try (Connection connection = dbConnector.getConnection()) {
-            ScriptRunner scriptRunner = new ScriptRunner(connection, false, false);
-            Reader createTablesScriptFile = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(
-                    DBConnector.class.getClassLoader().getResourceAsStream("create-tables.sql")),
-                StandardCharsets.UTF_8));
-            scriptRunner.runScript(createTablesScriptFile);
+        try (Connection connection = dbConnector.getConnection();
+             Statement statement = connection.createStatement();
+             BufferedReader createTablesScriptFile = new BufferedReader(new InputStreamReader(
+                 Objects.requireNonNull(
+                     DBConnector.class.getClassLoader().getResourceAsStream("create-tables.sql")),
+                 StandardCharsets.UTF_8))) {
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = createTablesScriptFile.readLine()) != null) {
+                stringBuilder.append(line).append("\n");
+            }
+
+            String[] queries = stringBuilder.toString().trim().split(";");
+
+            for (String query : queries) {
+                if (!query.trim().isEmpty()) {
+                    statement.executeUpdate(query);
+                }
+            }
 
         } catch (IOException ioException) {
             ioException.printStackTrace();
@@ -40,27 +56,50 @@ public class DBCreator {
         }
     }
 
+
     public static void createDB() {
         DBConnector dbConnector = new DBConnector();
         try (Connection postgresConnection = dbConnector.getConnection();
             Statement postgresStatement = postgresConnection.createStatement()) {
-            ScriptRunner scriptRunner = new ScriptRunner(postgresConnection, false, false);
             postgresStatement.execute(CLOSE_CONNECTION);
             postgresStatement.executeUpdate(DROP_DATABASE_QUERY);
+            postgresStatement.executeUpdate(REVOKE_ALL_PRIVILEGES);
             postgresStatement.execute(DROP_USER_QUERY);
-            Reader createDataBasesScriptFile = new BufferedReader(new InputStreamReader(
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(
-                    DBConnector.class.getClassLoader()
-                        .getResourceAsStream("create-data-bases.sql")),
-                StandardCharsets.UTF_8));
-
-            scriptRunner.runScript(createDataBasesScriptFile);
-
+                    DBConnector.class.getClassLoader().getResourceAsStream("create-data-bases.sql")),
+                StandardCharsets.UTF_8))) {
+                StringBuilder stringBuilder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line).append(System.lineSeparator());
+                }
+                String[] queries = stringBuilder.toString().trim().split(System.lineSeparator());
+                for (String query: queries) {
+                    postgresStatement.executeUpdate(query);
+                }
+            }
 
         } catch (SQLException e) {
             throw new DataBaseRunTimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String loadSqlScriptFromFile(String filePath) {
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+                sb.append(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return sb.toString();
     }
 }

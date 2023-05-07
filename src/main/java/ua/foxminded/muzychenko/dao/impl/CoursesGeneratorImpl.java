@@ -1,18 +1,18 @@
-package ua.foxminded.muzychenko.dao.data.impl;
+package ua.foxminded.muzychenko.dao.impl;
 
 import java.util.ArrayList;
 import java.util.List;
 import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dao.data.CoursesGenerator;
+import ua.foxminded.muzychenko.dao.CoursesGenerator;
 import ua.foxminded.muzychenko.entity.CourseEntity;
 
 public class CoursesGeneratorImpl implements CoursesGenerator {
 
     private final CourseDao courseDao;
-    protected static final List<String> courseNames = new ArrayList<>(
+    static final List<String> COURSE_NAMES = new ArrayList<>(
         List.of("Science", "Math", "English", "History", "Art", "Music", "Astronomy",
             "Physical Education", "Reading", "Geography"));
-    private final List<String> courseDescription = new ArrayList<>(List.of(
+    static final List<String> COURSE_DESCRIPTIONS = new ArrayList<>(List.of(
         "Systematic endeavor that builds and organizes knowledge in the form of testable"
             + " explanations and predictions about the universe",
         "Area of knowledge that includes the topics of numbers, formulas and related structures,"
@@ -44,8 +44,8 @@ public class CoursesGeneratorImpl implements CoursesGenerator {
     @Override
     public List<CourseEntity> generateData() {
         List<CourseEntity> courses = new ArrayList<>();
-        for (int i = 0; i < courseNames.size(); i++) {
-            courses.add(new CourseEntity(i + 1, courseNames.get(i), courseDescription.get(i)));
+        for (int i = 0; i < COURSE_NAMES.size(); i++) {
+            courses.add(new CourseEntity(i + 1L, COURSE_NAMES.get(i), COURSE_DESCRIPTIONS.get(i)));
         }
         return courses;
     }

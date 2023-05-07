@@ -2,12 +2,14 @@ package ua.foxminded.muzychenko;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Random;
+
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.StudentDao;
-import ua.foxminded.muzychenko.dao.data.impl.CoursesGeneratorImpl;
-import ua.foxminded.muzychenko.dao.data.impl.GroupsGeneratorImpl;
-import ua.foxminded.muzychenko.dao.data.impl.StudentsGeneratorImpl;
+import ua.foxminded.muzychenko.dao.impl.CoursesGeneratorImpl;
+import ua.foxminded.muzychenko.dao.impl.GroupsGeneratorImpl;
+import ua.foxminded.muzychenko.dao.impl.StudentsGeneratorImpl;
 import ua.foxminded.muzychenko.dao.impl.CourseDaoImpl;
 import ua.foxminded.muzychenko.dao.impl.GroupDaoImpl;
 import ua.foxminded.muzychenko.dao.impl.StudentDaoImpl;
@@ -15,6 +17,7 @@ import ua.foxminded.muzychenko.dao.impl.StudentDaoImpl;
 public class SchoolConsoleApplication {
 
     public static void main(String[] args) throws SQLException {
+        Random random = new Random();
         DBCreator.createDB();
         DBConnector dbConnector = new DBConnector("/db.properties");
         StudentDao studentDao = new StudentDaoImpl(dbConnector);
@@ -25,10 +28,10 @@ public class SchoolConsoleApplication {
             courseDao,
             studentDao,
             new DBCreator(dbConnector),
-            new GroupsGeneratorImpl(groupDao),
+            new GroupsGeneratorImpl(groupDao, random),
             new CoursesGeneratorImpl(courseDao),
-            new StudentsGeneratorImpl(studentDao)
-        );
+            new StudentsGeneratorImpl(studentDao, random),
+             random);
         schoolApplicationFacade.runQueries();
         Statement statement = dbConnector.getConnection().createStatement();
     }

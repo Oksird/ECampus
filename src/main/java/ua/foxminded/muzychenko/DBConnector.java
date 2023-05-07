@@ -23,16 +23,11 @@ public class DBConnector {
         dataSource = new HikariDataSource(postgresConfig);
     }
 
-    public Connection getConnection() {
-        try {
-            return dataSource.getConnection();
-        } catch (SQLException e) {
-            throw new DataBaseRunTimeException(e);
-        }
+    public Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
-
     public void closeConnection() {
         dataSource.close();
     }
-    
+
 }

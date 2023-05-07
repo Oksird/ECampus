@@ -1,4 +1,4 @@
-package ua.foxminded.muzychenko.dao.data;
+package ua.foxminded.muzychenko.dao;
 
 import java.util.List;
 import ua.foxminded.muzychenko.entity.StudentEntity;

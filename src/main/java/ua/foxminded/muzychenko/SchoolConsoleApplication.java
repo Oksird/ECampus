@@ -1,6 +1,5 @@
 package ua.foxminded.muzychenko;
 
-import java.sql.SQLException;
 import java.util.Random;
 
 import ua.foxminded.muzychenko.dao.CourseDao;
@@ -15,7 +14,7 @@ import ua.foxminded.muzychenko.dao.impl.StudentDaoImpl;
 
 public class SchoolConsoleApplication {
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         Random random = new Random();
         DBCreator.createDB();
         DBConnector dbConnector = new DBConnector("/db.properties");
@@ -29,8 +28,8 @@ public class SchoolConsoleApplication {
             new DBCreator(dbConnector),
             new GroupsGeneratorImpl(groupDao, random),
             new CoursesGeneratorImpl(courseDao),
-            new StudentsGeneratorImpl(studentDao, random),
-            random);
+            new StudentsGeneratorImpl(studentDao, random)
+        );
         schoolApplicationFacade.runQueries();
     }
 }

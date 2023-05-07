@@ -19,11 +19,10 @@ public class SchoolApplicationFacade {
     private final GroupsGenerator groupsGenerator;
     private final CoursesGenerator coursesGenerator;
     private final StudentsGenerator studentsGenerator;
-    private final Random random;
 
     public SchoolApplicationFacade(GroupDao groupDao, CourseDao courseDao,
                                    StudentDao studentDao, DBCreator dbCreator, GroupsGenerator groupsGenerator,
-                                   CoursesGenerator coursesGenerator, StudentsGenerator studentsGenerator, Random random) {
+                                   CoursesGenerator coursesGenerator, StudentsGenerator studentsGenerator) {
         this.groupDao = groupDao;
         this.courseDao = courseDao;
         this.studentDao = studentDao;
@@ -31,7 +30,6 @@ public class SchoolApplicationFacade {
         this.groupsGenerator = groupsGenerator;
         this.coursesGenerator = coursesGenerator;
         this.studentsGenerator = studentsGenerator;
-        this.random = random;
     }
 
     public void runQueries() {
@@ -49,7 +47,8 @@ public class SchoolApplicationFacade {
         studentDao.create(student);
         studentDao.deleteById(2L);
         studentDao.addToCourse(student, "Math");
-        studentDao.removeFromCourse(studentDao.findByCourse("Math").get(),
-            "Math");
+        studentDao.findByCourse("Math")
+            .ifPresent(mathStudent -> studentDao.removeFromCourse(mathStudent, "Math"));
+
     }
 }

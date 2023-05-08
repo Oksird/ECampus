@@ -28,5 +28,4 @@ public class DBConnector {
     public void closeConnection() {
         dataSource.close();
     }
-
 }

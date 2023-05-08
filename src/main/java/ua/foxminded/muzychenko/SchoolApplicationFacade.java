@@ -8,8 +8,6 @@ import ua.foxminded.muzychenko.dao.GroupsGenerator;
 import ua.foxminded.muzychenko.dao.StudentsGenerator;
 import ua.foxminded.muzychenko.entity.StudentEntity;
 
-import java.util.Random;
-
 public class SchoolApplicationFacade {
 
     private final GroupDao groupDao;

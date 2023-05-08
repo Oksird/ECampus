@@ -3,6 +3,7 @@ package ua.foxminded.muzychenko.dao.impl;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.CourseEntity;

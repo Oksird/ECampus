@@ -10,6 +10,7 @@ import ua.foxminded.muzychenko.entity.StudentEntity;
 public class StudentsGeneratorImpl implements StudentsGenerator {
 
     private static final int COUNT_OF_STUDENTS = 200;
+    private static final int COUNT_OF_GROUPS = 10;
     private final StudentDao studentDao;
     private final Random random;
     private static final List<String> FIRST_NAMES = new ArrayList<>(
@@ -33,9 +34,9 @@ public class StudentsGeneratorImpl implements StudentsGenerator {
             students.add(
                 new StudentEntity(
                     i + 1L,
-                    random.nextInt(10) + 1L,
-                    FIRST_NAMES.get(random.nextInt(20)),
-                    LAST_NAMES.get(random.nextInt(20))));
+                    random.nextInt(COUNT_OF_GROUPS) + 1L,
+                    FIRST_NAMES.get(random.nextInt(FIRST_NAMES.size())),
+                    LAST_NAMES.get(random.nextInt(LAST_NAMES.size()))));
         }
         return students;
     }
@@ -43,8 +44,8 @@ public class StudentsGeneratorImpl implements StudentsGenerator {
     @Override
     public void insertStudents(List<StudentEntity> students) {
         List<String> courseNames = CoursesGeneratorImpl.COURSE_NAMES;
-        generateData().forEach(studentDao::create);
-        generateData().forEach(
+        studentDao.createAll(students);
+        students.forEach(
             studentEntity -> studentDao.addToCourse(studentEntity,
                 courseNames.get(random.nextInt(courseNames.size()))));
     }

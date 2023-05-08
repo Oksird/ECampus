@@ -129,6 +129,19 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
             throw new DataBaseRunTimeException(e);
         }
     }
+    @Override
+    public void createAll(List<E> entities) {
+        try (Connection connection = connector.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(createQuery)) {
+            for (E entity : entities) {
+                insert(preparedStatement, entity);
+                preparedStatement.addBatch();
+            }
+            preparedStatement.executeBatch();
+        } catch (SQLException e) {
+            throw new DataBaseRunTimeException("Batch insertion is failed", e);
+        }
+    }
 
     protected Optional<E> findByLongParam(Long id, String query) {
         return findByParam(id, query, LONG_CONSUMER);
@@ -194,5 +207,4 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
 
     protected abstract void deleteById(PreparedStatement preparedStatement, Long id)
         throws SQLException;
-
 }

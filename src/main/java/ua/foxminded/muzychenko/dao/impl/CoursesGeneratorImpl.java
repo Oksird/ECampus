@@ -52,6 +52,6 @@ public class CoursesGeneratorImpl implements CoursesGenerator {
 
     @Override
     public void insertCourses(List<CourseEntity> courses) {
-        generateData().forEach(courseDao::create);
+        courseDao.createAll(courses);
     }
 }

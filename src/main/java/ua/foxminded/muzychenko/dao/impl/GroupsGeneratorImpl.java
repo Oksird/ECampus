@@ -22,7 +22,6 @@ public class GroupsGeneratorImpl implements GroupsGenerator {
     }
 
     @Override
-
     public List<GroupEntity> generateData() {
         List<GroupEntity> groups = new ArrayList<>();
         for (int i = 0; i < COUNT_OF_GROUPS; i++) {
@@ -38,6 +37,6 @@ public class GroupsGeneratorImpl implements GroupsGenerator {
 
     @Override
     public void insertGroups(List<GroupEntity> groups) {
-        groups.forEach(groupDao::create);
+        groupDao.createAll(groups);
     }
 }

@@ -17,4 +17,5 @@ public interface CrudDao<E, ID> {
 
     void deleteById(ID id);
 
+    void createAll(List<E> entities);
 }

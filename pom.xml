@@ -12,6 +12,8 @@
         <ibatis.version>2.3.4.726</ibatis.version>
         <postgresql.driver.version>42.6.0</postgresql.driver.version>
         <hikariCP.version>5.0.1</hikariCP.version>
+        <h2.version>2.1.214</h2.version>
+        <junit.version>5.9.2</junit.version>
     </properties>
 
     <build>
@@ -42,6 +44,18 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikariCP.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -25,10 +25,14 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
         + "Join courses c on c.course_id = sc.course_id WHERE c.course_name = ?";
     private static final String ADD_TO_COURSE_QUERY
         =
-        "INSERT INTO student_courses (student_id, course_id)"
-            + " SELECT s.student_id, c.course_id FROM students s"
-            + " JOIN (SELECT course_id FROM courses WHERE course_name = ?) c ON true"
-            + " WHERE s.student_id = ?;";
+        "INSERT INTO student_courses (student_id, course_id) "
+            + "SELECT s.student_id, c.course_id "
+            + "FROM students s "
+            + "JOIN (SELECT course_id FROM courses WHERE course_name = ?) c ON true "
+            + "WHERE s.student_id = ? "
+            + "AND NOT EXISTS (SELECT 1 FROM student_courses "
+            + "WHERE student_id = s.student_id AND course_id = c.course_id);";
+
     private static final String REMOVE_FROM_COURSE_QUERY =
         "DELETE FROM student_courses WHERE student_id = ?"
             + " AND course_id = (SELECT course_id FROM courses WHERE course_name = ?)";

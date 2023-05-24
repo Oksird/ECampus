@@ -51,10 +51,9 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements Gr
     }
 
     @Override
-    protected void updateValues(PreparedStatement preparedStatement, GroupEntity entity)
-        throws SQLException {
-        insert(preparedStatement, entity);
-        preparedStatement.setLong(3, entity.groupId());
+    protected void updateValues(PreparedStatement preparedStatement, GroupEntity oldEntity, GroupEntity newEntity) throws SQLException {
+        preparedStatement.setString(1, newEntity.groupName());
+        preparedStatement.setLong(2, newEntity.groupId());
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.entity.StudentEntity;
@@ -78,10 +79,12 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
     }
 
     @Override
-    protected void updateValues(PreparedStatement preparedStatement, StudentEntity entity)
+    protected void updateValues(PreparedStatement preparedStatement, StudentEntity oldEntity, StudentEntity newEntity)
         throws SQLException {
-        insert(preparedStatement, entity);
-        preparedStatement.setLong(4, entity.studentId());
+        preparedStatement.setLong(1, newEntity.groupId());
+        preparedStatement.setString(2, newEntity.firstName());
+        preparedStatement.setString(3, newEntity.lastName());
+        preparedStatement.setLong(4, oldEntity.studentId());
     }
 
     @Override

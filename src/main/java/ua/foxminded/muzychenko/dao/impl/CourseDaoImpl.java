@@ -41,10 +41,11 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<CourseEntity> implements 
     }
 
     @Override
-    protected void updateValues(PreparedStatement preparedStatement, CourseEntity entity)
+    protected void updateValues(PreparedStatement preparedStatement, CourseEntity oldEntity, CourseEntity newEntity)
         throws SQLException {
-        insert(preparedStatement, entity);
-        preparedStatement.setLong(3, entity.courseId());
+        preparedStatement.setString(1, newEntity.courseName());
+        preparedStatement.setString(2, newEntity.courseDescription());
+        preparedStatement.setLong(3, oldEntity.courseId());
     }
 
     @Override

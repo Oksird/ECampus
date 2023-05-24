@@ -105,11 +105,11 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     }
 
     @Override
-    public void update(E entity) {
+    public void update(E oldEntity, E newEntity) {
         try (Connection connection = connector.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
 
-            updateValues(preparedStatement, entity);
+            updateValues(preparedStatement, oldEntity, newEntity);
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -202,7 +202,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     protected abstract void insert(PreparedStatement preparedStatement, E entity)
         throws SQLException;
 
-    protected abstract void updateValues(PreparedStatement preparedStatement, E entity)
+    protected abstract void updateValues(PreparedStatement preparedStatement, E oldEntity, E newEntity)
         throws SQLException;
 
     protected abstract void deleteById(PreparedStatement preparedStatement, Long id)

@@ -13,7 +13,7 @@ public interface CrudDao<E, ID> {
 
     List<E> findAllByPage(Long countOfPages, Long pageSize);
 
-    void update(E entity);
+    void update(E oldEntity, E newEntity);
 
     void deleteById(ID id);
 

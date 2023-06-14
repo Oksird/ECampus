@@ -13,7 +13,6 @@ public class SchoolApplicationFacade {
     private final GroupDao groupDao;
     private final StudentDao studentDao;
     private final CourseDao courseDao;
-    private final DBCreator dbCreator;
     private final GroupsGenerator groupsGenerator;
     private final CoursesGenerator coursesGenerator;
     private final StudentsGenerator studentsGenerator;
@@ -24,10 +23,12 @@ public class SchoolApplicationFacade {
         this.groupDao = groupDao;
         this.courseDao = courseDao;
         this.studentDao = studentDao;
-        this.dbCreator = dbCreator;
         this.groupsGenerator = groupsGenerator;
         this.coursesGenerator = coursesGenerator;
         this.studentsGenerator = studentsGenerator;
+
+        dbCreator.createDB();
+        dbCreator.createTables();
     }
 
     public void runQueries() {
@@ -36,7 +37,6 @@ public class SchoolApplicationFacade {
             2L,
             "Max",
             "Muzychenko");
-        dbCreator.createTables();
         groupsGenerator.insertGroups(groupsGenerator.generateData());
         coursesGenerator.insertCourses(coursesGenerator.generateData());
         studentsGenerator.insertStudents(studentsGenerator.generateData());

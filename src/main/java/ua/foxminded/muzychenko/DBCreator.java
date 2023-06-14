@@ -1,85 +1,36 @@
 package ua.foxminded.muzychenko;
 
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import ua.foxminded.muzychenko.exception.WrongFilePathException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Objects;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 public class DBCreator {
 
-    private static final String DROP_DATABASE_QUERY = "DROP DATABASE IF EXISTS school";
-    private static final String REVOKE_ALL_PRIVILEGES = "REVOKE ALL PRIVILEGES ON SCHEMA public FROM fox;";
-    private static final String DROP_USER_QUERY = "DROP USER IF EXISTS fox";
-    private static final String CLOSE_CONNECTION =
-        "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'school';";
-    private final DBConnector dbConnector;
+    private static final String RESOURCES_PATH = "src/main/resources/";
+    private final ScriptRunner scriptRunner;
 
-    public DBCreator(DBConnector dbConnector) {
-        this.dbConnector = dbConnector;
+    public DBCreator(ScriptRunner scriptRunner) {
+        this.scriptRunner = scriptRunner;
+        this.scriptRunner.setAutoCommit(true);
     }
 
     public void createTables() {
-        try (Connection connection = dbConnector.getConnection();
-             Statement statement = connection.createStatement();
-             BufferedReader createTablesScriptFile = new BufferedReader(new InputStreamReader(
-                 Objects.requireNonNull(
-                     DBConnector.class.getClassLoader().getResourceAsStream("createTables.sql")),
-                 StandardCharsets.UTF_8))) {
-
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = createTablesScriptFile.readLine()) != null) {
-                stringBuilder.append(line).append("\n");
-            }
-
-            String[] queries = stringBuilder.toString().trim().split(";");
-
-            for (String query : queries) {
-                if (!query.trim().isEmpty()) {
-                    statement.executeUpdate(query);
-                }
-            }
-
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        } catch (SQLException sqlException) {
-            throw new DataBaseRunTimeException(sqlException);
+        try {
+            FileReader generateDataSQLScriptFile = new FileReader(RESOURCES_PATH + "createTables.sql");
+            scriptRunner.runScript(generateDataSQLScriptFile);
+        } catch (FileNotFoundException fileNotFoundException) {
+            throw new WrongFilePathException(fileNotFoundException.getMessage());
         }
     }
 
-    public static void createDB() {
-        DBConnector dbConnector = new DBConnector("/defaultDb.properties");
-        try (Connection postgresConnection = dbConnector.getConnection();
-             Statement postgresStatement = postgresConnection.createStatement()) {
-            postgresStatement.execute(CLOSE_CONNECTION);
-            postgresStatement.executeUpdate(DROP_DATABASE_QUERY);
-            postgresStatement.executeUpdate(REVOKE_ALL_PRIVILEGES);
-            postgresStatement.execute(DROP_USER_QUERY);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(
-                    DBConnector.class.getClassLoader().getResourceAsStream("createDataBases.sql")),
-                StandardCharsets.UTF_8))) {
-                StringBuilder stringBuilder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    stringBuilder.append(line).append(System.lineSeparator());
-                }
-                String[] queries = stringBuilder.toString().trim().split(System.lineSeparator());
-                for (String query : queries) {
-                    postgresStatement.executeUpdate(query);
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new DataBaseRunTimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public void createDB() {
+        try {
+            FileReader createTablesSQLScriptFile = new FileReader(RESOURCES_PATH + "createDataBases.sql");
+            scriptRunner.runScript(createTablesSQLScriptFile);
+        } catch (FileNotFoundException fileNotFoundException) {
+            throw new WrongFilePathException(fileNotFoundException.getMessage());
         }
     }
 }

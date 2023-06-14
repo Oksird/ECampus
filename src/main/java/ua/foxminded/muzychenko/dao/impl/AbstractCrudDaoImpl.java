@@ -1,5 +1,9 @@
 package ua.foxminded.muzychenko.dao.impl;
 
+import ua.foxminded.muzychenko.DBConnector;
+import ua.foxminded.muzychenko.dao.CrudDao;
+import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,9 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import ua.foxminded.muzychenko.DBConnector;
-import ua.foxminded.muzychenko.dao.CrudDao;
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
 
 public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
 
@@ -86,22 +87,22 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
 
     @Override
     public List<E> findAllByPage(Long pageNumber, Long pageSize) {
-        List<E> entities = new ArrayList<>();
+        List<E> listsOfEntities = new ArrayList<>();
         long offset = (pageNumber - 1) * pageSize;
         try (Connection connection = connector.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(
                 findAllByPageQuery)) {
+            preparedStatement.setLong(1, pageSize);
+            preparedStatement.setLong(2, offset);
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-                preparedStatement.setLong(1, offset);
-                preparedStatement.setLong(2, pageNumber);
                 while (resultSet.next()) {
-                    entities.add(mapResultSetToEntity(resultSet));
+                    listsOfEntities.add(mapResultSetToEntity(resultSet));
                 }
             }
         } catch (SQLException e) {
             throw new DataBaseRunTimeException(e);
         }
-        return entities;
+        return listsOfEntities;
     }
 
     @Override
@@ -143,6 +144,10 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
         }
     }
 
+    protected List<E> findAllByLongParam(Long id, String query) {
+        return findAllByParam(id, query, LONG_CONSUMER);
+    }
+
     protected Optional<E> findByLongParam(Long id, String query) {
         return findByParam(id, query, LONG_CONSUMER);
     }
@@ -151,10 +156,34 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
         return findByParam(param, query, STRING_CONSUMER);
     }
 
-    private <P> Optional<E> findByParam(P param, String query,
-        BiConsumer<PreparedStatement, P> consumer) {
+    protected List<E> findAllByStringParam(String param, String query) {
+        return findAllByParam(param, query, STRING_CONSUMER);
+    }
+
+    private <P> List<E> findAllByParam(P param, String query,
+                                       BiConsumer<PreparedStatement, P> consumer) {
+        List<E> results = new ArrayList<>();
         try (Connection connection = connector.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            consumer.accept(preparedStatement, param);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    E entity = mapResultSetToEntity(resultSet);
+                    if (entity != null) {
+                        results.add(entity);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataBaseRunTimeException(e);
+        }
+        return results;
+    }
+
+    private <P> Optional<E> findByParam(P param, String query,
+                                        BiConsumer<PreparedStatement, P> consumer) {
+        try (Connection connection = connector.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             consumer.accept(preparedStatement, param);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 return resultSet.next() ? Optional.ofNullable(mapResultSetToEntity(resultSet))
@@ -164,6 +193,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
             throw new DataBaseRunTimeException(e);
         }
     }
+
 
     protected void addSpecificData(String query, Object... params) {
         try (Connection connection = connector.getConnection();

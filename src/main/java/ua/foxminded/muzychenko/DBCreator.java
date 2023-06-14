@@ -1,5 +1,7 @@
 package ua.foxminded.muzychenko;
 
+import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,8 +10,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
-
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
 
 public class DBCreator {
 
@@ -29,7 +29,7 @@ public class DBCreator {
              Statement statement = connection.createStatement();
              BufferedReader createTablesScriptFile = new BufferedReader(new InputStreamReader(
                  Objects.requireNonNull(
-                     DBConnector.class.getClassLoader().getResourceAsStream("create-tables.sql")),
+                     DBConnector.class.getClassLoader().getResourceAsStream("createTables.sql")),
                  StandardCharsets.UTF_8))) {
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -54,7 +54,7 @@ public class DBCreator {
     }
 
     public static void createDB() {
-        DBConnector dbConnector = new DBConnector();
+        DBConnector dbConnector = new DBConnector("/defaultDb.properties");
         try (Connection postgresConnection = dbConnector.getConnection();
              Statement postgresStatement = postgresConnection.createStatement()) {
             postgresStatement.execute(CLOSE_CONNECTION);
@@ -63,7 +63,7 @@ public class DBCreator {
             postgresStatement.execute(DROP_USER_QUERY);
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(
-                    DBConnector.class.getClassLoader().getResourceAsStream("create-data-bases.sql")),
+                    DBConnector.class.getClassLoader().getResourceAsStream("createDataBases.sql")),
                 StandardCharsets.UTF_8))) {
                 StringBuilder stringBuilder = new StringBuilder();
                 String line;

@@ -14,14 +14,6 @@ public class DBConnector {
         dataSource = new HikariDataSource(hikariConfig);
     }
 
-    public DBConnector() {
-        HikariConfig postgresConfig = new HikariConfig();
-        postgresConfig.setJdbcUrl("jdbc:postgresql://localhost:5432/postgres");
-        postgresConfig.setUsername("postgres");
-        postgresConfig.setPassword("password");
-        dataSource = new HikariDataSource(postgresConfig);
-    }
-
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }

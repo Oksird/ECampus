@@ -1,12 +1,12 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.CourseEntity;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class CourseDaoImpl extends AbstractCrudDaoImpl<CourseEntity> implements CourseDao {
 
@@ -18,7 +18,7 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<CourseEntity> implements 
         = "UPDATE courses SET course_name =?, course_description=? WHERE course_id = ?";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM courses WHERE course_id = ?";
     private static final String FIND_ALL_BY_PAGE_QUERY
-        = "SELECT * FROM courses ORDER BY course_id DESC OFFSET ? LIMIT ?";
+        = "SELECT * FROM courses ORDER BY course_id DESC LIMIT ? OFFSET ?";
 
     public CourseDaoImpl(DBConnector connector) {
         super(connector, SAVE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, UPDATE_QUERY,

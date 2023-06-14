@@ -1,13 +1,13 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Optional;
-
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.entity.StudentEntity;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implements StudentDao {
 
@@ -38,7 +38,7 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
         "DELETE FROM student_courses WHERE student_id = ?"
             + " AND course_id = (SELECT course_id FROM courses WHERE course_name = ?)";
     private static final String FIND_ALL_BY_PAGE_QUERY =
-        "SELECT * FROM students ORDER BY student_id DESC OFFSET ? LIMIT ?";
+        "SELECT * FROM students ORDER BY student_id DESC LIMIT ? OFFSET ?";
 
 
     public StudentDaoImpl(DBConnector connector) {
@@ -47,8 +47,8 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
     }
 
     @Override
-    public Optional<StudentEntity> findByCourse(String nameOfCourse) {
-        return findByStringParam(nameOfCourse, FIND_BY_COURSE_QUERY);
+    public List<StudentEntity> findByCourse(String nameOfCourse) {
+        return findAllByStringParam(nameOfCourse, FIND_BY_COURSE_QUERY);
     }
 
     @Override

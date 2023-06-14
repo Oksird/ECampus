@@ -45,8 +45,7 @@ public class SchoolApplicationFacade {
         studentDao.create(student);
         studentDao.deleteById(2L);
         studentDao.addToCourse(student, "Math");
-        studentDao.findByCourse("Math")
-            .ifPresent(mathStudent -> studentDao.removeFromCourse(mathStudent, "Math"));
+        studentDao.findByCourse("Math");
 
     }
 }

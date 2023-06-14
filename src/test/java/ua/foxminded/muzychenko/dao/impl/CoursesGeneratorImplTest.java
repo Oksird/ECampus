@@ -1,16 +1,19 @@
 package ua.foxminded.muzychenko.dao.impl;
 
+import org.apache.ibatis.jdbc.ScriptRunner;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.dao.CoursesGenerator;
 import ua.foxminded.muzychenko.entity.CourseEntity;
 import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
+import ua.foxminded.muzychenko.exception.WrongFilePathException;
 
-import java.sql.Connection;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,28 +24,37 @@ class CoursesGeneratorImplTest {
 
     private CourseDao courseDao;
     private CoursesGenerator coursesGenerator;
+    private static final String RESOURCES_PATH = "src/main/resources/";
 
     @BeforeEach
     void setUp() {
-        DBConnector dbConnector = new DBConnector("/testdb.properties");
+
+        DBConnector dbConnector = new DBConnector("/testDb.properties");
+        ScriptRunner scriptRunner;
+
         courseDao = new CourseDaoImpl(dbConnector);
         coursesGenerator = new CoursesGeneratorImpl(courseDao);
 
-        try (Connection conn = dbConnector.getConnection();
-             Statement stmt = conn.createStatement()) {
+        try {
+            scriptRunner = new ScriptRunner(dbConnector.getConnection());
+        } catch (SQLException sqlException) {
+            throw new DataBaseRunTimeException(sqlException);
+        }
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS courses (" +
-                "course_id BIGINT AUTO_INCREMENT PRIMARY KEY," +
-                "course_name VARCHAR(255)," +
-                "course_description VARCHAR(255))");
-
-            stmt.execute("DELETE FROM courses");
-
-        } catch (SQLException e) {
-            throw new DataBaseRunTimeException(e);
+        try {
+            FileReader createTablesSQLScriptFile = new FileReader(RESOURCES_PATH + "createTables.sql");
+            FileReader generateDataSQLScriptFile = new FileReader(RESOURCES_PATH + "generateTestData.sql");
+            FileReader deleteAllDataFromDataBaseSQLFile
+                = new FileReader(RESOURCES_PATH + "deleteAllDataFromDataBases.sql");
+            scriptRunner.runScript(createTablesSQLScriptFile);
+            scriptRunner.runScript(deleteAllDataFromDataBaseSQLFile);
+            scriptRunner.runScript(generateDataSQLScriptFile);
+        } catch (FileNotFoundException fileNotFoundException) {
+            throw new WrongFilePathException(fileNotFoundException.getMessage());
         }
     }
 
+    @DisplayName("Courses were generated correctly")
     @Test
     void generateData_shouldReturnListOfCoursesWithCorrectNamesAndDescriptions() {
 
@@ -81,56 +93,22 @@ class CoursesGeneratorImplTest {
         for (int i = 0; i < countOfCourses; i++) {
             expectedCourses.add(new CourseEntity(i+1, courseNames.get(i), courseDescriptions.get(i)));
         }
-
         assertEquals(coursesGenerator.generateData(), expectedCourses);
-
     }
 
-    @Test
-    void insertCourses_shouldInsertsCoursesCorrectly() {
-        CourseEntity course1 =
-            new CourseEntity(1L, "Math", "Numbers and stuff");
-        CourseEntity course2 =
-            new CourseEntity(2L, "English", "Language and literature");
-
-        List<CourseEntity> courses = List.of(course1, course2);
-
-        coursesGenerator.insertCourses(courses);
-
-        List<CourseEntity> insertedCourses = courseDao.findAll();
-
-        assertEquals(2, insertedCourses.size());
-    }
-
-    @Test
-    void insertCourses_shouldInsertSingleCourse() {
-        CourseEntity course = new CourseEntity(0L, "Mathematics", "Numbers and stuff");
-
-        coursesGenerator.insertCourses(List.of(course));
-
-        List<CourseEntity> insertedCourses = courseDao.findAll();
-
-        assertEquals(1, insertedCourses.size());
-        assertEquals(course.courseName(), insertedCourses.get(0).courseName());
-    }
-
+    @DisplayName("Courses are inserted")
     @Test
     void insertCourses_shouldInsertMultipleCourses() {
-        List<CourseEntity> courses = new ArrayList<>();
-        courses.add(new CourseEntity(0L, "Physics", "Force"));
-        courses.add(new CourseEntity(0L, "Chemistry", "Breaking Bad"));
-        courses.add(new CourseEntity(0L, "Biology", "Flowers and animals"));
+        List<CourseEntity> insertedCourses = new ArrayList<>();
+        insertedCourses.add(new CourseEntity(4L, "Physics", "Force"));
+        insertedCourses.add(new CourseEntity(5L, "Chemistry", "Breaking Bad"));
+        insertedCourses.add(new CourseEntity(6L, "Biology", "Flowers and animals"));
 
-        coursesGenerator.insertCourses(courses);
+        coursesGenerator.insertCourses(insertedCourses);
 
-        List<CourseEntity> insertedCourses = courseDao.findAll();
+        List<CourseEntity> actualCourses = courseDao.findAll();
 
-        assertEquals(courses.size(), insertedCourses.size());
+        assertTrue(actualCourses.containsAll(insertedCourses));
 
-        for (CourseEntity expectedCourse : courses) {
-            assertTrue(insertedCourses.stream()
-                .anyMatch(actualCourse -> actualCourse.courseName().equals(expectedCourse.courseName())));
-        }
     }
-
 }

@@ -4,6 +4,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.CourseEntity;
@@ -17,10 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 class CourseDaoImplTest {
 
     private CourseDao courseDao;
+    private CourseDao courseDaoException;
     private static final String RESOURCES_PATH = "src/main/resources/";
 
     @BeforeEach
@@ -30,9 +34,11 @@ class CourseDaoImplTest {
         ScriptRunner scriptRunner;
 
         courseDao = new CourseDaoImpl(dbConnector);
-
+        DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
+        courseDaoException = new CourseDaoImpl(dbConnectorException);
         try {
             scriptRunner = new ScriptRunner(dbConnector.getConnection());
+            when(dbConnectorException.getConnection()).thenThrow(new SQLException());
         } catch (SQLException sqlException) {
             throw new DataBaseRunTimeException(sqlException);
         }
@@ -84,5 +90,14 @@ class CourseDaoImplTest {
         expectedCourses.add(testCourse);
         courseDao.update(actualCourse, testCourse);
         assertEquals(expectedCourses, courseDao.findAll());
+    }
+
+    @DisplayName("findById() throw sql exception")
+    @Test
+    void findById_shouldThrowException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> courseDaoException
+                .findById(111111L)
+        );
     }
 }

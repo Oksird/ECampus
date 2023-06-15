@@ -4,6 +4,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.entity.StudentEntity;
@@ -18,10 +19,15 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 class StudentDaoImplTest {
 
     private StudentDao studentDao;
+    private StudentDao studentDaoException;
+
     private static final String RESOURCES_PATH = "src/main/resources/";
 
     @BeforeEach
@@ -31,9 +37,12 @@ class StudentDaoImplTest {
         ScriptRunner scriptRunner;
 
         studentDao = new StudentDaoImpl(dbConnector);
+        DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
+        studentDaoException = new StudentDaoImpl(dbConnectorException);
 
         try {
             scriptRunner = new ScriptRunner(dbConnector.getConnection());
+            when(dbConnectorException.getConnection()).thenThrow(new SQLException());
         } catch (SQLException sqlException) {
             throw new DataBaseRunTimeException(sqlException);
         }
@@ -152,5 +161,133 @@ class StudentDaoImplTest {
             student.ifPresent(actualStudents::add);
         }
         assertEquals(studentsOnLastPage, actualStudents);
+    }
+
+    @DisplayName("create() trow sql exception")
+    @Test
+    void create_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException.create(new StudentEntity(55, 1, "Test", "Test"))
+        );
+    }
+
+    @DisplayName("update() trow sql exception")
+
+    @Test
+    void update_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .update(studentDao.findById(1L)
+                        .get(),
+                    new StudentEntity(
+                        1L,
+                        1,
+                        "Test",
+                        "Test"))
+        );
+    }
+
+    @DisplayName("delete() trow sql exception")
+    @Test
+    void delete_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .deleteById(1L)
+        );
+    }
+
+    @DisplayName("findAll() trow sql exception")
+    @Test
+    void findAll_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .findAll()
+        );
+    }
+
+    @DisplayName("findAllByPage() trow sql exception")
+    @Test
+    void findAllByPage_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .findAllByPage(444444L, 54444L)
+        );
+    }
+
+    @DisplayName("createAll() trow sql exception")
+    @Test
+    void createAll_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .createAll(new ArrayList<>(List.of(
+                        new StudentEntity(
+                            111L,
+                            1,
+                            "Test1",
+                            "Test1"),
+                        new StudentEntity(
+                            112L,
+                            1,
+                            "Test2",
+                            "Test2")
+                    )
+                    )
+                )
+        );
+    }
+
+    @DisplayName("findByCourse() trow sql exception")
+    @Test
+    void findByCourse_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .findByCourse("Math")
+        );
+    }
+
+    @DisplayName("removeFromCourse() trow sql exception")
+    @Test
+    void removeFromCourse_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .removeFromCourse(studentDao.findById(1L).get(), "Math")
+        );
+    }
+
+    @DisplayName("addToCourse() trow sql exception")
+    @Test
+    void addToCourse_shouldThrowSQLException() {
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDaoException
+                .addToCourse(studentDao.findById(1L).get(), "Mathssss")
+        );
+    }
+
+    @DisplayName("create() trow Illegal argument exception")
+    @Test
+    void addToCourse_shouldThrowIllegalArgumentException() {
+        studentDaoException = Mockito.mock(StudentDaoImpl.class);
+
+        doThrow(new IllegalArgumentException())
+            .when(studentDaoException)
+            .addToCourse(
+                new StudentEntity(
+                    111L,
+                    1L,
+                    "test",
+                    "test"),
+                " Maths");
+
+        assertThrows(IllegalArgumentException.class,
+            () ->
+                studentDaoException
+                    .addToCourse(
+                        new StudentEntity(
+                            111L,
+                            1L,
+                            "test",
+                            "test"),
+                        " Maths")
+        );
     }
 }

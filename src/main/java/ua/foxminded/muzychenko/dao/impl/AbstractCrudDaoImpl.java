@@ -152,10 +152,6 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
         return findByParam(id, query, LONG_CONSUMER);
     }
 
-    protected Optional<E> findByStringParam(String param, String query) {
-        return findByParam(param, query, STRING_CONSUMER);
-    }
-
     protected List<E> findAllByStringParam(String param, String query) {
         return findAllByParam(param, query, STRING_CONSUMER);
     }

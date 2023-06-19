@@ -1,6 +1,5 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,12 +7,8 @@ import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.GroupsGenerator;
 import ua.foxminded.muzychenko.entity.GroupEntity;
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
-import ua.foxminded.muzychenko.exception.WrongFilePathException;
+import util.DataBaseSetUpper;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -27,34 +22,16 @@ class GroupsGeneratorImplTest {
 
     private GroupDao groupDao;
     private GroupsGenerator groupsGenerator;
-    private static final String RESOURCES_PATH = "src/main/resources/";
 
     @BeforeEach
     void setUp() {
 
         DBConnector dbConnector = new DBConnector("/testDb.properties");
-        ScriptRunner scriptRunner;
 
         groupDao = new GroupDaoImpl(dbConnector);
         groupsGenerator = new GroupsGeneratorImpl(groupDao, new Random());
 
-        try {
-            scriptRunner = new ScriptRunner(dbConnector.getConnection());
-        } catch (SQLException sqlException) {
-            throw new DataBaseRunTimeException(sqlException);
-        }
-
-        try {
-            FileReader createTablesSQLScriptFile = new FileReader(RESOURCES_PATH + "createTables.sql");
-            FileReader generateDataSQLScriptFile = new FileReader(RESOURCES_PATH + "generateTestData.sql");
-            FileReader deleteAllDataFromDataBaseSQLFile
-                = new FileReader(RESOURCES_PATH + "deleteAllDataFromDataBases.sql");
-            scriptRunner.runScript(createTablesSQLScriptFile);
-            scriptRunner.runScript(deleteAllDataFromDataBaseSQLFile);
-            scriptRunner.runScript(generateDataSQLScriptFile);
-        } catch (FileNotFoundException fileNotFoundException) {
-            throw new WrongFilePathException(fileNotFoundException.getMessage());
-        }
+        DataBaseSetUpper.setUpDataBase(dbConnector);
     }
 
     @DisplayName("Groups were generated successfully")

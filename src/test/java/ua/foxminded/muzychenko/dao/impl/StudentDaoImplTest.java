@@ -1,6 +1,5 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,10 +8,11 @@ import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.entity.StudentEntity;
 import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
-import ua.foxminded.muzychenko.exception.WrongFilePathException;
+import util.DataBaseSetUpper;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -27,37 +29,22 @@ class StudentDaoImplTest {
 
     private StudentDao studentDao;
     private StudentDao studentDaoException;
-
-    private static final String RESOURCES_PATH = "src/main/resources/";
+    private final DBConnector dbConnector = new DBConnector("/testDb.properties");
 
     @BeforeEach
     void setUp() {
-
-        DBConnector dbConnector = new DBConnector("/testDb.properties");
-        ScriptRunner scriptRunner;
 
         studentDao = new StudentDaoImpl(dbConnector);
         DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
         studentDaoException = new StudentDaoImpl(dbConnectorException);
 
         try {
-            scriptRunner = new ScriptRunner(dbConnector.getConnection());
             when(dbConnectorException.getConnection()).thenThrow(new SQLException());
         } catch (SQLException sqlException) {
             throw new DataBaseRunTimeException(sqlException);
         }
 
-        try {
-            FileReader createTablesSQLScriptFile = new FileReader(RESOURCES_PATH + "createTables.sql");
-            FileReader generateDataSQLScriptFile = new FileReader(RESOURCES_PATH + "generateTestData.sql");
-            FileReader deleteAllDataFromDataBaseSQLFile
-                = new FileReader(RESOURCES_PATH + "deleteAllDataFromDataBases.sql");
-            scriptRunner.runScript(createTablesSQLScriptFile);
-            scriptRunner.runScript(deleteAllDataFromDataBaseSQLFile);
-            scriptRunner.runScript(generateDataSQLScriptFile);
-        } catch (FileNotFoundException fileNotFoundException) {
-            throw new WrongFilePathException(fileNotFoundException.getMessage());
-        }
+        DataBaseSetUpper.setUpDataBase(dbConnector);
     }
 
     @DisplayName("All students are found by course")
@@ -263,31 +250,34 @@ class StudentDaoImplTest {
         );
     }
 
-    @DisplayName("create() trow Illegal argument exception")
+    @DisplayName("String consumer throws exception")
     @Test
-    void addToCourse_shouldThrowIllegalArgumentException() {
-        studentDaoException = Mockito.mock(StudentDaoImpl.class);
-
-        doThrow(new IllegalArgumentException())
-            .when(studentDaoException)
-            .addToCourse(
-                new StudentEntity(
-                    111L,
-                    1L,
-                    "test",
-                    "test"),
-                " Maths");
-
-        assertThrows(IllegalArgumentException.class,
-            () ->
-                studentDaoException
-                    .addToCourse(
-                        new StudentEntity(
-                            111L,
-                            1L,
-                            "test",
-                            "test"),
-                        " Maths")
+    void findByCourse_shouldThrowSQLExceptionInPreparedStatement() throws SQLException {
+        DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
+        Connection connection = Mockito.mock(Connection.class);
+        when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
+        PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        doThrow(new SQLException()).when(preparedStatement).setString(anyInt(), anyString());
+        studentDao = new StudentDaoImpl(dbConnectorForSpecificException);
+        assertThrows(DataBaseRunTimeException.class,
+            () -> studentDao
+                .findByCourse("Math")
         );
+    }
+
+    @DisplayName("Long consumer throws exception")
+    @Test
+    void findAllByPage_shouldMapResultSetToEntityAndAddToList() throws SQLException {
+        DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
+        Connection connection = Mockito.mock(Connection.class);
+        when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
+        PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+        when(preparedStatement.getResultSet()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true, false);
+        List<StudentEntity> result = studentDao.findAllByPage(1L, 10L);
+        assertEquals(10, result.size());
     }
 }

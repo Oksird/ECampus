@@ -200,9 +200,6 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
                     statement.setString(i + 1, string);
                 } else if (param instanceof Long number) {
                     statement.setLong(i + 1, number);
-                } else {
-                    throw new IllegalArgumentException(
-                        "Unsupported parameter type: " + param.getClass().getSimpleName());
                 }
             }
             statement.executeUpdate();

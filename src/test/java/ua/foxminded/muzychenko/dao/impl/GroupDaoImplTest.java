@@ -1,53 +1,40 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.entity.GroupEntity;
 import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
-import ua.foxminded.muzychenko.exception.WrongFilePathException;
+import util.DataBaseSetUpper;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 class GroupDaoImplTest {
     private GroupDao groupDao;
-    private static final String RESOURCES_PATH = "src/main/resources/";
+    private final DBConnector dbConnector = new DBConnector("/testDb.properties");
 
     @BeforeEach
     void setUp() {
 
-        DBConnector dbConnector = new DBConnector("/testDb.properties");
-        ScriptRunner scriptRunner;
-
         groupDao = new GroupDaoImpl(dbConnector);
 
-        try {
-            scriptRunner = new ScriptRunner(dbConnector.getConnection());
-        } catch (SQLException sqlException) {
-            throw new DataBaseRunTimeException(sqlException);
-        }
-
-        try {
-            FileReader createTablesSQLScriptFile = new FileReader(RESOURCES_PATH + "createTables.sql");
-            FileReader generateDataSQLScriptFile = new FileReader(RESOURCES_PATH + "generateTestData.sql");
-            FileReader deleteAllDataFromDataBaseSQLFile
-                = new FileReader(RESOURCES_PATH + "deleteAllDataFromDataBases.sql");
-            scriptRunner.runScript(createTablesSQLScriptFile);
-            scriptRunner.runScript(deleteAllDataFromDataBaseSQLFile);
-            scriptRunner.runScript(generateDataSQLScriptFile);
-        } catch (FileNotFoundException fileNotFoundException) {
-            throw new WrongFilePathException(fileNotFoundException.getMessage());
-        }
+        DataBaseSetUpper.setUpDataBase(dbConnector);
     }
 
     @DisplayName("Groups with less or equal count of students are found")
@@ -110,4 +97,21 @@ class GroupDaoImplTest {
         groups.remove(testGroup);
         assertEquals(groups, groupDao.findAll());
     }
+
+    @DisplayName("Find group throws exception")
+    @Test
+    void findGroupWithLessOrEqualsStudents_shouldThrowSQLException() throws SQLException {
+            DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
+            Connection connection = Mockito.mock(Connection.class);
+            when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
+            PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+            doThrow(new SQLException()).when(preparedStatement).setLong(anyInt(), anyLong());
+            groupDao = new GroupDaoImpl(dbConnectorForSpecificException);
+            assertThrows(DataBaseRunTimeException.class,
+                () -> groupDao
+                    .findGroupWithLessOrEqualStudents(11)
+            );
+    }
+
 }

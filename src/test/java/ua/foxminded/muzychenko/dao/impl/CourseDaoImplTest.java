@@ -1,6 +1,5 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,10 +8,8 @@ import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.CourseEntity;
 import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
-import ua.foxminded.muzychenko.exception.WrongFilePathException;
+import util.DataBaseSetUpper;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -25,35 +22,22 @@ class CourseDaoImplTest {
 
     private CourseDao courseDao;
     private CourseDao courseDaoException;
-    private static final String RESOURCES_PATH = "src/main/resources/";
 
     @BeforeEach
     void setUp() {
 
         DBConnector dbConnector = new DBConnector("/testDb.properties");
-        ScriptRunner scriptRunner;
 
         courseDao = new CourseDaoImpl(dbConnector);
         DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
         courseDaoException = new CourseDaoImpl(dbConnectorException);
         try {
-            scriptRunner = new ScriptRunner(dbConnector.getConnection());
             when(dbConnectorException.getConnection()).thenThrow(new SQLException());
         } catch (SQLException sqlException) {
             throw new DataBaseRunTimeException(sqlException);
         }
 
-        try {
-            FileReader createTablesSQLScriptFile = new FileReader(RESOURCES_PATH + "createTables.sql");
-            FileReader generateDataSQLScriptFile = new FileReader(RESOURCES_PATH + "generateTestData.sql");
-            FileReader deleteAllDataFromDataBaseSQLFile
-                = new FileReader(RESOURCES_PATH + "deleteAllDataFromDataBases.sql");
-            scriptRunner.runScript(createTablesSQLScriptFile);
-            scriptRunner.runScript(deleteAllDataFromDataBaseSQLFile);
-            scriptRunner.runScript(generateDataSQLScriptFile);
-        } catch (FileNotFoundException fileNotFoundException) {
-            throw new WrongFilePathException(fileNotFoundException.getMessage());
-        }
+        DataBaseSetUpper.setUpDataBase(dbConnector);
     }
 
     @DisplayName("Course was created")

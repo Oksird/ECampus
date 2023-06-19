@@ -8,7 +8,6 @@ import java.io.FileReader;
 
 public class DBCreator {
 
-    private static final String RESOURCES_PATH = "src/main/resources/";
     private final ScriptRunner scriptRunner;
 
     public DBCreator(ScriptRunner scriptRunner) {
@@ -17,17 +16,19 @@ public class DBCreator {
     }
 
     public void createTables() {
-        try {
-            FileReader generateDataSQLScriptFile = new FileReader(RESOURCES_PATH + "createTables.sql");
-            scriptRunner.runScript(generateDataSQLScriptFile);
-        } catch (FileNotFoundException fileNotFoundException) {
-            throw new WrongFilePathException(fileNotFoundException.getMessage());
-        }
+        runScript("createTables.sql");
     }
 
     public void createDB() {
+        runScript("createDataBases.sql");
+    }
+
+    public void runScript(String scriptFileName) {
+
+        String resourcesPath = "src/main/resources/";
+
         try {
-            FileReader createTablesSQLScriptFile = new FileReader(RESOURCES_PATH + "createDataBases.sql");
+            FileReader createTablesSQLScriptFile = new FileReader(resourcesPath + scriptFileName);
             scriptRunner.runScript(createTablesSQLScriptFile);
         } catch (FileNotFoundException fileNotFoundException) {
             throw new WrongFilePathException(fileNotFoundException.getMessage());

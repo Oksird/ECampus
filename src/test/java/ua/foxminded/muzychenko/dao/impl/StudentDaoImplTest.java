@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -279,5 +280,27 @@ class StudentDaoImplTest {
         when(resultSet.next()).thenReturn(true, false);
         List<StudentEntity> result = studentDao.findAllByPage(1L, 10L);
         assertEquals(10, result.size());
+    }
+
+    @DisplayName("Find by id thrown SQL exception cause of result set is empty")
+    @Test
+    void findById_shouldThrowSQLExceptionWhenOptionalIsEmpty() throws SQLException {
+        DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
+        Connection connection = Mockito.mock(Connection.class);
+
+        when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
+
+        PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        when(preparedStatement.getResultSet()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(false);
+
+        Optional<StudentEntity> result = studentDao.findById(14L);
+
+        assertFalse(result.isPresent(), "Expected empty Optional");
     }
 }

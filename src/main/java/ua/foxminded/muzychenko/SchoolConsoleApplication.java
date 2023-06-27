@@ -26,7 +26,7 @@ public class SchoolConsoleApplication {
             groupDao,
             courseDao,
             studentDao,
-            new DBCreator(new ScriptRunner(dbConnector.getConnection())),
+            new TablesCreator(new ScriptRunner(dbConnector.getConnection())),
             new GroupsGeneratorImpl(groupDao, random),
             new CoursesGeneratorImpl(courseDao),
             new StudentsGeneratorImpl(studentDao, random)

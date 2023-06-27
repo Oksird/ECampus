@@ -10,8 +10,8 @@ public class DBConnector {
     private final HikariDataSource dataSource;
 
     public DBConnector(String fileConfigName) {
-        HikariConfig hikariConfig = new HikariConfig(fileConfigName);
-        dataSource = new HikariDataSource(hikariConfig);
+            HikariConfig hikariConfig = new HikariConfig(fileConfigName);
+            dataSource = new HikariDataSource(hikariConfig);
     }
 
     public Connection getConnection() throws SQLException {

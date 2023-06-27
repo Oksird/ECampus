@@ -1,10 +1,10 @@
 package ua.foxminded.muzychenko;
 
 import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.dao.CoursesGenerator;
+import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.GroupsGenerator;
+import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.dao.StudentsGenerator;
 import ua.foxminded.muzychenko.entity.StudentEntity;
 
@@ -18,7 +18,7 @@ public class SchoolApplicationFacade {
     private final StudentsGenerator studentsGenerator;
 
     public SchoolApplicationFacade(GroupDao groupDao, CourseDao courseDao,
-                                   StudentDao studentDao, DBCreator dbCreator, GroupsGenerator groupsGenerator,
+                                   StudentDao studentDao, TablesCreator tablesCreator, GroupsGenerator groupsGenerator,
                                    CoursesGenerator coursesGenerator, StudentsGenerator studentsGenerator) {
         this.groupDao = groupDao;
         this.courseDao = courseDao;
@@ -27,8 +27,7 @@ public class SchoolApplicationFacade {
         this.coursesGenerator = coursesGenerator;
         this.studentsGenerator = studentsGenerator;
 
-        dbCreator.createDB();
-        dbCreator.createTables();
+        tablesCreator.createTables();
     }
 
     public void runQueries() {
@@ -46,6 +45,5 @@ public class SchoolApplicationFacade {
         studentDao.deleteById(2L);
         studentDao.addToCourse(student, "Math");
         studentDao.findByCourse("Math");
-
     }
 }

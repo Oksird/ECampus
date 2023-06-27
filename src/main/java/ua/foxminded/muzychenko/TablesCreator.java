@@ -6,29 +6,20 @@ import ua.foxminded.muzychenko.exception.WrongFilePathException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
-public class DBCreator {
+public class TablesCreator {
 
     private final ScriptRunner scriptRunner;
 
-    public DBCreator(ScriptRunner scriptRunner) {
+    public TablesCreator(ScriptRunner scriptRunner) {
         this.scriptRunner = scriptRunner;
         this.scriptRunner.setAutoCommit(true);
     }
 
     public void createTables() {
-        runScript("createTables.sql");
-    }
-
-    public void createDB() {
-        runScript("createDataBases.sql");
-    }
-
-    public void runScript(String scriptFileName) {
-
         String resourcesPath = "src/main/resources/";
 
         try {
-            FileReader createTablesSQLScriptFile = new FileReader(resourcesPath + scriptFileName);
+            FileReader createTablesSQLScriptFile = new FileReader(resourcesPath + "createTables.sql");
             scriptRunner.runScript(createTablesSQLScriptFile);
         } catch (FileNotFoundException fileNotFoundException) {
             throw new WrongFilePathException(fileNotFoundException.getMessage());

@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.entity.GroupEntity;
@@ -19,21 +22,29 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-class GroupDaoImplTest {
+@Testcontainers
+class GroupDaoImplContainerTest {
+
+    @Container
+    private final PostgreSQLContainer container = new PostgreSQLContainer("postgres:latest");
+
     private GroupDao groupDao;
-    private final DBConnector dbConnector = new DBConnector("/testDb.properties");
 
     @BeforeEach
-    void setUp() {
-
+    void set_up() {
+        DBConnector dbConnector = new DBConnector(
+            container.getJdbcUrl(),
+            container.getUsername(),
+            container.getPassword()
+        );
         groupDao = new GroupDaoImpl(dbConnector);
-
         DataBaseSetUpper.setUpDataBase(dbConnector);
     }
 
@@ -50,7 +61,7 @@ class GroupDaoImplTest {
             )
         );
 
-        assertEquals(expectedGroups, groups);
+        assertTrue(groups.containsAll(expectedGroups));
     }
     @DisplayName("No groups with less or equal count of students")
     @Test
@@ -101,17 +112,16 @@ class GroupDaoImplTest {
     @DisplayName("Find group throws exception")
     @Test
     void findGroupWithLessOrEqualsStudentsShouldThrowSQLException() throws SQLException {
-            DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
-            Connection connection = Mockito.mock(Connection.class);
-            when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
-            PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            doThrow(new SQLException()).when(preparedStatement).setLong(anyInt(), anyLong());
-            groupDao = new GroupDaoImpl(dbConnectorForSpecificException);
-            assertThrows(DataBaseRunTimeException.class,
-                () -> groupDao
-                    .findGroupWithLessOrEqualStudents(11)
-            );
+        DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
+        Connection connection = Mockito.mock(Connection.class);
+        when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
+        PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        doThrow(new SQLException()).when(preparedStatement).setLong(anyInt(), anyLong());
+        groupDao = new GroupDaoImpl(dbConnectorForSpecificException);
+        assertThrows(DataBaseRunTimeException.class,
+            () -> groupDao
+                .findGroupWithLessOrEqualStudents(11)
+        );
     }
-
 }

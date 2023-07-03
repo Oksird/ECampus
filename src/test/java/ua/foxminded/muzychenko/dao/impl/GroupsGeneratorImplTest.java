@@ -36,7 +36,7 @@ class GroupsGeneratorImplTest {
 
     @DisplayName("Groups were generated successfully")
     @Test
-    void generateData_shouldReturnListOfTenGroupsWithSpecificNames() {
+    void generateDataShouldReturnListOfTenGroupsWithSpecificNames() {
         List<GroupEntity> groups = groupsGenerator.generateData();
         assertNotNull(groups);
         String pattern = "[A-Z]{2}-\\d{2}";
@@ -48,7 +48,7 @@ class GroupsGeneratorImplTest {
 
     @DisplayName("Groups were inserted")
     @Test
-    void insertGroups_shouldInsertMultipleGroups() {
+    void insertGroupsShouldInsertMultipleGroups() {
         List<GroupEntity> groups = new ArrayList<>();
         groups.add(new GroupEntity(4L, "TEST-01"));
         groups.add(new GroupEntity(5L, "TEST-02"));

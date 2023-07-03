@@ -33,7 +33,7 @@ class CoursesGeneratorImplTest {
 
     @DisplayName("Courses were generated correctly")
     @Test
-    void generateData_shouldReturnListOfCoursesWithCorrectNamesAndDescriptions() {
+    void generateDataShouldReturnListOfCoursesWithCorrectNamesAndDescriptions() {
 
         int countOfCourses = 10;
 
@@ -75,7 +75,7 @@ class CoursesGeneratorImplTest {
 
     @DisplayName("Courses are inserted")
     @Test
-    void insertCourses_shouldInsertMultipleCourses() {
+    void insertCoursesShouldInsertMultipleCourses() {
         List<CourseEntity> insertedCourses = new ArrayList<>();
         insertedCourses.add(new CourseEntity(4L, "Physics", "Force"));
         insertedCourses.add(new CourseEntity(5L, "Chemistry", "Breaking Bad"));

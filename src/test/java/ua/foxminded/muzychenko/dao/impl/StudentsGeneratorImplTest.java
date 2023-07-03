@@ -38,7 +38,7 @@ class StudentsGeneratorImplTest {
 
     @DisplayName("Students were generated correctly")
     @Test
-    void generateData_shouldReturnNotNullListOfStudentsWithRandomNames() {
+    void generateDataShouldReturnNotNullListOfStudentsWithRandomNames() {
         List<String> firstNames = new ArrayList<>(
             List.of("Brittany", "Ivan", "Shannon", "Valerie", "Juan", "Cleo", "Landry", "Melani",
                 "Kelly", "Luella", "Lyric", "Jon", "Rex", "Eddie", "Nixon", "Kendall", "Arthur",
@@ -65,7 +65,7 @@ class StudentsGeneratorImplTest {
 
     @DisplayName("Students were inserted correctly")
     @Test
-    void insertStudents_shouldInsertStudentsCorrectly() {
+    void insertStudentsShouldInsertStudentsCorrectly() {
 
         StudentEntity student1 = new StudentEntity(13, 1, "John", "Doe");
         StudentEntity student2 = new StudentEntity(14, 1, "Jane", "Doe");

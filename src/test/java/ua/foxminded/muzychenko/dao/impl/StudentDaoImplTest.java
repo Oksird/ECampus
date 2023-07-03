@@ -50,7 +50,7 @@ class StudentDaoImplTest {
 
     @DisplayName("All students are found by course")
     @Test
-    void findByCourse_shouldReturnAllStudentOnSpecifiedCourse() {
+    void findByCourseShouldReturnAllStudentOnSpecifiedCourse() {
         List<StudentEntity> expectedStudents = new ArrayList<>(
             List.of(
                 new StudentEntity(1, 1, "John", "Brown"),
@@ -65,14 +65,14 @@ class StudentDaoImplTest {
 
     @DisplayName("Course doesn't exist")
     @Test
-    void findByCourse_shouldReturnEmptyListIfCourseDoesntExist() {
+    void findByCourseShouldReturnEmptyListIfCourseDoesntExist() {
         List<StudentEntity> students = studentDao.findByCourse("Computer Science");
         assertEquals(0, students.size());
     }
 
     @DisplayName("Student is added to course")
     @Test
-    void addToCourse_shouldAddSpecificStudentToSpecificCourse() {
+    void addToCourseShouldAddSpecificStudentToSpecificCourse() {
         StudentEntity student = new StudentEntity(
             13,
             1,
@@ -96,7 +96,7 @@ class StudentDaoImplTest {
 
     @DisplayName("Student is removed from course")
     @Test
-    void removeFromCourse_shouldRemoveSpecificStudentFromSpecificCourse() {
+    void removeFromCourseShouldRemoveSpecificStudentFromSpecificCourse() {
         Optional<StudentEntity> student = studentDao.findById(1L);
         student.ifPresent(studentEntity -> studentDao.removeFromCourse(studentEntity, "Math"));
         List<StudentEntity> expectedStudents = new ArrayList<>(
@@ -112,7 +112,7 @@ class StudentDaoImplTest {
 
     @DisplayName("Student is deleted by id")
     @Test
-    void deleteById_shouldDeleteSpecificStudent() {
+    void deleteByIdShouldDeleteSpecificStudent() {
         List<StudentEntity> expectedStudents = studentDao.findAll();
         expectedStudents.remove(new StudentEntity(1, 1, "John", "Brown"));
 
@@ -123,7 +123,7 @@ class StudentDaoImplTest {
 
     @DisplayName("Student is updated correctly")
     @Test
-    void update_shouldReplaceOldStudentEntityWithNewOne() {
+    void updateShouldReplaceOldStudentEntityWithNewOne() {
         List<StudentEntity> students = studentDao.findAll();
         StudentEntity firstStudent = students.get(0);
         StudentEntity expectedStudent = new StudentEntity(1, 1, "Sam", "Winchester");
@@ -138,7 +138,7 @@ class StudentDaoImplTest {
 
     @DisplayName("Pagination")
     @Test
-    void findAllByPage_shouldReturnAllStudentsOnTheCurrentPage() {
+    void findAllByPageShouldReturnAllStudentsOnTheCurrentPage() {
         long countOfPages = 4;
         long pageSize = 4;
         List<StudentEntity> studentsOnLastPage = studentDao.findAllByPage(countOfPages, pageSize);
@@ -153,7 +153,7 @@ class StudentDaoImplTest {
 
     @DisplayName("create() trow sql exception")
     @Test
-    void create_shouldThrowSQLException() {
+    void createShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException.create(new StudentEntity(55, 1, "Test", "Test"))
         );
@@ -162,7 +162,7 @@ class StudentDaoImplTest {
     @DisplayName("update() trow sql exception")
 
     @Test
-    void update_shouldThrowSQLException() {
+    void updateShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .update(studentDao.findById(1L)
@@ -177,7 +177,7 @@ class StudentDaoImplTest {
 
     @DisplayName("delete() trow sql exception")
     @Test
-    void delete_shouldThrowSQLException() {
+    void deleteShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .deleteById(1L)
@@ -186,7 +186,7 @@ class StudentDaoImplTest {
 
     @DisplayName("findAll() trow sql exception")
     @Test
-    void findAll_shouldThrowSQLException() {
+    void findAllShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .findAll()
@@ -195,7 +195,7 @@ class StudentDaoImplTest {
 
     @DisplayName("findAllByPage() trow sql exception")
     @Test
-    void findAllByPage_shouldThrowSQLException() {
+    void findAllByPageShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .findAllByPage(444444L, 54444L)
@@ -204,7 +204,7 @@ class StudentDaoImplTest {
 
     @DisplayName("createAll() trow sql exception")
     @Test
-    void createAll_shouldThrowSQLException() {
+    void createAllShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .createAll(new ArrayList<>(List.of(
@@ -226,7 +226,7 @@ class StudentDaoImplTest {
 
     @DisplayName("findByCourse() trow sql exception")
     @Test
-    void findByCourse_shouldThrowSQLException() {
+    void findByCourseShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .findByCourse("Math")
@@ -235,7 +235,7 @@ class StudentDaoImplTest {
 
     @DisplayName("removeFromCourse() trow sql exception")
     @Test
-    void removeFromCourse_shouldThrowSQLException() {
+    void removeFromCourseShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .removeFromCourse(studentDao.findById(1L).get(), "Math")
@@ -244,7 +244,7 @@ class StudentDaoImplTest {
 
     @DisplayName("addToCourse() trow sql exception")
     @Test
-    void addToCourse_shouldThrowSQLException() {
+    void addToCourseShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
                 .addToCourse(studentDao.findById(1L).get(), "Mathssss")
@@ -253,7 +253,7 @@ class StudentDaoImplTest {
 
     @DisplayName("String consumer throws exception")
     @Test
-    void findByCourse_shouldThrowSQLExceptionInPreparedStatement() throws SQLException {
+    void findByCourseShouldThrowSQLExceptionInPreparedStatement() throws SQLException {
         DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
         Connection connection = Mockito.mock(Connection.class);
         when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
@@ -269,7 +269,7 @@ class StudentDaoImplTest {
 
     @DisplayName("Long consumer throws exception")
     @Test
-    void findAllByPage_shouldMapResultSetToEntityAndAddToList() throws SQLException {
+    void findAllByPageShouldMapResultSetToEntityAndAddToList() throws SQLException {
         DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
         Connection connection = Mockito.mock(Connection.class);
         when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
@@ -284,7 +284,7 @@ class StudentDaoImplTest {
 
     @DisplayName("Find by id thrown SQL exception cause of result set is empty")
     @Test
-    void findById_shouldThrowSQLExceptionWhenOptionalIsEmpty() throws SQLException {
+    void findByIdShouldThrowSQLExceptionWhenOptionalIsEmpty() throws SQLException {
         DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
         Connection connection = Mockito.mock(Connection.class);
 

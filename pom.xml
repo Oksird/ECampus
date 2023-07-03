@@ -19,6 +19,7 @@
         <jacoco.version>0.8.10</jacoco.version>
         <maven.compiler.version>16</maven.compiler.version>
         <ibatis.version>3.5.13</ibatis.version>
+        <testcontainers.version>1.18.3</testcontainers.version>
     </properties>
 
     <build>
@@ -135,6 +136,26 @@
             <artifactId>mybatis</artifactId>
             <version>${ibatis.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
 </project>

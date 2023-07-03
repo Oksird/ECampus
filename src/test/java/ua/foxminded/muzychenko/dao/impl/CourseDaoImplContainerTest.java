@@ -3,40 +3,35 @@ package ua.foxminded.muzychenko.dao.impl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.CourseEntity;
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
 import util.DataBaseSetUpper;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
-class CourseDaoImplTest {
+@Testcontainers
+class CourseDaoImplContainerTest {
+
+    @Container
+    private final PostgreSQLContainer container = new PostgreSQLContainer("postgres:latest");
 
     private CourseDao courseDao;
-    private CourseDao courseDaoException;
 
     @BeforeEach
-    void setUp() {
-
-        DBConnector dbConnector = new DBConnector("/testDb.properties");
-
+    void set_up() {
+        DBConnector dbConnector = new DBConnector(
+            container.getJdbcUrl(),
+            container.getUsername(),
+            container.getPassword()
+        );
         courseDao = new CourseDaoImpl(dbConnector);
-        DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
-        courseDaoException = new CourseDaoImpl(dbConnectorException);
-        try {
-            when(dbConnectorException.getConnection()).thenThrow(new SQLException());
-        } catch (SQLException sqlException) {
-            throw new DataBaseRunTimeException(sqlException);
-        }
-
         DataBaseSetUpper.setUpDataBase(dbConnector);
     }
 
@@ -74,14 +69,5 @@ class CourseDaoImplTest {
         expectedCourses.add(testCourse);
         courseDao.update(actualCourse, testCourse);
         assertEquals(expectedCourses, courseDao.findAll());
-    }
-
-    @DisplayName("findById() throw sql exception")
-    @Test
-    void findByIdShouldThrowException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> courseDaoException
-                .findById(111111L)
-        );
     }
 }

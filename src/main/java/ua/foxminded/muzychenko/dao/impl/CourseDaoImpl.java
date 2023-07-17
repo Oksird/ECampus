@@ -1,5 +1,7 @@
 package ua.foxminded.muzychenko.dao.impl;
 
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.CourseEntity;
@@ -8,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Repository
 public class CourseDaoImpl extends AbstractCrudDaoImpl<CourseEntity> implements CourseDao {
 
     private static final String SAVE_QUERY

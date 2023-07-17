@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.dao.GroupsGenerator;
 import ua.foxminded.muzychenko.entity.GroupEntity;
 import util.DataBaseSetUpper;
 

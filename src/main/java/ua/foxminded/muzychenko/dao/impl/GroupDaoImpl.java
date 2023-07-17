@@ -1,5 +1,6 @@
 package ua.foxminded.muzychenko.dao.impl;
 
+import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.entity.GroupEntity;
@@ -9,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Repository
 public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements GroupDao {
 
     private static final String SAVE_QUERY = "INSERT INTO groups (group_name) values(?)";
@@ -25,7 +27,6 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements Gr
         + " FROM group_counts WHERE student_count <= ?";
     private static final String FIND_ALL_BY_PAGE_QUERY
         = "SELECT * FROM groups ORDER BY group_id DESC LIMIT ? OFFSET ?";
-
     public GroupDaoImpl(DBConnector connector) {
         super(connector, SAVE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, UPDATE_QUERY,
             DELETE_BY_ID_QUERY, FIND_ALL_BY_PAGE_QUERY);

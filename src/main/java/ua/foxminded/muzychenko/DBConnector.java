@@ -2,11 +2,17 @@ package ua.foxminded.muzychenko;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
+@Component
+@PropertySource("classpath:db.properties")
 public class DBConnector {
-
     private final HikariDataSource dataSource;
 
     public DBConnector(String fileConfigName) {
@@ -14,7 +20,15 @@ public class DBConnector {
         dataSource = new HikariDataSource(hikariConfig);
     }
 
-    public DBConnector(String jdbcUrl, String userName, String password) {
+    @Autowired
+    public DBConnector(
+        @Value("${jdbcUrl}")
+        String jdbcUrl,
+        @Value("${dataSource.user}")
+        String userName,
+        @Value("${dataSource.password}")
+        String password) {
+
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(jdbcUrl);
         hikariConfig.setUsername(userName);

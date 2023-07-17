@@ -1,5 +1,6 @@
 package ua.foxminded.muzychenko.dao.impl;
 
+import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.entity.StudentEntity;
@@ -9,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Repository
 public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implements StudentDao {
 
     private static final String SAVE_QUERY
@@ -40,9 +42,8 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
     private static final String FIND_ALL_BY_PAGE_QUERY =
         "SELECT * FROM students ORDER BY student_id DESC LIMIT ? OFFSET ?";
 
-
-    public StudentDaoImpl(DBConnector connector) {
-        super(connector, SAVE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, UPDATE_QUERY,
+    public StudentDaoImpl(DBConnector dbConnector) {
+        super(dbConnector, SAVE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, UPDATE_QUERY,
             DELETE_BY_ID_QUERY, FIND_ALL_BY_PAGE_QUERY);
     }
 

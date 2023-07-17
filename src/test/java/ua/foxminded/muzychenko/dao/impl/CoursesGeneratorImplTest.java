@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ua.foxminded.muzychenko.DBConnector;
 import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dao.CoursesGenerator;
 import ua.foxminded.muzychenko.entity.CourseEntity;
 import util.DataBaseSetUpper;
 

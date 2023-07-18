@@ -7,15 +7,14 @@ public interface CrudDao<E, ID> {
 
     void create(E entity);
 
+    void update(ID id, E newEntity);
+
     Optional<E> findById(ID id);
 
     List<E> findAll();
 
-    List<E> findAllByPage(Long countOfPages, Long pageSize);
-
-    void update(E oldEntity, E newEntity);
-
     void deleteById(ID id);
 
-    void createAll(List<E> entities);
+    List<E> findAllByPage(Long pageNumber, Long pageSize);
+
 }

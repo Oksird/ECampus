@@ -28,9 +28,9 @@ class CourseDaoImplTest {
 
         DBConnector dbConnector = new DBConnector("/testDb.properties");
 
-        courseDao = new CourseDaoImpl(dbConnector);
+        courseDao = new CourseDaoImpl1(dbConnector);
         DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
-        courseDaoException = new CourseDaoImpl(dbConnectorException);
+        courseDaoException = new CourseDaoImpl1(dbConnectorException);
         try {
             when(dbConnectorException.getConnection()).thenThrow(new SQLException());
         } catch (SQLException sqlException) {

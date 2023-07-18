@@ -98,7 +98,7 @@ class StudentDaoImplTest {
     @Test
     void removeFromCourseShouldRemoveSpecificStudentFromSpecificCourse() {
         Optional<StudentEntity> student = studentDao.findById(1L);
-        student.ifPresent(studentEntity -> studentDao.removeFromCourse(studentEntity, "Math"));
+        student.ifPresent(studentEntity -> studentDao.deleteFromCourse(studentEntity, "Math"));
         List<StudentEntity> expectedStudents = new ArrayList<>(
             List.of(
                 new StudentEntity(3,1,"Mija", "White"),
@@ -238,7 +238,7 @@ class StudentDaoImplTest {
     void removeFromCourseShouldThrowSQLException() {
         assertThrows(DataBaseRunTimeException.class,
             () -> studentDaoException
-                .removeFromCourse(studentDao.findById(1L).get(), "Math")
+                .deleteFromCourse(studentDao.findById(1L).get(), "Math")
         );
     }
 

@@ -1,10 +1,10 @@
 package ua.foxminded.muzychenko;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.StudentDao;
-import ua.foxminded.muzychenko.entity.StudentEntity;
 
 @Component
 public class SchoolApplicationFacade {
@@ -13,6 +13,7 @@ public class SchoolApplicationFacade {
     private final StudentDao studentDao;
     private final CourseDao courseDao;
 
+    @Autowired
     public SchoolApplicationFacade(GroupDao groupDao, CourseDao courseDao,
                                    StudentDao studentDao) {
         this.groupDao = groupDao;
@@ -22,16 +23,8 @@ public class SchoolApplicationFacade {
     }
 
     public void runQueries() {
-        StudentEntity student = new StudentEntity(
-            1L,
-            2L,
-            "Max",
-            "Muzychenko");
-        groupDao.findGroupWithLessOrEqualStudents(10);
-        studentDao.findByCourse("Math");
-        studentDao.create(student);
-        studentDao.deleteById(3L);
-        studentDao.addToCourse(student, "Math");
-        studentDao.findByCourse("Math");
+        studentDao.findAll();
+        courseDao.findAll();
+        groupDao.findAll();
     }
 }

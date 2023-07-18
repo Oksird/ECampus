@@ -8,10 +8,7 @@ public interface StudentDao extends CrudDao<StudentEntity, Long> {
 
     List<StudentEntity> findByCourse(String nameOfCourse);
 
-    @Override
-    void deleteById(Long id);
+    void addToCourse(String nameOfCourse, Long id);
 
-    void addToCourse(StudentEntity entity, String nameOfCourse);
-
-    void removeFromCourse(StudentEntity entity, String nameOfCourse);
+    void deleteFromCourse(Long id, String nameOfCourse);
 }

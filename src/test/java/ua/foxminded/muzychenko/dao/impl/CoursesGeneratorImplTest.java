@@ -24,7 +24,7 @@ class CoursesGeneratorImplTest {
 
         DBConnector dbConnector = new DBConnector("/testDb.properties");
 
-        courseDao = new CourseDaoImpl(dbConnector);
+        courseDao = new CourseDaoImpl1(dbConnector);
         coursesGenerator = new CoursesGeneratorImpl(courseDao);
 
         DataBaseSetUpper.setUpDataBase(dbConnector);

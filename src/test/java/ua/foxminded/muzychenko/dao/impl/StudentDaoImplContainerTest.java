@@ -86,7 +86,7 @@ class StudentDaoImplContainerTest {
     @Test
     void removeFromCourseShouldRemoveSpecificStudentFromSpecificCourse() {
         Optional<StudentEntity> student = studentDao.findById(1L);
-        student.ifPresent(studentEntity -> studentDao.removeFromCourse(studentEntity, "Math"));
+        student.ifPresent(studentEntity -> studentDao.deleteFromCourse(studentEntity, "Math"));
         List<StudentEntity> expectedStudents = new ArrayList<>(
             List.of(
                 new StudentEntity(3,1,"Mija", "White"),

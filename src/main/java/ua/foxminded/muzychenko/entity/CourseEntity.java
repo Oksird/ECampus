@@ -1,5 +1,12 @@
 package ua.foxminded.muzychenko.entity;
 
-public record CourseEntity(long courseId, String courseName, String courseDescription) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
+public final class CourseEntity {
+    private long courseId;
+    private String courseName;
+    private String courseDescription;
 }

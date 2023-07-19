@@ -41,11 +41,11 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements Gr
 
     @Override
     protected Object[] getCreateParameters(GroupEntity group) {
-        return new Object[]{group.groupId(), group.groupName()};
+        return new Object[]{group.getGroupId(), group.getGroupName()};
     }
 
     @Override
     protected Object[] getUpdateParameters(Long id, GroupEntity updatedGroup) {
-        return new Object[]{updatedGroup.groupName(), id};
+        return new Object[]{updatedGroup.getGroupName(), id};
     }
 }

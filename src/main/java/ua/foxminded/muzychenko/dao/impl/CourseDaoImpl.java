@@ -23,11 +23,11 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<CourseEntity> implements 
 
     @Override
     protected Object[] getCreateParameters(CourseEntity course) {
-        return new Object[]{course.courseId(), course.courseName(), course.courseDescription()};
+        return new Object[]{course.getCourseId(), course.getCourseName(), course.getCourseDescription()};
     }
 
     @Override
     protected Object[] getUpdateParameters(Long id, CourseEntity updatedCourse) {
-        return new Object[]{updatedCourse.courseName(), updatedCourse.courseDescription(), id};
+        return new Object[]{updatedCourse.getCourseName(), updatedCourse.getCourseDescription(), id};
     }
 }

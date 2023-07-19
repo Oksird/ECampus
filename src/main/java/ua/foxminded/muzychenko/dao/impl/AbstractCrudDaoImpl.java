@@ -1,5 +1,7 @@
 package ua.foxminded.muzychenko.dao.impl;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -8,6 +10,7 @@ import ua.foxminded.muzychenko.dao.CrudDao;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
 
     protected final JdbcTemplate jdbcTemplate;
@@ -17,17 +20,6 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     private final String findByIdQuery;
     private final String findAllQuery;
     private final String deleteByIdQuery;
-
-    protected AbstractCrudDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<E> rowMapper, String createQuery, String updateQuery,
-                                  String findByIdQuery, String findAllQuery, String deleteByIdQuery) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.rowMapper = rowMapper;
-        this.createQuery = createQuery;
-        this.updateQuery = updateQuery;
-        this.findByIdQuery = findByIdQuery;
-        this.findAllQuery = findAllQuery;
-        this.deleteByIdQuery = deleteByIdQuery;
-    }
 
     @Override
     public void create(E entity) {

@@ -1,5 +1,11 @@
 package ua.foxminded.muzychenko.entity;
 
-public record GroupEntity(long groupId, String groupName) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
+public final class GroupEntity {
+    private long groupId;
+    private String groupName;
 }

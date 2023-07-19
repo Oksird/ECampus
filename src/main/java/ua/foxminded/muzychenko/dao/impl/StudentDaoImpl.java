@@ -62,12 +62,12 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<StudentEntity> implement
 
     @Override
     protected Object[] getCreateParameters(StudentEntity entity) {
-        return new Object[]{entity.studentId(), entity.groupId(), entity.firstName(), entity.lastName()};
+        return new Object[]{entity.getStudentId(), entity.getGroupId(), entity.getFirstName(), entity.getLastName()};
     }
 
     @Override
     protected Object[] getUpdateParameters(Long id, StudentEntity newEntity) {
-        return new Object[]{newEntity.groupId(), newEntity.firstName(), newEntity.lastName(), id};
+        return new Object[]{newEntity.getGroupId(), newEntity.getFirstName(), newEntity.getLastName(), id};
     }
 
 }

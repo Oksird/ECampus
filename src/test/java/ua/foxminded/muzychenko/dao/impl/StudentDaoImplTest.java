@@ -1,306 +1,164 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import ua.foxminded.muzychenko.DBConnector;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.dao.StudentDao;
-import ua.foxminded.muzychenko.entity.StudentEntity;
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
-import util.DataBaseSetUpper;
+import ua.foxminded.muzychenko.entity.Student;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringJUnitConfig(TestConfig.class)
+@Transactional
 class StudentDaoImplTest {
 
+    @Autowired
     private StudentDao studentDao;
-    private StudentDao studentDaoException;
-    private final DBConnector dbConnector = new DBConnector("/testDb.properties");
-
-    @BeforeEach
-    void setUp() {
-
-        studentDao = new StudentDaoImpl(dbConnector);
-        DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
-        studentDaoException = new StudentDaoImpl(dbConnectorException);
-
-        try {
-            when(dbConnectorException.getConnection()).thenThrow(new SQLException());
-        } catch (SQLException sqlException) {
-            throw new DataBaseRunTimeException(sqlException);
-        }
-
-        DataBaseSetUpper.setUpDataBase(dbConnector);
-    }
 
     @DisplayName("All students are found by course")
     @Test
     void findByCourseShouldReturnAllStudentOnSpecifiedCourse() {
-        List<StudentEntity> expectedStudents = new ArrayList<>(
-            List.of(
-                new StudentEntity(1, 1, "John", "Brown"),
-                new StudentEntity(3,1,"Mija", "White"),
-                new StudentEntity(4,1,"Lee", "Simpson"),
-                new StudentEntity(6,2,"Jorge", "White"),
-                new StudentEntity(9,3,"David", "Ivanko"))
-        );
-        List<StudentEntity> actualStudents = studentDao.findByCourse("Math");
-        assertEquals(expectedStudents, actualStudents);
+        List<Student> studentsOnCourse = studentDao.findByCourse("Course1");
+        int expectedCountOfStudents = 4;
+        System.out.println(studentDao.findAll());
+        assertEquals(expectedCountOfStudents, studentsOnCourse.size());
     }
 
     @DisplayName("Course doesn't exist")
     @Test
     void findByCourseShouldReturnEmptyListIfCourseDoesntExist() {
-        List<StudentEntity> students = studentDao.findByCourse("Computer Science");
-        assertEquals(0, students.size());
+        assertTrue(studentDao.findByCourse("").isEmpty());
     }
 
     @DisplayName("Student is added to course")
     @Test
     void addToCourseShouldAddSpecificStudentToSpecificCourse() {
-        StudentEntity student = new StudentEntity(
-            13,
-            1,
-            "Maksym",
-            "Muzychenko");
+        Student student =
+            new Student(
+                UUID.randomUUID(),
+                "name",
+                "surname",
+                "e@g.com",
+                "pass111",
+                null,
+                null
+            );
         studentDao.create(student);
-        studentDao.addToCourse(student, "Math");
-
-        List<StudentEntity> expectedStudents = new ArrayList<>(
-            List.of(
-                new StudentEntity(1, 1, "John", "Brown"),
-                new StudentEntity(3,1,"Mija", "White"),
-                new StudentEntity(4,1,"Lee", "Simpson"),
-                new StudentEntity(6,2,"Jorge", "White"),
-                new StudentEntity(9,3,"David", "Ivanko"),
-                student)
-        );
-
-        assertEquals(expectedStudents, studentDao.findByCourse("Math"));
+        studentDao.addToCourse(student.getUserId(), "Course1");
+        UUID courseId = Objects.requireNonNull(studentDao.findById(student.getUserId()).orElse(null)).getCourseId();
+        assertNotNull(courseId);
     }
 
     @DisplayName("Student is removed from course")
     @Test
     void removeFromCourseShouldRemoveSpecificStudentFromSpecificCourse() {
-        Optional<StudentEntity> student = studentDao.findById(1L);
-        student.ifPresent(studentEntity -> studentDao.deleteFromCourse(studentEntity, "Math"));
-        List<StudentEntity> expectedStudents = new ArrayList<>(
-            List.of(
-                new StudentEntity(3,1,"Mija", "White"),
-                new StudentEntity(4,1,"Lee", "Simpson"),
-                new StudentEntity(6,2,"Jorge", "White"),
-                new StudentEntity(9,3,"David", "Ivanko"))
-        );
-
-        assertEquals(expectedStudents, studentDao.findByCourse("Math"));
+        UUID idOfStudent = studentDao.findAll().get(0).getUserId();
+        studentDao.deleteFromCourse(idOfStudent, "Course1");
+        studentDao.deleteFromCourse(idOfStudent, "Course2");
+        studentDao.deleteFromCourse(idOfStudent, "Course3");
+        assertNull(Objects.requireNonNull(studentDao.findById(idOfStudent).orElse(null)).getCourseId());
     }
 
     @DisplayName("Student is deleted by id")
     @Test
     void deleteByIdShouldDeleteSpecificStudent() {
-        List<StudentEntity> expectedStudents = studentDao.findAll();
-        expectedStudents.remove(new StudentEntity(1, 1, "John", "Brown"));
-
-        studentDao.deleteById(1L);
-
-        assertEquals(expectedStudents, studentDao.findAll());
+        Optional<Student> expectedStudent;
+        UUID studentId = studentDao.findAll().get(0).getCourseId();
+        studentDao.deleteById(studentId);
+        expectedStudent = studentDao.findById(studentId);
+        assertTrue(expectedStudent.isEmpty());
     }
 
     @DisplayName("Student is updated correctly")
     @Test
     void updateShouldReplaceOldStudentEntityWithNewOne() {
-        List<StudentEntity> students = studentDao.findAll();
-        StudentEntity firstStudent = students.get(0);
-        StudentEntity expectedStudent = new StudentEntity(1, 1, "Sam", "Winchester");
-        studentDao.update(firstStudent, expectedStudent);
-        StudentEntity actualStudent = null;
-        Optional<StudentEntity> optionalStudent = studentDao.findById(1L);
-        if (optionalStudent.isPresent()){
-            actualStudent = optionalStudent.get();
-        }
-        assertEquals(expectedStudent, actualStudent);
+        Student oldStudent = studentDao.findById(studentDao.findAll().get(0).getUserId()).orElse(null);
+        assert oldStudent != null;
+        Student newStudent = new Student(
+                    oldStudent.getUserId(),
+                    "test",
+                    "test",
+                    "test",
+                    "test",
+                    oldStudent.getGroupId(),
+                    oldStudent.getCourseId()
+                );
+        studentDao.update(oldStudent.getUserId(), newStudent);
+        assertEquals(newStudent, studentDao.findById(oldStudent.getUserId()).orElse(null));
     }
 
     @DisplayName("Pagination")
     @Test
     void findAllByPageShouldReturnAllStudentsOnTheCurrentPage() {
-        long countOfPages = 4;
         long pageSize = 4;
-        List<StudentEntity> studentsOnLastPage = studentDao.findAllByPage(countOfPages, pageSize);
-        List<StudentEntity> actualStudents = new ArrayList<>();
-        Optional<StudentEntity> student;
-        for (int i = (int) (pageSize * 2); i >studentDao.findAll().size() ; i++) {
-            student = studentDao.findById((long) i);
-            student.ifPresent(actualStudents::add);
+        long pageNumber = 2;
+
+        List<Student> studentsOnPage = studentDao.findAllByPage(pageNumber, pageSize);
+
+        List<Student> allStudents = studentDao.findAll();
+        int startIndex = (int) (pageSize * (pageNumber - 1));
+        int endIndex = (int) (pageSize * pageNumber);
+        if (startIndex >= allStudents.size()) {
+            assertTrue(studentsOnPage.isEmpty());
+        } else {
+            List<Student> expectedStudents = allStudents.subList(startIndex, Math.min(endIndex, allStudents.size()));
+            assertEquals(expectedStudents, studentsOnPage);
         }
-        assertEquals(studentsOnLastPage, actualStudents);
     }
 
-    @DisplayName("create() trow sql exception")
+    @DisplayName("Student was added to group")
     @Test
-    void createShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException.create(new StudentEntity(55, 1, "Test", "Test"))
-        );
+    void addToGroupShouldAddStudentToGroup() {
+        Student student =
+            new Student(
+                UUID.randomUUID(),
+                "name",
+                "lastName",
+                "email",
+                "pass",
+                null,
+                null
+            );
+        studentDao.create(student);
+        studentDao.addToGroup(student.getUserId(), "AA-01");
+        assertNotNull(Objects.requireNonNull(studentDao.findById(student.getUserId()).orElse(null)).getGroupId());
     }
 
-    @DisplayName("update() trow sql exception")
-
+    @DisplayName("Student was deleted from group")
     @Test
-    void updateShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .update(studentDao.findById(1L)
-                        .get(),
-                    new StudentEntity(
-                        1L,
-                        1,
-                        "Test",
-                        "Test"))
-        );
+    void deleteFromGroup() {
+        Student student = studentDao.findById(studentDao.findAll().get(0).getUserId()).orElse(null);
+        assert student != null;
+        studentDao.deleteFromGroup(student.getUserId(), "AA-01");
+        assertNull(Objects.requireNonNull(studentDao.findById(student.getUserId()).orElse(null)).getGroupId());
     }
 
-    @DisplayName("delete() trow sql exception")
+    @DisplayName("Students was found by group")
     @Test
-    void deleteShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .deleteById(1L)
-        );
+    void findByGroupShouldReturnAllStudentsOnGroup() {
+        List<Student> studentsOnGroup = studentDao.findByGroup("AA-01");
+        boolean areOneTheSameGroup = false;
+        UUID groupId = studentsOnGroup.get(0).getGroupId();
+        for (Student s : studentsOnGroup) {
+            areOneTheSameGroup = s.getGroupId().equals(groupId);
+        }
+        assertTrue(areOneTheSameGroup);
     }
 
-    @DisplayName("findAll() trow sql exception")
+    @DisplayName("Exception when created student is null")
     @Test
-    void findAllShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .findAll()
-        );
-    }
-
-    @DisplayName("findAllByPage() trow sql exception")
-    @Test
-    void findAllByPageShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .findAllByPage(444444L, 54444L)
-        );
-    }
-
-    @DisplayName("createAll() trow sql exception")
-    @Test
-    void createAllShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .createAll(new ArrayList<>(List.of(
-                        new StudentEntity(
-                            111L,
-                            1,
-                            "Test1",
-                            "Test1"),
-                        new StudentEntity(
-                            112L,
-                            1,
-                            "Test2",
-                            "Test2")
-                    )
-                    )
-                )
-        );
-    }
-
-    @DisplayName("findByCourse() trow sql exception")
-    @Test
-    void findByCourseShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .findByCourse("Math")
-        );
-    }
-
-    @DisplayName("removeFromCourse() trow sql exception")
-    @Test
-    void removeFromCourseShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .deleteFromCourse(studentDao.findById(1L).get(), "Math")
-        );
-    }
-
-    @DisplayName("addToCourse() trow sql exception")
-    @Test
-    void addToCourseShouldThrowSQLException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDaoException
-                .addToCourse(studentDao.findById(1L).get(), "Mathssss")
-        );
-    }
-
-    @DisplayName("String consumer throws exception")
-    @Test
-    void findByCourseShouldThrowSQLExceptionInPreparedStatement() throws SQLException {
-        DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
-        Connection connection = Mockito.mock(Connection.class);
-        when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
-        PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-        doThrow(new SQLException()).when(preparedStatement).setString(anyInt(), anyString());
-        studentDao = new StudentDaoImpl(dbConnectorForSpecificException);
-        assertThrows(DataBaseRunTimeException.class,
-            () -> studentDao
-                .findByCourse("Math")
-        );
-    }
-
-    @DisplayName("Long consumer throws exception")
-    @Test
-    void findAllByPageShouldMapResultSetToEntityAndAddToList() throws SQLException {
-        DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
-        Connection connection = Mockito.mock(Connection.class);
-        when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
-        PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-        ResultSet resultSet = Mockito.mock(ResultSet.class);
-        when(preparedStatement.getResultSet()).thenReturn(resultSet);
-        when(resultSet.next()).thenReturn(true, false);
-        List<StudentEntity> result = studentDao.findAllByPage(1L, 10L);
-        assertEquals(10, result.size());
-    }
-
-    @DisplayName("Find by id thrown SQL exception cause of result set is empty")
-    @Test
-    void findByIdShouldThrowSQLExceptionWhenOptionalIsEmpty() throws SQLException {
-        DBConnector dbConnectorForSpecificException = Mockito.mock(DBConnector.class);
-        Connection connection = Mockito.mock(Connection.class);
-
-        when(dbConnectorForSpecificException.getConnection()).thenReturn(connection);
-
-        PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
-
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-
-        ResultSet resultSet = Mockito.mock(ResultSet.class);
-
-        when(preparedStatement.getResultSet()).thenReturn(resultSet);
-        when(resultSet.next()).thenReturn(false);
-
-        Optional<StudentEntity> result = studentDao.findById(14L);
-
-        assertFalse(result.isPresent(), "Expected empty Optional");
+    void createShouldThrowNullPointerException() {
+        assertThrows(NullPointerException.class, () -> studentDao.create(null));
     }
 }

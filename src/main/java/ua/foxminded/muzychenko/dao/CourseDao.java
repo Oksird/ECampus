@@ -1,7 +1,9 @@
 package ua.foxminded.muzychenko.dao;
 
-import ua.foxminded.muzychenko.entity.CourseEntity;
+import ua.foxminded.muzychenko.entity.Course;
 
-public interface CourseDao extends CrudDao<CourseEntity, Long> {
+import java.util.UUID;
+
+public interface CourseDao extends CrudDao<Course, UUID> {
 
 }

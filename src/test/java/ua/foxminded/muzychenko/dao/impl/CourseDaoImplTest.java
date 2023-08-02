@@ -1,87 +1,55 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import ua.foxminded.muzychenko.DBConnector;
-import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.entity.CourseEntity;
-import ua.foxminded.muzychenko.exception.DataBaseRunTimeException;
-import util.DataBaseSetUpper;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.transaction.annotation.Transactional;
+import ua.foxminded.muzychenko.dao.CourseDao;
+import ua.foxminded.muzychenko.entity.Course;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
+@SpringJUnitConfig(TestConfig.class)
+@Transactional
 class CourseDaoImplTest {
 
+    @Autowired
     private CourseDao courseDao;
-    private CourseDao courseDaoException;
-
-    @BeforeEach
-    void setUp() {
-
-        DBConnector dbConnector = new DBConnector("/testDb.properties");
-
-        courseDao = new CourseDaoImpl1(dbConnector);
-        DBConnector dbConnectorException = Mockito.mock(DBConnector.class);
-        courseDaoException = new CourseDaoImpl1(dbConnectorException);
-        try {
-            when(dbConnectorException.getConnection()).thenThrow(new SQLException());
-        } catch (SQLException sqlException) {
-            throw new DataBaseRunTimeException(sqlException);
-        }
-
-        DataBaseSetUpper.setUpDataBase(dbConnector);
-    }
 
     @DisplayName("Course was created")
     @Test
-    void insertShouldCreateNewCourse() {
-        CourseEntity testCourse = new CourseEntity(4, "Test", "It's just test");
-        List<CourseEntity> expectedCourses = courseDao.findAll();
-        expectedCourses.add(testCourse);
+    void createShouldCreateNewCourse() {
+        Course testCourse = new Course(
+            UUID.randomUUID(),
+            "TestName",
+            "TestDesc"
+        );
         courseDao.create(testCourse);
-        assertEquals(expectedCourses, courseDao.findAll());
+        Course actualCourse = courseDao.findById(testCourse.getCourseId()).orElse(null);
+        assertEquals(testCourse, actualCourse);
     }
 
     @DisplayName("Course was deleted")
     @Test
     void deleteByIdShouldDeleteSpecificCourse() {
-        courseDao.create(new CourseEntity(4, "Test", "It's just test"));
-        List<CourseEntity> expectedCourses = courseDao.findAll();
-        expectedCourses.remove(expectedCourses.size() - 1);
-        courseDao.deleteById(4L);
-        assertEquals(expectedCourses, courseDao.findAll());
+        int countOfCourses = courseDao.findAll().size();
+        courseDao.deleteById(courseDao.findAll().get(0).getCourseId());
+        int expectedCountOfCourses = countOfCourses - 1;
+        int actualCountOfCourses = courseDao.findAll().size();
+        assertEquals(expectedCountOfCourses, actualCountOfCourses);
     }
 
     @DisplayName("Course was updated")
     @Test
     void updateShouldReplaceCourseWithProvidedOne() {
-        List<CourseEntity> expectedCourses = courseDao.findAll();
-        CourseEntity testCourse = new CourseEntity(3, "Replaced course", "TEST");
-        Optional<CourseEntity> optionalCourse = courseDao.findById(3L);
-        CourseEntity actualCourse = null;
-        if (optionalCourse.isPresent()) {
-            actualCourse = optionalCourse.get();
-        }
-        expectedCourses.remove(actualCourse);
-        expectedCourses.add(testCourse);
-        courseDao.update(actualCourse, testCourse);
-        assertEquals(expectedCourses, courseDao.findAll());
-    }
-
-    @DisplayName("findById() throw sql exception")
-    @Test
-    void findByIdShouldThrowException() {
-        assertThrows(DataBaseRunTimeException.class,
-            () -> courseDaoException
-                .findById(111111L)
-        );
+        Course oldCourse = courseDao.findById(courseDao.findAll().get(0).getCourseId()).orElse(null);
+        assert oldCourse != null;
+        Course newCourse = new Course(oldCourse.getCourseId(),"TEST", "TEST");
+        courseDao.update(oldCourse.getCourseId(), newCourse);
+        assertEquals(newCourse, courseDao.findById(oldCourse.getCourseId()).orElse(null));
     }
 }

@@ -5,12 +5,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.entity.GroupEntity;
+import ua.foxminded.muzychenko.entity.Group;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements GroupDao {
+public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao {
 
     private static final String CREATE_QUERY = "INSERT INTO groups VALUES (?, ?)";
     private static final String UPDATE_QUERY = "UPDATE groups SET group_name=? WHERE group_id=?";
@@ -18,20 +19,21 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements Gr
     private static final String FIND_ALL_QUERY = "SELECT * FROM groups";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM groups WHERE group_id=?";
     private static final String FIND_GROUP_WITH_LESS_OR_EQUAL_STUDENTS_QUERY = """
-        WITH group_counts AS ( SELECT g.group_id, g.group_name, COUNT(s.student_id)
-        AS student_count FROM groups g
-        LEFT JOIN students s ON g.group_id = s.group_id GROUP BY g.group_id, g.group_name )
-        SELECT group_id, group_name, student_count
-        FROM group_counts WHERE student_count <= ?;
+        SELECT g.group_id, g.group_name
+        FROM public.groups AS g
+        LEFT JOIN public.users AS u ON g.group_id = u.group_id AND u.user_type = 'Student'
+        GROUP BY g.group_id, g.group_name
+        HAVING COUNT(u.user_id) <= ?
+
         """;
 
     @Autowired
-    protected GroupDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<GroupEntity> rowMapper) {
+    protected GroupDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Group> rowMapper) {
         super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
     }
 
     @Override
-    public List<GroupEntity> findGroupWithLessOrEqualStudents(Integer countOfStudents) {
+    public List<Group> findGroupWithLessOrEqualStudents(Integer countOfStudents) {
         return jdbcTemplate.query(
             FIND_GROUP_WITH_LESS_OR_EQUAL_STUDENTS_QUERY,
             new Object[]{countOfStudents},
@@ -40,12 +42,12 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<GroupEntity> implements Gr
     }
 
     @Override
-    protected Object[] getCreateParameters(GroupEntity group) {
+    protected Object[] getCreateParameters(Group group) {
         return new Object[]{group.getGroupId(), group.getGroupName()};
     }
 
     @Override
-    protected Object[] getUpdateParameters(Long id, GroupEntity updatedGroup) {
+    protected Object[] getUpdateParameters(UUID id, Group updatedGroup) {
         return new Object[]{updatedGroup.getGroupName(), id};
     }
 }

@@ -1,14 +1,20 @@
 package ua.foxminded.muzychenko.dao;
 
-import ua.foxminded.muzychenko.entity.StudentEntity;
+import ua.foxminded.muzychenko.entity.Student;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface StudentDao extends CrudDao<StudentEntity, Long> {
+public interface StudentDao extends UserDao<Student, UUID> {
 
-    List<StudentEntity> findByCourse(String nameOfCourse);
+    List<Student> findByCourse(String nameOfCourse);
 
-    void addToCourse(String nameOfCourse, Long id);
+    List<Student> findByGroup(String nameOfGroup);
 
-    void deleteFromCourse(Long id, String nameOfCourse);
+    void addToCourse(UUID id, String courseName);
+    void addToGroup(UUID id, String groupName);
+
+    void deleteFromCourse(UUID id, String nameOfCourse);
+
+    void deleteFromGroup(UUID id, String nameOfGroup);
 }

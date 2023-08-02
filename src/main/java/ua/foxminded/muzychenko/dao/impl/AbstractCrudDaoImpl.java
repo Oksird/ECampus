@@ -9,9 +9,10 @@ import ua.foxminded.muzychenko.dao.CrudDao;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
+public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, UUID> {
 
     protected final JdbcTemplate jdbcTemplate;
     protected final RowMapper<E> rowMapper;
@@ -27,12 +28,12 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     }
 
     @Override
-    public void update(Long id, E newEntity) {
+    public void update(UUID id, E newEntity) {
         jdbcTemplate.update(updateQuery, getUpdateParameters(id, newEntity));
     }
 
     @Override
-    public Optional<E> findById(Long id) {
+    public Optional<E> findById(UUID id) {
         try {
             E result = jdbcTemplate.queryForObject(findByIdQuery, new Object[]{id}, rowMapper);
             return Optional.ofNullable(result);
@@ -47,7 +48,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(UUID id) {
         jdbcTemplate.update(deleteByIdQuery, id);
     }
 
@@ -60,6 +61,6 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, Long> {
 
     protected abstract Object[] getCreateParameters(E entity);
 
-    protected abstract Object[] getUpdateParameters(Long id, E newEntity);
+    protected abstract Object[] getUpdateParameters(UUID id, E newEntity);
 
 }

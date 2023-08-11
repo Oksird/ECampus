@@ -59,6 +59,15 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, UUID> {
         return jdbcTemplate.query(query, rowMapper, pageSize, offset);
     }
 
+    protected Optional<E> findByParams(String query,String param) {
+        try {
+            E result = jdbcTemplate.queryForObject(query, new Object[]{param}, rowMapper);
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
     protected abstract Object[] getCreateParameters(E entity);
 
     protected abstract Object[] getUpdateParameters(UUID id, E newEntity);

@@ -11,6 +11,7 @@ services:
       - "5432:5432"
   pgadmin:
     image: dpage/pgadmin4
+    container_name: pgadmin
     environment:
       - PGADMIN_DEFAULT_EMAIL=m.muz.al3105@gmail.com
       - PGADMIN_DEFAULT_PASSWORD=password

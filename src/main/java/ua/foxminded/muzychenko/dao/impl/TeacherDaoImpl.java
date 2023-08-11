@@ -4,9 +4,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.dao.TeacherDao;
+import ua.foxminded.muzychenko.dao.mapper.CourseMapper;
 import ua.foxminded.muzychenko.entity.Teacher;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -53,8 +55,9 @@ public class TeacherDaoImpl extends AbstractCrudDaoImpl<Teacher> implements Teac
         FROM deleted_teacher
         WHERE u.user_id =? AND u.user_type = 'Teacher';
         """;
+    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email= ? AND user_type='Teacher'";
 
-    protected TeacherDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Teacher> rowMapper) {
+    protected TeacherDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Teacher> rowMapper, CourseMapper courseMapper) {
         super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
     }
 
@@ -106,5 +109,10 @@ public class TeacherDaoImpl extends AbstractCrudDaoImpl<Teacher> implements Teac
             newEntity.getPassword(),
             id
         };
+    }
+
+    @Override
+    public Optional<Teacher> findByEmail(String email) {
+        return findByParams(FIND_BY_EMAIL_QUERY, email);
     }
 }

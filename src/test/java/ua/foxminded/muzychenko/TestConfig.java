@@ -1,4 +1,4 @@
-package ua.foxminded.muzychenko.dao.impl;
+package ua.foxminded.muzychenko;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -12,7 +12,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.junit.jupiter.Container;
-import ua.foxminded.muzychenko.AppConfiguration;
 
 import javax.sql.DataSource;
 

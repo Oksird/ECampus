@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
+import ua.foxminded.muzychenko.TestConfig;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.Course;
 

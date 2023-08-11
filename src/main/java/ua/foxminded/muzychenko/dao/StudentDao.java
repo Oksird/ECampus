@@ -12,6 +12,7 @@ public interface StudentDao extends UserDao<Student, UUID> {
     List<Student> findByGroup(String nameOfGroup);
 
     void addToCourse(UUID id, String courseName);
+
     void addToGroup(UUID id, String groupName);
 
     void deleteFromCourse(UUID id, String nameOfCourse);

@@ -1,6 +1,7 @@
 package ua.foxminded.muzychenko.dao.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -8,6 +9,7 @@ import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.entity.Group;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -24,7 +26,12 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao
         LEFT JOIN public.users AS u ON g.group_id = u.group_id AND u.user_type = 'Student'
         GROUP BY g.group_id, g.group_name
         HAVING COUNT(u.user_id) <= ?
-
+        """;
+    private static final String FIND_STUDENT_GROUP_QUERY = """
+        SELECT g.*
+        FROM groups g
+        JOIN users u ON u.group_id = g.group_id
+        WHERE u.user_id =?;
         """;
 
     @Autowired
@@ -39,6 +46,16 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao
             new Object[]{countOfStudents},
             rowMapper
         );
+    }
+
+    @Override
+    public Optional<Group> findUsersGroup(UUID id) {
+        try {
+            Group result = jdbcTemplate.queryForObject(FIND_STUDENT_GROUP_QUERY, new Object[]{id}, rowMapper);
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override

@@ -9,9 +9,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public abstract class User {
-    @NonNull
     private UUID userId;
-    @NonNull
     private String userType;
     private String firstName;
     private String lastName;

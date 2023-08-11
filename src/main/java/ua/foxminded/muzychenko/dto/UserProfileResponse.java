@@ -9,10 +9,8 @@ import java.util.List;
 
 @AllArgsConstructor
 @Getter
-public class UserProfileResponse {
+public abstract class UserProfileResponse {
     private String firstName;
     private String lastName;
     private String email;
-    private Group group;
-    private List<Course> courses;
 }

@@ -6,12 +6,11 @@ import org.springframework.stereotype.Service;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.StudentDao;
+import ua.foxminded.muzychenko.dto.StudentProfileResponse;
 import ua.foxminded.muzychenko.dto.UserLoginRequest;
-import ua.foxminded.muzychenko.dto.UserProfileResponse;
 import ua.foxminded.muzychenko.dto.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Student;
 import ua.foxminded.muzychenko.exception.BadCredentialsException;
-import ua.foxminded.muzychenko.exception.PasswordMismatchException;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.util.Validator;
@@ -45,22 +44,16 @@ public class StudentService {
         return studentDao.findByGroup(nameOfGroup);
     }
 
-    public UserProfileResponse login(UserLoginRequest userLoginRequest) {
+    public StudentProfileResponse login(UserLoginRequest userLoginRequest) {
         String email = userLoginRequest.getEmail();
         String password = userLoginRequest.getPassword();
 
         Optional<Student> optionalStudent = studentDao.findByEmail(email);
 
-        if (optionalStudent.isEmpty()) {
-            throw new UserNotFoundException("User with email: " + email + " not found");
-        }
-
-        if (!passwordEncoder.matches(password, optionalStudent.get().getPassword())) {
-            throw new BadCredentialsException("Invalid password");
-        }
+        validator.validateLoginRequest(optionalStudent, password, optionalStudent.orElse(null).getPassword());
 
         Student student = optionalStudent.get();
-        return new UserProfileResponse(
+        return new StudentProfileResponse(
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
@@ -82,7 +75,6 @@ public class StudentService {
                 null
             )
         );
-
     }
 
     public void deleteStudent(UUID id) {
@@ -107,12 +99,7 @@ public class StudentService {
 
     public void changePassword(String email, String oldPassword, String newPassword, String repeatNewPassword) {
         Student student = studentDao.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
-        if (!passwordEncoder.matches(oldPassword, student.getPassword())) {
-            throw new BadCredentialsException("Wrong password");
-        }
-        if (!newPassword.equals(repeatNewPassword)) {
-            throw new PasswordMismatchException();
-        }
+        validator.validatePasswordChange(oldPassword, newPassword, repeatNewPassword, student.getPassword());
         student.setPassword(newPassword);
         studentDao.update(student.getUserId(), student);
     }

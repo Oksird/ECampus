@@ -1,13 +1,19 @@
 package ua.foxminded.muzychenko.dao.impl;
 
 import lombok.NonNull;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.dao.StudentDao;
+import ua.foxminded.muzychenko.dao.mapper.CourseMapper;
+import ua.foxminded.muzychenko.dao.mapper.GroupMapper;
+import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -82,8 +88,10 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
         WHERE u.user_id = ? AND u.user_type = 'Student' AND u.group_id = group_info.group_id;
         """;
 
-    protected StudentDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Student> rowMapper) {
-        super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
+    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email= ? AND user_type='Student'";
+
+    protected StudentDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Student> studentRowMapper, CourseMapper courseMapper, GroupMapper groupMapper) {
+        super(jdbcTemplate, studentRowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
     }
 
     @Override
@@ -166,5 +174,10 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
             newEntity.getPassword(),
             id
         };
+    }
+
+    @Override
+    public Optional<Student> findByEmail(String email) {
+        return findByParams(FIND_BY_EMAIL_QUERY, email);
     }
 }

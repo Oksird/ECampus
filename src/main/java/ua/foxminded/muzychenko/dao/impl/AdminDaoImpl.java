@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.dao.AdminDao;
 import ua.foxminded.muzychenko.entity.Admin;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -17,6 +18,7 @@ public class AdminDaoImpl extends AbstractCrudDaoImpl<Admin> implements AdminDao
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE user_id=?";
     private static final String FIND_ALL_QUERY = "SELECT * FROM users WHERE user_type='Admin'";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE user_id=?";
+    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email= ? AND user_type='Admin'";
 
     protected AdminDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Admin> rowMapper) {
         super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
@@ -42,5 +44,10 @@ public class AdminDaoImpl extends AbstractCrudDaoImpl<Admin> implements AdminDao
             newEntity.getPassword(),
             id
         };
+    }
+
+    @Override
+    public Optional<Admin> findByEmail(String email) {
+        return findByParams(FIND_BY_EMAIL_QUERY, email);
     }
 }

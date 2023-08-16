@@ -83,8 +83,7 @@ public class TeacherService {
                 userRegistrationRequest.getFirstName(),
                 userRegistrationRequest.getLastName(),
                 userRegistrationRequest.getEmail(),
-                passwordEncoder.encode(userRegistrationRequest.getPassword()),
-                null
+                passwordEncoder.encode(userRegistrationRequest.getPassword())
             )
         );
     }

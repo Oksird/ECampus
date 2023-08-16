@@ -43,44 +43,34 @@ VALUES (uuid_generate_v4(), 'Student', 'Emma', 'Smith', 'es1', 'student123'),
        (uuid_generate_v4(), 'Student', 'Aiden', 'Miller', 'es10', 'password202');
 
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01')
 WHERE email = 'es1';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course2')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02')
 WHERE email = 'es2';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-03'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course3')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-03')
 WHERE email = 'es3';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01')
 WHERE email = 'es4';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course2')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02')
 WHERE email = 'es5';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course3')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02')
 WHERE email = 'es6';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01')
 WHERE email = 'es7';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course2')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-01')
 WHERE email = 'es8';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-03'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course3')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-03')
 WHERE email = 'es9';
 UPDATE users
-SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02'),
-    course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
+SET group_id=(SELECT group_id FROM groups WHERE group_name = 'AA-02')
 WHERE email = 'es10';
 
 INSERT INTO students_courses VALUES ((SELECT user_id FROM users WHERE email = 'es1'), (SELECT course_id FROM courses WHERE course_name = 'Course1'));
@@ -93,37 +83,6 @@ INSERT INTO students_courses VALUES ((SELECT user_id FROM users WHERE email = 'e
 INSERT INTO students_courses VALUES ((SELECT user_id FROM users WHERE email = 'es8'), (SELECT course_id FROM courses WHERE course_name = 'Course2'));
 INSERT INTO students_courses VALUES ((SELECT user_id FROM users WHERE email = 'es9'), (SELECT course_id FROM courses WHERE course_name = 'Course3'));
 INSERT INTO students_courses VALUES ((SELECT user_id FROM users WHERE email = 'es10'), (SELECT course_id FROM courses WHERE course_name = 'Course1'));
-
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
-WHERE email = 'et1';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course2')
-WHERE email = 'et2';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course3')
-WHERE email = 'et3';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
-WHERE email = 'et4';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course2')
-WHERE email = 'et5';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course3')
-WHERE email = 'et6';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
-WHERE email = 'et7';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course2')
-WHERE email = 'et8';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course3')
-WHERE email = 'et9';
-UPDATE users
-SET course_id=(SELECT course_id FROM courses WHERE course_name = 'Course1')
-WHERE email = 'et10';
 
 INSERT INTO teachers_courses VALUES ((SELECT user_id FROM users WHERE email = 'et1'), (SELECT course_id FROM courses WHERE course_name = 'Course1'));
 INSERT INTO teachers_courses VALUES ((SELECT user_id FROM users WHERE email = 'et2'), (SELECT course_id FROM courses WHERE course_name = 'Course2'));

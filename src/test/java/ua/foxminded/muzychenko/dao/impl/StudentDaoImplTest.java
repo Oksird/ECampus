@@ -6,8 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.TestConfig;
+import ua.foxminded.muzychenko.dao.CourseDao;
+import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.StudentDao;
+import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Student;
+import ua.foxminded.muzychenko.entity.UserType;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +30,10 @@ class StudentDaoImplTest {
 
     @Autowired
     private StudentDao studentDao;
+    @Autowired
+    private CourseDao courseDao;
+    @Autowired
+    private GroupDao groupDao;
 
     @DisplayName("All students are found by course")
     @Test
@@ -52,30 +60,30 @@ class StudentDaoImplTest {
                 "surname",
                 "e@g.com",
                 "pass111",
-                null,
                 null
             );
         studentDao.create(student);
         studentDao.addToCourse(student.getUserId(), "Course1");
-        UUID courseId = Objects.requireNonNull(studentDao.findById(student.getUserId()).orElse(null)).getCourseId();
-        assertNotNull(courseId);
+        List<Course> courses =courseDao.findCoursesByUserIdAndUserType(student.getUserId(), UserType.STUDENT);
+        assertTrue(courses.contains(courseDao.findByName("Course1").orElse(null)));
+
     }
 
     @DisplayName("Student is removed from course")
     @Test
     void removeFromCourseShouldRemoveSpecificStudentFromSpecificCourse() {
         UUID idOfStudent = studentDao.findAll().get(0).getUserId();
-        studentDao.deleteFromCourse(idOfStudent, "Course1");
-        studentDao.deleteFromCourse(idOfStudent, "Course2");
-        studentDao.deleteFromCourse(idOfStudent, "Course3");
-        assertNull(Objects.requireNonNull(studentDao.findById(idOfStudent).orElse(null)).getCourseId());
+        studentDao.excludeFromCourse(idOfStudent, "Course1");
+        studentDao.excludeFromCourse(idOfStudent, "Course2");
+        studentDao.excludeFromCourse(idOfStudent, "Course3");
+        assertTrue(courseDao.findCoursesByUserIdAndUserType(idOfStudent, UserType.STUDENT).isEmpty());
     }
 
     @DisplayName("Student is deleted by id")
     @Test
     void deleteByIdShouldDeleteSpecificStudent() {
         Optional<Student> expectedStudent;
-        UUID studentId = studentDao.findAll().get(0).getCourseId();
+        UUID studentId = studentDao.findAll().get(0).getUserId();
         studentDao.deleteById(studentId);
         expectedStudent = studentDao.findById(studentId);
         assertTrue(expectedStudent.isEmpty());
@@ -92,8 +100,7 @@ class StudentDaoImplTest {
                     "test",
                     "test",
                     "test",
-                    oldStudent.getGroupId(),
-                    oldStudent.getCourseId()
+                    oldStudent.getGroupId()
                 );
         studentDao.update(oldStudent.getUserId(), newStudent);
         assertEquals(newStudent, studentDao.findById(oldStudent.getUserId()).orElse(null));
@@ -105,7 +112,7 @@ class StudentDaoImplTest {
         long pageSize = 4;
         long pageNumber = 2;
 
-        List<Student> studentsOnPage = studentDao.findAllByPage(pageNumber, pageSize);
+        List<Student> studentsOnPage = studentDao.findAll(pageNumber, pageSize);
 
         List<Student> allStudents = studentDao.findAll();
         int startIndex = (int) (pageSize * (pageNumber - 1));
@@ -128,7 +135,6 @@ class StudentDaoImplTest {
                 "lastName",
                 "email",
                 "pass",
-                null,
                 null
             );
         studentDao.create(student);
@@ -141,7 +147,7 @@ class StudentDaoImplTest {
     void deleteFromGroup() {
         Student student = studentDao.findById(studentDao.findAll().get(0).getUserId()).orElse(null);
         assert student != null;
-        studentDao.deleteFromGroup(student.getUserId(), "AA-01");
+        studentDao.excludeFromGroup(student.getUserId(), "AA-01");
         assertNull(Objects.requireNonNull(studentDao.findById(student.getUserId()).orElse(null)).getGroupId());
     }
 
@@ -161,5 +167,21 @@ class StudentDaoImplTest {
     @Test
     void createShouldThrowNullPointerException() {
         assertThrows(NullPointerException.class, () -> studentDao.create(null));
+    }
+
+    @DisplayName("Student is found by email")
+    @Test
+    void findByEmailShouldReturnStudentIfEmailIsCorrect() {
+        Student expectedStudent = new Student(
+            UUID.randomUUID(),
+            "Emma",
+            "Smith",
+            "es1",
+            "student123",
+            Objects.requireNonNull(groupDao.findByName("AA-01").orElse(null)).getGroupId());
+        Student actualStudent = studentDao.findByEmail("es1").orElse(null);
+        assert actualStudent != null;
+        expectedStudent.setUserId(actualStudent.getUserId());
+        assertEquals(expectedStudent, actualStudent);
     }
 }

@@ -25,10 +25,9 @@ CREATE TABLE Users
     last_name  VARCHAR(100) NOT NULL,
     email      VARCHAR(255) NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,
-    course_id  UUID,
     group_id   UUID,
     CHECK (
-            (user_type = 'Admin' AND course_id IS NULL AND group_id IS NULL) OR
+            (user_type = 'Admin' AND group_id IS NULL) OR
             (user_type = 'Teacher' AND group_id IS NULL) OR
             (user_type = 'Student')
         )

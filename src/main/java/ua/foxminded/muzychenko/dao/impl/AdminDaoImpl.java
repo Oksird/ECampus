@@ -48,6 +48,6 @@ public class AdminDaoImpl extends AbstractCrudDaoImpl<Admin> implements AdminDao
 
     @Override
     public Optional<Admin> findByEmail(String email) {
-        return findByParams(FIND_BY_EMAIL_QUERY, email);
+        return findByParam(FIND_BY_EMAIL_QUERY, email);
     }
 }

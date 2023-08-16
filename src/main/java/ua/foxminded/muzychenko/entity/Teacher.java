@@ -10,10 +10,8 @@ import java.util.UUID;
 @Data
 public class Teacher extends User {
     private static final String USER_TYPE = "Teacher";
-    private UUID courseId;
 
-    public Teacher(@NonNull UUID teacherId, String firstName, String lastName, String email, String password, UUID courseId) {
+    public Teacher(@NonNull UUID teacherId, String firstName, String lastName, String email, String password) {
         super(teacherId, USER_TYPE, firstName, lastName, email, password);
-        this.courseId = courseId;
     }
 }

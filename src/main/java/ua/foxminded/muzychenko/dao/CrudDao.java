@@ -15,6 +15,6 @@ public interface CrudDao<E, ID> {
 
     void deleteById(ID id);
 
-    List<E> findAllByPage(Long pageNumber, Long pageSize);
+    List<E> findAll(Long pageNumber, Long pageSize);
 
 }

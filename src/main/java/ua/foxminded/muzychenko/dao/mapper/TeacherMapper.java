@@ -17,8 +17,7 @@ public class TeacherMapper implements RowMapper<Teacher> {
             resultSet.getString("first_name"),
             resultSet.getString("last_name"),
             resultSet.getString("email"),
-            resultSet.getString("password"),
-            resultSet.getObject("course_id", UUID.class)
+            resultSet.getString("password")
         );
     }
 }

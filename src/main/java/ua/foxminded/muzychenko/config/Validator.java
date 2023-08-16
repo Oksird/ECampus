@@ -1,4 +1,4 @@
-package ua.foxminded.muzychenko.annotation;
+package ua.foxminded.muzychenko.config;
 
 import org.springframework.stereotype.Component;
 
@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Component
-public @interface CustomValidator {
+public @interface Validator {
 }

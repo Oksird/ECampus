@@ -7,14 +7,17 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.TestConfig;
 import ua.foxminded.muzychenko.dao.GroupDao;
+import ua.foxminded.muzychenko.dao.StudentDao;
+import ua.foxminded.muzychenko.dao.exception.EntityWasNotFoundException;
+import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
 import ua.foxminded.muzychenko.entity.Group;
+import ua.foxminded.muzychenko.entity.Student;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringJUnitConfig(TestConfig.class)
 @Transactional
@@ -22,6 +25,8 @@ class GroupDaoImplTest {
 
     @Autowired
     private GroupDao groupDao;
+    @Autowired
+    private StudentDao studentDao;
 
     @DisplayName("Groups with less or equal count of students are found")
     @Test
@@ -83,5 +88,42 @@ class GroupDaoImplTest {
     void findByIdShouldReturnEmptyOptionalWhenGroupWithIdDoesntExist() {
         Optional<Group> group = groupDao.findById(UUID.randomUUID());
         assertFalse(group.isPresent());
+    }
+
+    @DisplayName("User's group is found")
+    @Test
+    void findUsersGroupShouldReturnGroupRelatedToExactUser() {
+        Group expectedGroup = groupDao.findByName("AA-01").orElse(null);
+        assertEquals(expectedGroup, groupDao.findUsersGroup(Objects.requireNonNull(studentDao.findByEmail("es1").orElse(null)).getUserId()).orElse(null));
+    }
+
+    @DisplayName("Group is found by name")
+    @Test
+    void findByNameShouldReturnGroupEntityWithCorrectName() {
+        Group expectedGroup = new Group(UUID.randomUUID(), "AA-01");
+        assertEquals(expectedGroup.getGroupName(), Objects.requireNonNull(groupDao.findByName("AA-01").orElse(null)).getGroupName());
+    }
+
+    @DisplayName("Exception is thrown when group name is incorrect")
+    @Test
+    void findByNameShouldThrowException() {
+        assertThrows(EntityWasNotFoundException.class,() -> groupDao.findByName("qweqwe"));
+    }
+
+    @DisplayName("Exception is thrown when user does not have group")
+    @Test
+    void findUsersGroupShouldThrowExceptionWhenUserDoesNotHaveGroup() {
+        Student example = new Student(
+            UUID.randomUUID(),
+            "test",
+            "test",
+            "test",
+            "test",
+            null
+        );
+
+        studentDao.create(example);
+        UUID studentId = example.getUserId();
+        assertThrows(GroupNotFoundException.class, () -> groupDao.findUsersGroup(studentId));
     }
 }

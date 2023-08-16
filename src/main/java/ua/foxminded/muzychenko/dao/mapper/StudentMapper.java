@@ -18,8 +18,7 @@ public class StudentMapper implements RowMapper<Student> {
             resultSet.getString("last_name"),
             resultSet.getString("email"),
             resultSet.getString("password"),
-            resultSet.getObject("group_id", UUID.class),
-            resultSet.getObject("course_id", UUID.class)
+            resultSet.getObject("group_id", UUID.class)
         );
     }
 }

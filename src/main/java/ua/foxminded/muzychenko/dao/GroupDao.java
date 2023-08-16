@@ -10,4 +10,6 @@ public interface GroupDao extends CrudDao<Group, UUID> {
 
     List<Group> findGroupWithLessOrEqualStudents(Integer countOfStudents);
     Optional<Group> findUsersGroup(UUID userId);
+
+    Optional<Group> findByName(String groupName);
 }

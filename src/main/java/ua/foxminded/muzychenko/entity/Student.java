@@ -11,12 +11,10 @@ import java.util.UUID;
 public class Student extends User {
     private static final String USER_TYPE = "Student";
     private UUID groupId;
-    private UUID courseId;
 
     public Student(@NonNull UUID studentId , String firstName, String lastName, String email, String password,
-                   UUID groupId, UUID courseId) {
+                   UUID groupId) {
         super(studentId, USER_TYPE, firstName, lastName, email, password);
         this.groupId = groupId;
-        this.courseId = courseId;
     }
 }

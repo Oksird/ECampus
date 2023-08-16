@@ -1,6 +1,7 @@
 package ua.foxminded.muzychenko;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import ua.foxminded.muzychenko.config.AppConfiguration;
 
 public class SchoolConsoleApplication {
 
@@ -9,6 +10,6 @@ public class SchoolConsoleApplication {
             new AnnotationConfigApplicationContext(AppConfiguration.class);
         SchoolApplicationFacade schoolApplicationFacade
             = context.getBean("schoolApplicationFacade", SchoolApplicationFacade.class);
-        schoolApplicationFacade.runQueries();
+        schoolApplicationFacade.runFrontController();
     }
 }

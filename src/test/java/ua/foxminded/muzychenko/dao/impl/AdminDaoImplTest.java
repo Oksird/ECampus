@@ -63,4 +63,20 @@ class AdminDaoImplTest {
         UUID oldId = oldAdmin.getUserId();
         assertThrows(NullPointerException.class, () -> adminDao.update(oldId, null));
     }
+
+    @DisplayName("Admin is found by email")
+    @Test
+    void findByEmailShouldReturnAdminIfEmailIsCorrect() {
+        Admin expectedAdmin = new Admin(
+            UUID.randomUUID(),
+            "John",
+            "Smith",
+            "john.smith@example.com",
+            "admin1_password"
+        );
+        Admin actualAdmin = adminDao.findByEmail("john.smith@example.com").orElse(null);
+        assert actualAdmin != null;
+        expectedAdmin.setUserId(actualAdmin.getUserId());
+        assertEquals(expectedAdmin, actualAdmin);
+    }
 }

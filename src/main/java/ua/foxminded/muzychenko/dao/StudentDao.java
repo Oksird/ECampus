@@ -15,7 +15,7 @@ public interface StudentDao extends UserDao<Student, UUID> {
 
     void addToGroup(UUID id, String groupName);
 
-    void deleteFromCourse(UUID id, String nameOfCourse);
+    void excludeFromCourse(UUID id, String nameOfCourse);
 
-    void deleteFromGroup(UUID id, String nameOfGroup);
+    void excludeFromGroup(UUID id, String nameOfGroup);
 }

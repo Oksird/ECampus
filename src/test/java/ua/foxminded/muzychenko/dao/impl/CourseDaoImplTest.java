@@ -9,10 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.TestConfig;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.entity.UserType;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringJUnitConfig(TestConfig.class)
 @Transactional
@@ -52,5 +53,23 @@ class CourseDaoImplTest {
         Course newCourse = new Course(oldCourse.getCourseId(),"TEST", "TEST");
         courseDao.update(oldCourse.getCourseId(), newCourse);
         assertEquals(newCourse, courseDao.findById(oldCourse.getCourseId()).orElse(null));
+    }
+
+    @DisplayName("Exception is thrown then user type is admin")
+    @Test
+    void findCoursesByUserIdAndUserTypeShouldThrowExceptionWhenUserTypeIsAdmin() {
+        UUID userId = UUID.randomUUID();
+        assertThrows(IllegalArgumentException.class, () ->
+            courseDao.findCoursesByUserIdAndUserType(userId, UserType.ADMIN)
+        );
+    }
+
+    @DisplayName("Runtime exception is thrown when user type is invalid")
+    @Test
+    void findCoursesByUserIdAndUserTypeWhenUserTypeIsInvalid() {
+        UUID userId = UUID.randomUUID();
+        assertThrows(IllegalArgumentException.class, () ->
+            courseDao.findCoursesByUserIdAndUserType(userId, UserType.valueOf("unknown"))
+        );
     }
 }

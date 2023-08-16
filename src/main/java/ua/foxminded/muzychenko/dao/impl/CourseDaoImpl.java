@@ -1,13 +1,12 @@
 package ua.foxminded.muzychenko.dao.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.entity.Course;
-import ua.foxminded.muzychenko.entity.Group;
+import ua.foxminded.muzychenko.entity.UserType;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,10 +30,12 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<Course> implements Course
     private static final String FIND_TEACHER_COURSES_QUERY = """
         SELECT c.*
         FROM courses c
-        JOIN teachers_courses sc ON c.course_id = sc.course_id
-        JOIN users u ON sc.student_id = u.user_id
-        WHERE u.user_id =?;
+        JOIN teachers_courses tc ON c.course_id = tc.course_id
+        WHERE tc.teacher_id = ?;
         """;
+
+    private static final String FIND_BY_NAME_QUERY = "SELECT * FROM courses WHERE course_name = ?";
+
     @Autowired
     protected CourseDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Course> rowMapper) {
         super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
@@ -51,16 +52,12 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<Course> implements Course
     }
 
     @Override
-    public List<Course> getUserCourses(UUID userId, String userType) {
-        String query;
-
-        if ("Student".equals(userType)) {
-            query = FIND_STUDENT_COURSES_QUERY;
-        } else if ("Teacher".equals(userType)) {
-            query = FIND_TEACHER_COURSES_QUERY;
-        } else {
-            throw new IllegalArgumentException("Unsupported user type: " + userType);
-        }
+    public List<Course> findCoursesByUserIdAndUserType(UUID userId, UserType userType) {
+        String query = switch (userType) {
+            case STUDENT -> FIND_STUDENT_COURSES_QUERY;
+            case TEACHER -> FIND_TEACHER_COURSES_QUERY;
+            case ADMIN -> throw new IllegalArgumentException("Unsupported user type: Admin cannot access courses");
+        };
 
         return jdbcTemplate.query(
             query,
@@ -68,4 +65,10 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<Course> implements Course
             rowMapper
         );
     }
+
+    @Override
+    public Optional<Course> findByName(String courseName) {
+        return findByParam(FIND_BY_NAME_QUERY, courseName);
+    }
+
 }

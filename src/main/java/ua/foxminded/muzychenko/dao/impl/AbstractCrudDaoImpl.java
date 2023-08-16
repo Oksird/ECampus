@@ -6,6 +6,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import ua.foxminded.muzychenko.dao.CrudDao;
+import ua.foxminded.muzychenko.dao.exception.EntityWasNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,18 +54,18 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, UUID> {
     }
 
     @Override
-    public List<E> findAllByPage(Long pageNumber, Long pageSize) {
+    public List<E> findAll(Long pageNumber, Long pageSize) {
         long offset = (pageNumber - 1) * pageSize;
         String query = findAllQuery + " LIMIT ? OFFSET ?";
         return jdbcTemplate.query(query, rowMapper, pageSize, offset);
     }
 
-    protected Optional<E> findByParams(String query,String param) {
+    protected Optional<E> findByParam(String query, String param) {
         try {
             E result = jdbcTemplate.queryForObject(query, new Object[]{param}, rowMapper);
             return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
+            throw new EntityWasNotFoundException();
         }
     }
 

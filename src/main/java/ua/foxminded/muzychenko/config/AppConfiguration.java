@@ -1,4 +1,4 @@
-package ua.foxminded.muzychenko;
+package ua.foxminded.muzychenko.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -11,10 +11,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.sql.DataSource;
+import java.util.Scanner;
 
 @Configuration
-@ComponentScan
 @PropertySource("classpath:db.properties")
+@ComponentScan("ua.foxminded.muzychenko")
 public class AppConfiguration {
 
     @Value("${dataSource.driver-class-name}")
@@ -47,5 +48,10 @@ public class AppConfiguration {
     @Bean
     public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public Scanner scanner() {
+        return new Scanner(System.in);
     }
 }

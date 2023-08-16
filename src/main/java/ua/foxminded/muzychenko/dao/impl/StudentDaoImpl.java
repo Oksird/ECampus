@@ -1,15 +1,10 @@
 package ua.foxminded.muzychenko.dao.impl;
 
 import lombok.NonNull;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.dao.StudentDao;
-import ua.foxminded.muzychenko.dao.mapper.CourseMapper;
-import ua.foxminded.muzychenko.dao.mapper.GroupMapper;
-import ua.foxminded.muzychenko.entity.Course;
-import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
 
 import java.util.List;
@@ -27,8 +22,12 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
     private static final String FIND_BY_COURSE_QUERY = """
         SELECT u.*
         FROM public.users AS u
-        JOIN public.courses AS c ON u.course_id = c.course_id
-        WHERE u.user_type = 'Student' AND c.course_name =?;
+        WHERE u.user_type = 'Student' AND u.user_id IN (
+            SELECT student_id
+            FROM public.students_courses sc
+            JOIN public.courses c ON sc.course_id = c.course_id
+            WHERE c.course_name = ?
+        );
         """;
     private static final String FIND_BY_GROUP_QUERY = """
         SELECT u.*
@@ -37,15 +36,6 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
         WHERE u.user_type = 'Student' AND g.group_name =?;
         """;
     private static final String ADD_TO_COURSE_QUERY = """
-        UPDATE public.users
-        SET course_id = (
-            SELECT course_id
-            FROM public.courses
-            WHERE course_name =?
-        )
-        WHERE user_id = ? AND user_type = 'Student'
-        """;
-    private static final String CREATE_RELATION_STUDENT_COURSE = """
         INSERT INTO public.students_courses (student_id, course_id)
         VALUES (?,
         (SELECT course_id
@@ -62,19 +52,12 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
         WHERE user_id =? AND user_type = 'Student';
         """;
     private static final String DELETE_FROM_COURSE_QUERY = """
-        WITH deleted_student AS (
-            DELETE FROM public.students_courses
-            WHERE student_id = ? AND course_id = (
-                SELECT course_id
-                FROM public.courses
-                WHERE course_name = ?
-            )
-            RETURNING course_id
-        )
-        UPDATE public.users AS u
-        SET course_id = NULL
-        FROM deleted_student
-        WHERE u.user_id = ? AND u.user_type = 'Student';
+        DELETE FROM public.students_courses
+        WHERE student_id = ? AND course_id IN (
+            SELECT course_id
+            FROM public.courses
+            WHERE course_name = ?
+        );
         """;
     private static final String DELETE_FROM_GROUP_QUERY = """
         WITH group_info AS (
@@ -90,7 +73,7 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
 
     private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email= ? AND user_type='Student'";
 
-    protected StudentDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Student> studentRowMapper, CourseMapper courseMapper, GroupMapper groupMapper) {
+    protected StudentDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Student> studentRowMapper) {
         super(jdbcTemplate, studentRowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
     }
 
@@ -116,11 +99,6 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
     public void addToCourse(UUID id, String courseName) {
         jdbcTemplate.update(
             ADD_TO_COURSE_QUERY,
-            courseName,
-            id
-        );
-        jdbcTemplate.update(
-            CREATE_RELATION_STUDENT_COURSE,
             id,
             courseName
         );
@@ -136,17 +114,16 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
     }
 
     @Override
-    public void deleteFromCourse(UUID id, String nameOfCourse) {
+    public void excludeFromCourse(UUID id, String nameOfCourse) {
         jdbcTemplate.update(
             DELETE_FROM_COURSE_QUERY,
             id,
-            nameOfCourse,
-            id
+            nameOfCourse
         );
     }
 
     @Override
-    public void deleteFromGroup(UUID id, String nameOfGroup) {
+    public void excludeFromGroup(UUID id, String nameOfGroup) {
         jdbcTemplate.update(
             DELETE_FROM_GROUP_QUERY,
             nameOfGroup,
@@ -178,6 +155,6 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
 
     @Override
     public Optional<Student> findByEmail(String email) {
-        return findByParams(FIND_BY_EMAIL_QUERY, email);
+        return findByParam(FIND_BY_EMAIL_QUERY, email);
     }
 }

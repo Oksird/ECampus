@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public interface TeacherDao extends UserDao<Teacher, UUID> {
     List<Teacher> findByCourse(String courseName);
+
     void addToCourse(UUID id, String courseName);
-    void deleteFromCourse(UUID id, String courseName);
+
+    void excludeFromCourse(UUID id, String courseName);
 }

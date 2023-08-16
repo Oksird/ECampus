@@ -5,6 +5,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.entity.Group;
 
@@ -33,6 +34,7 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao
         JOIN users u ON u.group_id = g.group_id
         WHERE u.user_id =?;
         """;
+    private static final String FIND_GROUP_BY_NAME_QUERY = "SELECT * FROM groups WHERE group_name =?";
 
     @Autowired
     protected GroupDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Group> rowMapper) {
@@ -54,8 +56,13 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao
             Group result = jdbcTemplate.queryForObject(FIND_STUDENT_GROUP_QUERY, new Object[]{id}, rowMapper);
             return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
+            throw new GroupNotFoundException();
         }
+    }
+
+    @Override
+    public Optional<Group> findByName(String groupName) {
+        return findByParam(FIND_GROUP_BY_NAME_QUERY, groupName);
     }
 
     @Override

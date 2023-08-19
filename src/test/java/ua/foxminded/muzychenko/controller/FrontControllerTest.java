@@ -18,7 +18,7 @@ import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
 import ua.foxminded.muzychenko.entity.Teacher;
 import ua.foxminded.muzychenko.entity.UserType;
-import ua.foxminded.muzychenko.service.validator.UserValidator;
+import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.view.ViewProvider;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ class FrontControllerTest {
     @MockBean
     private AdminDao adminDao;
     @MockBean
-    private UserValidator userValidator;
+    private RequestValidator requestValidator;
     @Autowired
     private FrontController frontController;
 

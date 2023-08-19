@@ -1,4 +1,4 @@
-package ua.foxminded.muzychenko.exception;
+package ua.foxminded.muzychenko.service.validator.exception;
 
 public class PasswordMismatchException extends RuntimeException{
     public PasswordMismatchException() {

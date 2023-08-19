@@ -1,4 +1,4 @@
-package ua.foxminded.muzychenko.exception;
+package ua.foxminded.muzychenko.service.validator.exception;
 
 public class InvalidFieldException extends RuntimeException{
     public InvalidFieldException(String field) {

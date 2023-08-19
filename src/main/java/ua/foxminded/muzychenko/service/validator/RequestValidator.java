@@ -1,15 +1,20 @@
 package ua.foxminded.muzychenko.service.validator;
 
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import ua.foxminded.muzychenko.config.Validator;
-import ua.foxminded.muzychenko.dto.UserRegistrationRequest;
-import ua.foxminded.muzychenko.exception.InvalidFieldException;
-import ua.foxminded.muzychenko.exception.PasswordMismatchException;
+import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
+import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
+import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
+import ua.foxminded.muzychenko.service.validator.exception.InvalidFieldException;
 
 import java.util.regex.Pattern;
 
 @Validator
-public class UserValidator {
+@AllArgsConstructor
+public class RequestValidator {
+
+    private final PasswordValidator passwordValidator;
 
     private static final Pattern EMAIL_PATTERN =
         Pattern.compile("^[a-zA-Z0-9_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}$");
@@ -21,7 +26,7 @@ public class UserValidator {
     public void validateUserRegistrationRequest(@NonNull UserRegistrationRequest userRegistrationRequest) {
 
         if (!userRegistrationRequest.getPassword().equals(userRegistrationRequest.getRepeatPassword())) {
-            throw new PasswordMismatchException();
+            throw new BadCredentialsException();
         }
         if (!isEmailValid(userRegistrationRequest.getEmail())) {
             throw new InvalidFieldException("Email");
@@ -34,6 +39,15 @@ public class UserValidator {
         }
         if (!isLastNameValid(userRegistrationRequest.getLastName())) {
             throw new InvalidFieldException("Last name");
+        }
+    }
+
+    public void validateUserLoginRequest(UserLoginRequest userLoginRequest, String encodedPassword, String realEmail) {
+        String password = userLoginRequest.getPassword();
+        String email = userLoginRequest.getEmail();
+        passwordValidator.validateEnteredPassword(encodedPassword, password);
+        if (!email.equals(realEmail)) {
+            throw new BadCredentialsException();
         }
     }
 

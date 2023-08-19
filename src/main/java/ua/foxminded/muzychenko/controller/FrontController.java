@@ -10,19 +10,19 @@ import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.dao.StudentDao;
 import ua.foxminded.muzychenko.dao.TeacherDao;
 import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.dto.AdminProfile;
-import ua.foxminded.muzychenko.dto.CourseInfo;
-import ua.foxminded.muzychenko.dto.GroupInfo;
-import ua.foxminded.muzychenko.dto.StudentProfile;
-import ua.foxminded.muzychenko.dto.TeacherProfile;
-import ua.foxminded.muzychenko.dto.UserRegistrationRequest;
+import ua.foxminded.muzychenko.dto.profile.AdminProfile;
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
+import ua.foxminded.muzychenko.dto.profile.GroupInfo;
+import ua.foxminded.muzychenko.dto.profile.StudentProfile;
+import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
+import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Admin;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
 import ua.foxminded.muzychenko.entity.Teacher;
 import ua.foxminded.muzychenko.entity.UserType;
-import ua.foxminded.muzychenko.service.validator.UserValidator;
+import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.view.ViewProvider;
 
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class FrontController {
     private final AdminDao adminDao;
     private final CourseDao courseDao;
     private final GroupDao groupDao;
-    private final UserValidator userValidator;
+    private final RequestValidator requestValidator;
 
     public void run() {
         boolean isRunning = true;
@@ -268,7 +268,7 @@ public class FrontController {
     }
 
     private void registerStudent(UserRegistrationRequest userRegistrationRequest) {
-        userValidator.validateUserRegistrationRequest(userRegistrationRequest);
+        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
         studentDao.create(
             new Student(
                 UUID.randomUUID(),
@@ -346,7 +346,7 @@ public class FrontController {
     }
 
     private void registerAdmin(UserRegistrationRequest userRegistrationRequest) {
-        userValidator.validateUserRegistrationRequest(userRegistrationRequest);
+        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
         adminDao.create(
             new Admin(
                 UUID.randomUUID(),
@@ -400,7 +400,7 @@ public class FrontController {
     }
 
     private void registerTeacher(UserRegistrationRequest userRegistrationRequest) {
-        userValidator.validateUserRegistrationRequest(userRegistrationRequest);
+        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
         teacherDao.create(
             new Teacher(
                 UUID.randomUUID(),

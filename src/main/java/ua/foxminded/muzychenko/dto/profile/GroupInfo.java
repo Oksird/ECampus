@@ -1,10 +1,12 @@
-package ua.foxminded.muzychenko.dto;
+package ua.foxminded.muzychenko.dto.profile;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @AllArgsConstructor
+@EqualsAndHashCode
 public class GroupInfo {
     private String groupName;
 }

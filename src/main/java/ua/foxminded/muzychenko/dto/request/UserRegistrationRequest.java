@@ -1,4 +1,4 @@
-package ua.foxminded.muzychenko.dto;
+package ua.foxminded.muzychenko.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -11,6 +11,7 @@ import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
 import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
 import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Admin;
+import ua.foxminded.muzychenko.service.mapper.AdminProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
@@ -37,6 +38,8 @@ class AdminServiceTest {
     private RequestValidator requestValidator;
     @MockBean
     private PasswordEncoder passwordEncoder;
+    @MockBean
+    private AdminProfileMapper adminProfileMapper;
     @Autowired
     private AdminService adminService;
 
@@ -50,9 +53,19 @@ class AdminServiceTest {
             "pass"
         );
 
+        AdminProfile adminProfile = new AdminProfile(
+          admin.getFirstName(),
+          admin.getLastName(),
+          admin.getEmail()
+        );
+
         when(adminDao.findById(any(UUID.class)))
             .thenReturn(Optional.of(admin));
-        assertEquals(admin, adminService.findAdminById(UUID.randomUUID()));
+
+        when(adminProfileMapper.mapAdminEntityToAdminProfile(any(Admin.class)))
+            .thenReturn(adminProfile);
+
+        assertEquals(adminProfile, adminService.findAdminById(UUID.randomUUID()));
     }
 
     @Test
@@ -74,10 +87,23 @@ class AdminServiceTest {
             )
         ));
 
+        Admin admin1 = adminList.get(0);
+        Admin admin2 = adminList.get(1);
+
+        AdminProfile adminProfile1 = new AdminProfile(admin1.getFirstName(), admin1.getLastName(), admin1.getEmail());
+        AdminProfile adminProfile2 = new AdminProfile(admin2.getFirstName(), admin2.getLastName(), admin2.getEmail());
+
+        List<AdminProfile> adminProfileList = new ArrayList<>(List.of(adminProfile1, adminProfile2));
+
+        when(adminProfileMapper.mapAdminEntityToAdminProfile(admin1))
+            .thenReturn(adminProfile1);
+        when(adminProfileMapper.mapAdminEntityToAdminProfile(admin2))
+            .thenReturn(adminProfile2);
+
         when(adminDao.findAll(any(Long.class), any(Long.class)))
             .thenReturn(adminList);
 
-        assertEquals(adminList, adminService.findAllAdmins(1L,1L));
+        assertEquals(adminProfileList, adminService.findAllAdmins(1L,1L));
     }
 
     @Test
@@ -119,6 +145,9 @@ class AdminServiceTest {
             admin.getLastName(),
             admin.getEmail()
         );
+
+        when(adminProfileMapper.mapAdminEntityToAdminProfile(admin))
+            .thenReturn(expectedAdminProfile);
 
         UserLoginRequest userLoginRequest = new UserLoginRequest(
             admin.getEmail(),
@@ -214,5 +243,17 @@ class AdminServiceTest {
 
         verify(adminDao).findByEmail(admin.getEmail());
         verify(adminDao).deleteById(admin.getUserId());
+    }
+
+    @Test
+    void findAdminByEmailShouldReturnCorrectAdminProfile() {
+        Admin admin = new Admin(UUID.randomUUID(), "fn", "ln", "em", "pas");
+        AdminProfile adminProfile = new AdminProfile(admin.getFirstName(), admin.getLastName(), admin.getEmail());
+        when(adminDao.findByEmail(any(String.class)))
+            .thenReturn(Optional.of(admin));
+        when(adminProfileMapper.mapAdminEntityToAdminProfile(admin))
+            .thenReturn(adminProfile);
+
+        assertEquals(adminProfile, adminService.findAdminByEmail("email"));
     }
 }

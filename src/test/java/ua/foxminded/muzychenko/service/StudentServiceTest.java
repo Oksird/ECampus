@@ -8,6 +8,7 @@ import ua.foxminded.muzychenko.TestConfig;
 import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.StudentDao;
+import ua.foxminded.muzychenko.dao.exception.UserNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
@@ -18,6 +19,7 @@ import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
 import ua.foxminded.muzychenko.entity.UserType;
+import ua.foxminded.muzychenko.service.mapper.StudentProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
@@ -49,6 +51,8 @@ class StudentServiceTest {
     private PasswordValidator passwordValidator;
     @MockBean
     private PasswordEncoder passwordEncoder;
+    @MockBean
+    private StudentProfileMapper studentProfileMapper;
     @Autowired
     private StudentService studentService;
 
@@ -63,9 +67,27 @@ class StudentServiceTest {
             null
         );
 
+        StudentProfile studentProfile = new StudentProfile(
+            student.getFirstName(),
+            student.getLastName(),
+            student.getEmail(),
+            new GroupInfo("gn"),
+            new ArrayList<>()
+            );
+
         when(studentDao.findById(any(UUID.class)))
             .thenReturn(Optional.of(student));
-        assertEquals(student, studentService.findStudentById(UUID.randomUUID()));
+
+        when(groupDao.findUsersGroup(any(UUID.class)))
+            .thenReturn(Optional.of(new Group(UUID.randomUUID(), "gn")));
+
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq (UserType.STUDENT)))
+            .thenReturn(new ArrayList<>());
+
+        when(studentProfileMapper.mapStudentInfoToProfile(any(Student.class), any(Group.class), eq (new ArrayList<>())))
+            .thenReturn(studentProfile);
+
+        assertEquals(studentProfile, studentService.findStudentById(UUID.randomUUID()));
     }
 
     @Test
@@ -89,10 +111,45 @@ class StudentServiceTest {
             )
         ));
 
+        Student student1 = studentList.get(0);
+        Student student2 = studentList.get(1);
+
+        StudentProfile studentProfile1 = new StudentProfile(
+            student1.getFirstName(),
+            student1.getLastName(),
+            student1.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+
+        StudentProfile studentProfile2 = new StudentProfile(
+            student2.getFirstName(),
+            student2.getLastName(),
+            student2.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+
+        List<Course> courseList = new ArrayList<>();
+
+        List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
+
         when(studentDao.findAll(any(Long.class), any(Long.class)))
             .thenReturn(studentList);
 
-        assertEquals(studentList, studentService.findAllStudents(1L,1L));
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
+            .thenReturn(courseList);
+
+        when(groupDao.findUsersGroup(any(UUID.class)))
+            .thenReturn(Optional.empty());
+
+        when(studentProfileMapper.mapStudentInfoToProfile(eq (student1), any(), eq(courseList)))
+            .thenReturn(studentProfile1);
+
+        when(studentProfileMapper.mapStudentInfoToProfile(eq (student2), any(), eq(courseList)))
+            .thenReturn(studentProfile2);
+
+        assertEquals(studentProfileList, studentService.findAllStudents(1L,1L));
     }
 
     @Test
@@ -116,10 +173,45 @@ class StudentServiceTest {
             )
         ));
 
+        Student student1 = studentList.get(0);
+        Student student2 = studentList.get(1);
+
+        StudentProfile studentProfile1 = new StudentProfile(
+            student1.getFirstName(),
+            student1.getLastName(),
+            student1.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+
+        StudentProfile studentProfile2 = new StudentProfile(
+            student2.getFirstName(),
+            student2.getLastName(),
+            student2.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+
+        List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
+
+        List<Course> courseList = new ArrayList<>();
+
         when(studentDao.findByCourse(any(String.class)))
             .thenReturn(studentList);
 
-        assertEquals(studentList, studentService.findStudentsByCourse("cn"));
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
+            .thenReturn(courseList);
+
+        when(groupDao.findUsersGroup(any(UUID.class)))
+            .thenReturn(Optional.empty());
+
+        when(studentProfileMapper.mapStudentInfoToProfile(eq (student1), any(), eq(courseList)))
+            .thenReturn(studentProfile1);
+
+        when(studentProfileMapper.mapStudentInfoToProfile(eq (student2), any(), eq(courseList)))
+            .thenReturn(studentProfile2);
+
+        assertEquals(studentProfileList, studentService.findStudentsByCourse("cn"));
     }
 
     @Test
@@ -143,10 +235,45 @@ class StudentServiceTest {
             )
         ));
 
+        Student student1 = studentList.get(0);
+        Student student2 = studentList.get(1);
+
+        StudentProfile studentProfile1 = new StudentProfile(
+            student1.getFirstName(),
+            student1.getLastName(),
+            student1.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+
+        StudentProfile studentProfile2 = new StudentProfile(
+            student2.getFirstName(),
+            student2.getLastName(),
+            student2.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+
+        List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
+
+        List<Course> courseList = new ArrayList<>();
+
         when(studentDao.findByGroup(any(String.class)))
             .thenReturn(studentList);
 
-        assertEquals(studentList, studentService.findStudentsByGroup("gn"));
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
+            .thenReturn(courseList);
+
+        when(groupDao.findUsersGroup(any(UUID.class)))
+            .thenReturn(Optional.empty());
+
+        when(studentProfileMapper.mapStudentInfoToProfile(eq (student1), any(), eq(courseList)))
+            .thenReturn(studentProfile1);
+
+        when(studentProfileMapper.mapStudentInfoToProfile(eq (student2), any(), eq(courseList)))
+            .thenReturn(studentProfile2);
+
+        assertEquals(studentProfileList, studentService.findStudentsByGroup("gn"));
     }
 
     @Test
@@ -388,5 +515,60 @@ class StudentServiceTest {
 
         verify(studentDao).findByEmail(student.getEmail());
         verify(studentDao).addToGroup(student.getUserId(), "gN");
+    }
+
+    @Test
+    void findStudentByEmailShouldReturnStudent() {
+        Student student = new Student(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            UUID.randomUUID()
+        );
+
+        Group group = new Group(UUID.randomUUID(), "GN");
+        Course course1 = new Course(UUID.randomUUID(), "cn1", "cd1");
+        Course course2 = new Course(UUID.randomUUID(), "cn2", "cd2");
+
+        CourseInfo courseInfo1 = new CourseInfo(
+            course1.getCourseName(),
+            course1.getCourseDescription()
+        );
+        CourseInfo courseInfo2 = new CourseInfo(
+            course2.getCourseName(),
+            course2.getCourseDescription()
+        );
+
+        when(groupDao.findUsersGroup(any(UUID.class)))
+            .thenReturn(Optional.of(group));
+
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
+            .thenReturn(new ArrayList<>(List.of(course1, course2)));
+
+        StudentProfile studentProfile = new StudentProfile(
+            student.getFirstName(),
+            student.getLastName(),
+            student.getEmail(),
+            new GroupInfo(group.getGroupName()),
+            new ArrayList<>(List.of(courseInfo1, courseInfo2))
+        );
+
+        when(studentDao.findByEmail(any(String.class)))
+            .thenReturn(Optional.of(student));
+
+        when(studentProfileMapper.mapStudentInfoToProfile(student, group, new ArrayList<>(List.of(course1, course2))))
+            .thenReturn(studentProfile);
+
+        assertEquals(studentProfile, studentService.findStudentByEmail("email"));
+    }
+
+    @Test
+    void findStudentByEmailShouldThrowExceptionWhenEmailIsWrong() {
+        when(studentDao.findByEmail(any(String.class)))
+            .thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> studentService.findStudentByEmail("email"));
     }
 }

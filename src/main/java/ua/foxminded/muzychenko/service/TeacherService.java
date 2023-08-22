@@ -14,6 +14,7 @@ import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
 import ua.foxminded.muzychenko.entity.UserType;
+import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
@@ -31,27 +32,33 @@ public class TeacherService {
     private final RequestValidator requestValidator;
     private final PasswordEncoder passwordEncoder;
     private final PasswordValidator passwordValidator;
+    private final TeacherProfileMapper teacherProfileMapper;
 
-    public Teacher findTeacherById(UUID id) {
-        return teacherDao.findById(id).orElseThrow(UserNotFoundException::new);
+    public TeacherProfile findTeacherById(UUID id) {
+        Teacher teacher =teacherDao.findById(id).orElseThrow(UserNotFoundException::new);
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(id, UserType.TEACHER);
+        return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
     }
 
-    public List<Teacher> findAllTeachers(Long pageNumber, Long pageSize) {
-        return teacherDao.findAll(pageNumber, pageSize);
+    public List<TeacherProfile> findAllTeachers(Long pageNumber, Long pageSize) {
+        return getTeacherProfiles(teacherDao.findAll(pageNumber, pageSize));
     }
 
-    public List<Teacher> findTeachersByCourse(String nameOfCourse) {
-        return teacherDao.findByCourse(nameOfCourse);
+    public List<TeacherProfile> findTeachersByCourse(String nameOfCourse) {
+        return getTeacherProfiles(teacherDao.findByCourse(nameOfCourse));
     }
 
+    @Transactional
     public void deleteTeacher(String email) {
         teacherDao.deleteById(getTeacherIdByEmail(email));
     }
 
+    @Transactional
     public void excludeTeacherFromCourse(String email, String nameOfCourse) {
         teacherDao.excludeFromCourse(getTeacherIdByEmail(email), nameOfCourse);
     }
 
+    @Transactional
     public void addTeacherToCourse(String email, String nameOfCourse) {
         teacherDao.addToCourse(getTeacherIdByEmail(email), nameOfCourse);
     }
@@ -103,7 +110,25 @@ public class TeacherService {
         );
     }
 
+    public TeacherProfile findTeacherByEmail(String email) {
+        Teacher teacher = teacherDao.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId(), UserType.TEACHER);
+        return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
+    }
+
     private UUID getTeacherIdByEmail(String email) {
         return teacherDao.findByEmail(email).orElseThrow(UserNotFoundException::new).getUserId();
+    }
+
+    private List<TeacherProfile> getTeacherProfiles(List<Teacher> students) {
+        List<TeacherProfile> teacherProfiles = new ArrayList<>();
+
+        for (Teacher teacher : students) {
+            teacherProfiles.add(teacherProfileMapper.mapTeacherEntityToProfile(
+                teacher,
+                courseDao.findCoursesByUserIdAndUserType(teacher.getUserId(), UserType.TEACHER)
+            ));
+        }
+        return teacherProfiles;
     }
 }

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.controller.exception.InvalidInputException;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;

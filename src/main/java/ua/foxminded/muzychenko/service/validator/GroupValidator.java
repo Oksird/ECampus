@@ -2,7 +2,7 @@ package ua.foxminded.muzychenko.service.validator;
 
 import ua.foxminded.muzychenko.config.Validator;
 import ua.foxminded.muzychenko.controller.exception.InvalidInputException;
-import ua.foxminded.muzychenko.dto.GroupInfo;
+import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 
 import java.util.regex.Pattern;
 

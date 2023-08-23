@@ -3,21 +3,24 @@ package ua.foxminded.muzychenko.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.foxminded.muzychenko.controller.exception.InvalidInputException;
 import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.dto.GroupInfo;
+import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
+import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.entity.Group;
+import ua.foxminded.muzychenko.service.mapper.GroupInfoMapper;
 import ua.foxminded.muzychenko.service.validator.GroupValidator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class GroupService {
-    private static final String INVALID_GROUP_NAME_MESSAGE = "Invalid group name";
-    private GroupDao groupDao;
-    private GroupValidator groupValidator;
+
+    private final GroupDao groupDao;
+    private final GroupValidator groupValidator;
+    private final GroupInfoMapper groupInfoMapper;
 
     @Transactional
     public void createGroup(GroupInfo groupInfo) {
@@ -28,17 +31,14 @@ public class GroupService {
     public GroupInfo findGroupByName(String groupName) {
         Group group = groupDao
             .findByName(groupName)
-            .orElseThrow(
-                () -> new InvalidInputException(INVALID_GROUP_NAME_MESSAGE)
-            );
-        return new GroupInfo(group.getGroupName());
+            .orElseThrow(GroupNotFoundException::new);
+        return groupInfoMapper.mapGroupEntityToGroupInfo(group);
     }
 
-    public Group findGroupById(UUID groupId) {
-        return groupDao.findById(groupId)
-            .orElseThrow(
-                () -> new InvalidInputException("Invalid group id")
-            );
+    public GroupInfo findGroupById(UUID groupId) {
+        Group group = groupDao.findById(groupId)
+            .orElseThrow(GroupNotFoundException::new);
+        return groupInfoMapper.mapGroupEntityToGroupInfo(group);
     }
 
     @Transactional
@@ -46,21 +46,23 @@ public class GroupService {
         groupDao.deleteById(
             groupDao
             .findByName(groupName)
-            .orElseThrow(() -> new InvalidInputException(INVALID_GROUP_NAME_MESSAGE))
+            .orElseThrow(GroupNotFoundException::new)
             .getGroupId()
         );
     }
 
-    public List<Group> findAllGroups(Long pageNumber, Long pageSize) {
-        return groupDao.findAll(pageNumber, pageSize);
+    public List<GroupInfo> findAllGroups(Long pageNumber, Long pageSize) {
+        List<Group> groups = groupDao.findAll(pageNumber, pageSize);
+        List<GroupInfo> groupInfoList = new ArrayList<>(groups.size());
+        groups.forEach(group -> groupInfoList.add(groupInfoMapper.mapGroupEntityToGroupInfo(group)));
+        return groupInfoList;
     }
 
     @Transactional
     public void changeGroupName(String groupName, String newGroupName) {
         Group oldGroup = groupDao
             .findByName(groupName)
-            .orElseThrow(() -> new InvalidInputException(INVALID_GROUP_NAME_MESSAGE)
-            );
+            .orElseThrow(GroupNotFoundException::new);
         Group newGroup = new Group(oldGroup.getGroupId(), newGroupName);
 
         groupValidator.validateGroupName(new GroupInfo(newGroup.getGroupName()));
@@ -68,7 +70,10 @@ public class GroupService {
         groupDao.update(oldGroup.getGroupId(), newGroup);
     }
 
-    public List<Group> findGroupWithLessOrEqualStudents(Integer countOfStudents) {
-        return groupDao.findGroupWithLessOrEqualStudents(countOfStudents);
+    public List<GroupInfo> findGroupWithLessOrEqualStudents(Integer countOfStudents) {
+        List<Group> groups = groupDao.findGroupWithLessOrEqualStudents(countOfStudents);
+        List<GroupInfo> groupInfoList = new ArrayList<>(groups.size());
+        groups.forEach(group -> groupInfoList.add(groupInfoMapper.mapGroupEntityToGroupInfo(group)));
+        return groupInfoList;
     }
 }

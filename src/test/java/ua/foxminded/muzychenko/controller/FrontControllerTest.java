@@ -7,28 +7,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.dao.AdminDao;
-import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.dao.StudentDao;
-import ua.foxminded.muzychenko.dao.TeacherDao;
+import ua.foxminded.muzychenko.dto.profile.AdminProfile;
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
+import ua.foxminded.muzychenko.dto.profile.GroupInfo;
+import ua.foxminded.muzychenko.dto.profile.StudentProfile;
+import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
+import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Admin;
-import ua.foxminded.muzychenko.entity.Course;
-import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
-import ua.foxminded.muzychenko.entity.Teacher;
-import ua.foxminded.muzychenko.entity.UserType;
+import ua.foxminded.muzychenko.service.AdminService;
+import ua.foxminded.muzychenko.service.CourseService;
+import ua.foxminded.muzychenko.service.GroupService;
+import ua.foxminded.muzychenko.service.StudentService;
+import ua.foxminded.muzychenko.service.TeacherService;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.view.ViewProvider;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 
 @SpringJUnitConfig(TestConfig.class)
 class FrontControllerTest {
@@ -36,15 +41,15 @@ class FrontControllerTest {
     @MockBean
     private ViewProvider viewProvider;
     @MockBean
-    private StudentDao studentDao;
+    private StudentService studentService;
     @MockBean
-    private CourseDao courseDao;
+    private CourseService courseService;
     @MockBean
-    private GroupDao groupDao;
+    private GroupService groupService;
     @MockBean
-    private TeacherDao teacherDao;
+    private TeacherService teacherService;
     @MockBean
-    private AdminDao adminDao;
+    private AdminService adminService;
     @MockBean
     private RequestValidator requestValidator;
     @Autowired
@@ -62,24 +67,30 @@ class FrontControllerTest {
             .thenReturn("email@test.com")
             .thenReturn("2837u47J!")
             .thenReturn("2837u47J!");
-        doNothing().when(adminDao).create(any(Admin.class));
+        doNothing().when(adminService).register(any(UserRegistrationRequest.class));
         frontController.run();
-        verify(adminDao).create(any(Admin.class));
+        verify(adminService).register(any(UserRegistrationRequest.class));
     }
 
     @Test
     void runShouldFindAdminByEmail() {
-        Admin expectedAdmin = new Admin(UUID.randomUUID(), "fn", "ln", "email", "pass");
         when(viewProvider.readInt())
             .thenReturn(1)
             .thenReturn(2)
             .thenReturn(0);
         when(viewProvider.readString())
             .thenReturn("email");
-        when(adminDao.findByEmail("email")).thenReturn(Optional.of(expectedAdmin));
+
+        AdminProfile adminProfile = new AdminProfile(
+            "fn",
+            "ln",
+            "em"
+        );
+
+        when(adminService.findAdminByEmail("email")).thenReturn(adminProfile);
         frontController.run();
-        verify(adminDao).findByEmail(any(String.class));
-        assertEquals(expectedAdmin, adminDao.findByEmail("email").orElse(null));
+        verify(adminService).findAdminByEmail(any(String.class));
+        assertEquals(adminProfile, adminService.findAdminByEmail("email"));
     }
 
     @Test
@@ -100,14 +111,29 @@ class FrontControllerTest {
                     "e",
                     "p"
                 )));
+
+        List<AdminProfile> adminProfileList = new ArrayList<>(expectedAdmins.size());
+
+        expectedAdmins.forEach(
+            admin -> adminProfileList.add(
+                new AdminProfile(
+                    admin.getFirstName(),
+                    admin.getLastName(),
+                    admin.getEmail()
+                )
+            )
+        );
+
         when(viewProvider.readInt())
             .thenReturn(1)
             .thenReturn(3)
+            .thenReturn(1)
+            .thenReturn(1)
             .thenReturn(0);
-        when(adminDao.findAll()).thenReturn(expectedAdmins);
+        when(adminService.findAllAdmins(1L, 1L)).thenReturn(adminProfileList);
         frontController.run();
-        verify(adminDao).findAll();
-        assertEquals(expectedAdmins, adminDao.findAll());
+        verify(adminService).findAllAdmins(any(), any());
+        assertEquals(adminProfileList, adminService.findAllAdmins(1L, 1L));
     }
 
     @Test
@@ -122,25 +148,34 @@ class FrontControllerTest {
             .thenReturn("email@mail.com")
             .thenReturn("8273W99w!")
             .thenReturn("8273W99w!");
-        doNothing().when(studentDao).create(any(Student.class));
+        doNothing().when(studentService).register(any(UserRegistrationRequest.class));
         frontController.run();
-        verify(studentDao).create(any(Student.class));
+        verify(studentService).register(any(UserRegistrationRequest.class));
     }
 
     @Test
     void runShouldFindStudentByEmail() {
-        Student expectedStudent = new Student(
-            UUID.randomUUID(), "fn", "ln", "email", "pass", null);
         when(viewProvider.readInt())
             .thenReturn(2)
             .thenReturn(2)
             .thenReturn(0);
         when(viewProvider.readString())
             .thenReturn("email");
-        when(studentDao.findByEmail("email")).thenReturn(Optional.of(expectedStudent));
+
+        StudentProfile studentProfile = new StudentProfile(
+            "fn",
+            "ln",
+            "em",
+            null,
+            new ArrayList<>()
+        );
+
+        when(studentService.findStudentByEmail(any(String.class)))
+            .thenReturn(studentProfile);
+
         frontController.run();
-        verify(studentDao).findByEmail(any(String.class));
-        assertEquals(expectedStudent, studentDao.findByEmail("email").orElse(null));
+
+        assertEquals(studentProfile, studentService.findStudentByEmail("email"));
     }
 
     @Test
@@ -163,14 +198,37 @@ class FrontControllerTest {
                     "p",
                     null
                 )));
+
+        Student student1 = expectedStudents.get(0);
+        Student student2 = expectedStudents.get(1);
+
+        StudentProfile studentProfile1 = new StudentProfile(
+            student1.getFirstName(),
+            student1.getLastName(),
+            student1.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+        StudentProfile studentProfile2 = new StudentProfile(
+            student2.getFirstName(),
+            student2.getLastName(),
+            student2.getEmail(),
+            null,
+            new ArrayList<>()
+        );
+
+        List<StudentProfile> studentProfileList = List.of(studentProfile1, studentProfile2);
+
         when(viewProvider.readInt())
             .thenReturn(2)
             .thenReturn(3)
+            .thenReturn(1)
+            .thenReturn(1)
             .thenReturn(0);
-        when(studentDao.findAll()).thenReturn(expectedStudents);
+        when(studentService.findAllStudents(any(), any())).thenReturn(studentProfileList);
         frontController.run();
-        verify(studentDao).findAll();
-        assertEquals(expectedStudents, studentDao.findAll());
+        verify(studentService).findAllStudents(1L, 1L);
+        assertEquals(studentProfileList, studentService.findAllStudents(1L, 1L));
     }
 
     @Test
@@ -183,22 +241,11 @@ class FrontControllerTest {
             .thenReturn("email")
             .thenReturn("courseName");
 
-        when(studentDao.findByEmail(any(String.class)))
-            .thenReturn(Optional.of(
-                new Student(
-                    UUID.randomUUID(),
-                    "f",
-                    "l",
-                    "email",
-                    "password",
-                    null))
-            );
-        doNothing().when(studentDao).addToCourse(any(UUID.class), eq("courseName"));
+        doNothing().when(studentService).addStudentToCourse(any(String.class), eq("courseName"));
 
         frontController.run();
 
-        verify(studentDao).findByEmail(any(String.class));
-        verify(studentDao).addToCourse(any(UUID.class), eq("courseName"));
+        verify(studentService).addStudentToCourse(any(String.class), eq("courseName"));
     }
 
     @Test
@@ -211,23 +258,11 @@ class FrontControllerTest {
             .thenReturn("email")
             .thenReturn("groupName");
 
-        when(studentDao.findByEmail(any(String.class)))
-            .thenReturn(Optional.of(
-                new Student(
-                    UUID.randomUUID(),
-                    "f",
-                    "l",
-                    "email",
-                    "password",
-                    null)
-                )
-            );
-        doNothing().when(studentDao).addToGroup(any(UUID.class), eq("groupName"));
+        doNothing().when(studentService).addStudentToGroup(any(String.class), eq("groupName"));
 
         frontController.run();
 
-        verify(studentDao).findByEmail(any(String.class));
-        verify(studentDao).addToGroup(any(UUID.class), eq("groupName"));
+        verify(studentService).addStudentToGroup(any(String.class), eq("groupName"));
     }
 
     @Test
@@ -242,24 +277,31 @@ class FrontControllerTest {
             .thenReturn("mailtest@test.com")
             .thenReturn("2837u47J!")
             .thenReturn("2837u47J!");
-        doNothing().when(teacherDao).create(any(Teacher.class));
+        doNothing().when(teacherService).register(any(UserRegistrationRequest.class));
         frontController.run();
-        verify(teacherDao).create(any(Teacher.class));
+        verify(teacherService).register(any(UserRegistrationRequest.class));
     }
 
     @Test
     void runShouldFindTeacherByEmailWhenEmailIsCorrect() {
-        Teacher expectedTeacher = new Teacher(UUID.randomUUID(), "fn", "ln", "email", "pass");
         when(viewProvider.readInt())
             .thenReturn(3)
             .thenReturn(2)
             .thenReturn(0);
         when(viewProvider.readString())
             .thenReturn("email");
-        when(teacherDao.findByEmail("email")).thenReturn(Optional.of(expectedTeacher));
+
+        TeacherProfile teacherProfile = new TeacherProfile(
+            "fn",
+            "ln",
+            "em",
+            new ArrayList<>()
+        );
+
+        when(teacherService.findTeacherByEmail(any(String.class))).thenReturn(teacherProfile);
         frontController.run();
-        verify(teacherDao).findByEmail(any(String.class));
-        assertEquals(expectedTeacher, teacherDao.findByEmail("email").orElse(null));
+        verify(teacherService).findTeacherByEmail(any(String.class));
+        assertEquals(teacherProfile, teacherService.findTeacherByEmail("email"));
     }
 
     @Test
@@ -272,21 +314,11 @@ class FrontControllerTest {
             .thenReturn("email")
             .thenReturn("courseName");
 
-        when(teacherDao.findByEmail(any(String.class)))
-            .thenReturn(Optional.of(
-                new Teacher(
-                    UUID.randomUUID(),
-                    "f",
-                    "l",
-                    "email",
-                    "password"))
-            );
-        doNothing().when(teacherDao).addToCourse(any(UUID.class), eq("courseName"));
+        doNothing().when(teacherService).addTeacherToCourse(any(String.class), eq("courseName"));
 
         frontController.run();
 
-        verify(teacherDao).findByEmail(any(String.class));
-        verify(teacherDao).addToCourse(any(UUID.class), eq("courseName"));
+        verify(teacherService).addTeacherToCourse(any(String.class), eq("courseName"));
     }
 
     @Test
@@ -298,20 +330,10 @@ class FrontControllerTest {
         when(viewProvider.readString())
             .thenReturn("email")
             .thenReturn("courseName");
-        when(teacherDao.findByEmail(any(String.class)))
-            .thenReturn(Optional.of(
-                new Teacher(
-                    UUID.randomUUID(),
-                    "fn",
-                    "ln",
-                    "email",
-                    "pass")
-                )
-            );
-        doNothing().when(teacherDao).excludeFromCourse(any(UUID.class), any(String.class));
+
+        doNothing().when(teacherService).excludeTeacherFromCourse(any(String.class), any(String.class));
         frontController.run();
-        verify(teacherDao).findByEmail(any(String.class));
-        verify(teacherDao).excludeFromCourse(any(UUID.class), any(String.class));
+        verify(teacherService).excludeTeacherFromCourse(any(String.class), any(String.class));
     }
 
     @Test
@@ -323,9 +345,9 @@ class FrontControllerTest {
         when(viewProvider.readString())
             .thenReturn("cName")
             .thenReturn("cDesc");
-        doNothing().when(courseDao).create(any(Course.class));
+        doNothing().when(courseService).createCourse(any(CourseInfo.class));
         frontController.run();
-        verify(courseDao).create(any(Course.class));
+        verify(courseService).createCourse(any(CourseInfo.class));
     }
 
     @Test
@@ -336,18 +358,12 @@ class FrontControllerTest {
             .thenReturn(0);
         when(viewProvider.readString())
             .thenReturn("cName");
-        when(courseDao.findByName(any(String.class)))
-            .thenReturn(Optional.of(
-                new Course(
-                    UUID.randomUUID(),
-                    "cName",
-                    "cDesc")
-                )
-            );
-        doNothing().when(courseDao).deleteById(any(UUID.class));
+
+        doNothing().when(courseService).deleteCourse(any(String.class));
+
         frontController.run();
-        verify(courseDao).findByName(any(String.class));
-        verify(courseDao).deleteById(any(UUID.class));
+
+        verify(courseService).deleteCourse(any(String.class));
     }
 
     @Test
@@ -358,9 +374,12 @@ class FrontControllerTest {
             .thenReturn(0);
         when(viewProvider.readString())
             .thenReturn("gName");
-        doNothing().when(groupDao).create(any(Group.class));
+
+        doNothing().when(groupService).createGroup(any(GroupInfo.class));
+
         frontController.run();
-        verify(groupDao).create(any(Group.class));
+
+        verify(groupService).createGroup(any(GroupInfo.class));
     }
 
     @Test
@@ -371,17 +390,12 @@ class FrontControllerTest {
             .thenReturn(0);
         when(viewProvider.readString())
             .thenReturn("gName");
-        when(groupDao.findByName(any(String.class)))
-            .thenReturn(Optional.of(
-                new Group(
-                    UUID.randomUUID(),
-                    "gName"
-                )
-            ));
-        doNothing().when(groupDao).deleteById(any(UUID.class));
+
+        doNothing().when(groupService).deleteGroup(any(String.class));
+
         frontController.run();
-        verify(groupDao).findByName(any(String.class));
-        verify(groupDao).deleteById(any(UUID.class));
+
+        verify(groupService).deleteGroup(any(String.class));
     }
 
     @Test
@@ -412,93 +426,5 @@ class FrontControllerTest {
         frontController.run();
 
         verify(viewProvider).printMessage("Invalid choice");
-    }
-
-    @Test
-    void runShouldFindTeacherByEmailAndCreateTeacherProfile() {
-        Teacher teacher = new Teacher(
-            UUID.randomUUID(),
-            "fn",
-            "ln",
-            "email",
-            "pass"
-        );
-        Course course1 = new Course(UUID.randomUUID(), "cname1", "cdeesc");
-        Course course2 = new Course(UUID.randomUUID(), "cname2", "cdewsc");
-
-        when(viewProvider.readInt())
-            .thenReturn(3)
-            .thenReturn(2)
-            .thenReturn(0);
-        when(viewProvider.readString())
-            .thenReturn("email");
-
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.TEACHER)))
-            .thenReturn(new ArrayList<>(List.of(course1, course2)));
-        when(teacherDao.findByEmail(any(String.class))).thenReturn(Optional.of(teacher));
-
-        frontController.run();
-
-        verify(courseDao).findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.TEACHER));
-        verify(teacherDao).findByEmail(("email"));
-    }
-
-    @Test
-    void runShouldCreateStudentProfileWithPresentGroupInfoAndCourseInfo() {
-        Group group = new Group(UUID.randomUUID(), "gName");
-        Course course = new Course(UUID.randomUUID(), "cName", "cDesc");
-        Student student = new Student(
-            UUID.randomUUID(),
-            "fName",
-            "lName",
-            "email",
-            "pass",
-            UUID.randomUUID()
-        );
-        when(viewProvider.readInt())
-            .thenReturn(2)
-            .thenReturn(3)
-            .thenReturn(0);
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
-            .thenReturn(new ArrayList<>(List.of(course)));
-        when(groupDao.findUsersGroup(any(UUID.class))).thenReturn(Optional.of(group));
-        when(studentDao.findAll()).thenReturn(new ArrayList<>(List.of(student)));
-        frontController.run();
-        verify(groupDao).findUsersGroup(any(UUID.class));
-        verify(studentDao).findAll();
-        verify(courseDao).findCoursesByUserIdAndUserType(any(UUID.class), eq (UserType.STUDENT));
-    }
-
-    @Test
-    void runShouldFindStudentByEmailAndCreateStudentProfileWithPresentGroupAndCourseInfo() {
-        Group group = new Group(UUID.randomUUID(), "gName");
-        Course course = new Course(UUID.randomUUID(), "cName", "cDesc");
-
-        when(viewProvider.readInt())
-            .thenReturn(2)
-            .thenReturn(2)
-            .thenReturn(0);
-        when(viewProvider.readString())
-            .thenReturn("email");
-
-        when(groupDao.findUsersGroup(any(UUID.class))).thenReturn(Optional.of(group));
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq (UserType.STUDENT)))
-            .thenReturn(new ArrayList<>(List.of(course)));
-        when(studentDao.findByEmail(any(String.class))).thenReturn(
-            Optional.of(
-                new Student(
-                    UUID.randomUUID(),
-                    "fName",
-                    "lName",
-                    "email",
-                    "pass",
-                    group.getGroupId()
-                )
-            )
-        );
-        frontController.run();
-        verify(groupDao).findUsersGroup(any(UUID.class));
-        verify(courseDao).findCoursesByUserIdAndUserType(any(UUID.class), eq (UserType.STUDENT));
-        verify(studentDao).findByEmail(any(String.class));
     }
 }

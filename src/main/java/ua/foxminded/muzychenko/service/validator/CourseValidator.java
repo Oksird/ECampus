@@ -1,8 +1,9 @@
 package ua.foxminded.muzychenko.service.validator;
 
 import ua.foxminded.muzychenko.config.Validator;
-import ua.foxminded.muzychenko.dto.CourseInfo;
-import ua.foxminded.muzychenko.exception.InvalidFieldException;
+
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
+import ua.foxminded.muzychenko.service.validator.exception.InvalidFieldException;
 
 import java.util.regex.Pattern;
 

@@ -3,6 +3,7 @@ package ua.foxminded.muzychenko.view;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import ua.foxminded.muzychenko.controller.exception.InvalidInputException;
+import ua.foxminded.muzychenko.view.util.ConsoleWriter;
 
 import java.util.Scanner;
 
@@ -10,6 +11,7 @@ import java.util.Scanner;
 @AllArgsConstructor
 public class ViewProvider {
     private final Scanner scanner;
+    private final ConsoleWriter consoleWriter;
 
     public String readString() {
         try {
@@ -28,6 +30,6 @@ public class ViewProvider {
     }
 
     public void printMessage(String message) {
-        System.out.println(message);
+        consoleWriter.writeInConsole(message);
     }
 }

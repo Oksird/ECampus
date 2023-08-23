@@ -2,32 +2,21 @@ package ua.foxminded.muzychenko.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ua.foxminded.muzychenko.dao.exception.CourseNotFoundException;
-import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
-import ua.foxminded.muzychenko.dao.exception.UserNotFoundException;
-import ua.foxminded.muzychenko.dao.AdminDao;
-import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dao.StudentDao;
-import ua.foxminded.muzychenko.dao.TeacherDao;
-import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
-import ua.foxminded.muzychenko.entity.Admin;
-import ua.foxminded.muzychenko.entity.Course;
-import ua.foxminded.muzychenko.entity.Group;
-import ua.foxminded.muzychenko.entity.Student;
-import ua.foxminded.muzychenko.entity.Teacher;
-import ua.foxminded.muzychenko.entity.UserType;
+import ua.foxminded.muzychenko.service.AdminService;
+import ua.foxminded.muzychenko.service.CourseService;
+import ua.foxminded.muzychenko.service.GroupService;
+import ua.foxminded.muzychenko.service.StudentService;
+import ua.foxminded.muzychenko.service.TeacherService;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.view.ViewProvider;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -36,11 +25,11 @@ public class FrontController {
     private static final String ENTER_COURSE_NAME_MESSAGE = "Enter course name";
     private static final String ENTER_TEACHERS_EMAIL_MESSAGE = "Enter teacher's email";
     private final ViewProvider viewProvider;
-    private final StudentDao studentDao;
-    private final TeacherDao teacherDao;
-    private final AdminDao adminDao;
-    private final CourseDao courseDao;
-    private final GroupDao groupDao;
+    private final StudentService studentService;
+    private final TeacherService teacherService;
+    private final AdminService adminService;
+    private final CourseService courseService;
+    private final GroupService groupService;
     private final RequestValidator requestValidator;
 
     public void run() {
@@ -93,7 +82,11 @@ public class FrontController {
                     viewProvider.printMessage(adminProfile.toString());
                 }
                 case 3 -> {
-                    List<AdminProfile> adminProfiles = findAllAdmins();
+                    viewProvider.printMessage("Enter page number");
+                    int pageNumber = viewProvider.readInt();
+                    viewProvider.printMessage("Enter page size");
+                    int pageSize = viewProvider.readInt();
+                    List<AdminProfile> adminProfiles = findAllAdmins((long) pageNumber, (long) pageSize);
                     adminProfiles.forEach(studentInfo -> System.out.println(studentInfo.toString()));
                 }
                 case 0 -> {
@@ -128,7 +121,11 @@ public class FrontController {
                     viewProvider.printMessage(studentProfile.toString());
                 }
                 case 3 -> {
-                    List<StudentProfile> studentProfiles = findAllStudents();
+                    viewProvider.printMessage("Enter page number");
+                    int pageNumber = viewProvider.readInt();
+                    viewProvider.printMessage("Enter page size");
+                    int pageSize = viewProvider.readInt();
+                    List<StudentProfile> studentProfiles = findAllStudents((long) pageNumber, (long) pageSize);
                     studentProfiles.forEach(studentInfo -> System.out.println(studentInfo.toString()));
                 }
                 case 4 -> {
@@ -269,93 +266,28 @@ public class FrontController {
 
     private void registerStudent(UserRegistrationRequest userRegistrationRequest) {
         requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
-        studentDao.create(
-            new Student(
-                UUID.randomUUID(),
-                userRegistrationRequest.getFirstName(),
-                userRegistrationRequest.getLastName(),
-                userRegistrationRequest.getEmail(),
-                userRegistrationRequest.getPassword(),
-                null
-            )
-        );
+        studentService.register(userRegistrationRequest);
     }
 
     private StudentProfile findStudentByEmail(String email) {
-        Student student = studentDao.findByEmail(email)
-            .orElseThrow(UserNotFoundException::new);
-
-        GroupInfo groupInfo = groupDao.findUsersGroup(student.getUserId())
-            .map(group -> new GroupInfo(group.getGroupName()))
-            .orElse(null);
-
-        List<Course> studentCourses = courseDao.findCoursesByUserIdAndUserType(student.getUserId(), UserType.STUDENT);
-        List<CourseInfo> courseInfoList = studentCourses.stream()
-            .map(course -> new CourseInfo(course.getCourseName(), course.getCourseDescription()))
-            .toList();
-
-        return new StudentProfile(
-            student.getFirstName(),
-            student.getLastName(),
-            student.getEmail(),
-            groupInfo,
-            courseInfoList
-        );
+        return studentService.findStudentByEmail(email);
     }
 
-    private List<StudentProfile> findAllStudents() {
-        List<Student> students = studentDao.findAll();
-        List<StudentProfile> studentProfiles = new ArrayList<>();
-
-        for (Student student : students) {
-            UUID userId = student.getUserId();
-
-            GroupInfo groupInfo = groupDao.findUsersGroup(userId)
-                .map(group -> new GroupInfo(group.getGroupName()))
-                .orElse(null);
-
-            List<Course> studentCourses = courseDao.findCoursesByUserIdAndUserType(userId, UserType.STUDENT);
-            List<CourseInfo> courseInfoList = studentCourses.stream()
-                .map(course -> new CourseInfo(course.getCourseName(), course.getCourseDescription()))
-                .toList();
-
-            studentProfiles.add(new StudentProfile(
-                student.getFirstName(),
-                student.getLastName(),
-                student.getEmail(),
-                groupInfo,
-                courseInfoList
-            ));
-        }
-
-        return studentProfiles;
+    private List<StudentProfile> findAllStudents(Long pageNumber, Long pageSize) {
+        return studentService.findAllStudents(pageNumber, pageSize);
     }
-
 
 
     private void addStudentToCourse(String studentEmail, String courseName) {
-        Student student =
-            studentDao.findByEmail(studentEmail).orElseThrow(UserNotFoundException::new);
-        studentDao.addToCourse(student.getUserId(), courseName);
+        studentService.addStudentToCourse(studentEmail, courseName);
     }
 
     private void addStudentToGroup(String studentEmail, String groupName) {
-        Student student =
-            studentDao.findByEmail(studentEmail).orElseThrow(UserNotFoundException::new);
-        studentDao.addToGroup(student.getUserId(), groupName);
+        studentService.addStudentToGroup(studentEmail, groupName);
     }
 
     private void registerAdmin(UserRegistrationRequest userRegistrationRequest) {
-        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
-        adminDao.create(
-            new Admin(
-                UUID.randomUUID(),
-                userRegistrationRequest.getFirstName(),
-                userRegistrationRequest.getLastName(),
-                userRegistrationRequest.getEmail(),
-                userRegistrationRequest.getPassword()
-            )
-        );
+        adminService.register(userRegistrationRequest);
     }
 
     private UserRegistrationRequest getPreparedUserRegistrationRequest() {
@@ -376,89 +308,42 @@ public class FrontController {
     }
 
     private AdminProfile findAdminByEmail(String email) {
-        Admin admin = adminDao.findByEmail(email)
-            .orElseThrow(UserNotFoundException::new);
-
-        return new AdminProfile(
-            admin.getFirstName(),
-            admin.getLastName(),
-            admin.getEmail()
-        );
+        return adminService.findAdminByEmail(email);
     }
 
-    private List<AdminProfile> findAllAdmins() {
-        List<Admin> admins = adminDao.findAll();
-        List<AdminProfile> adminProfiles = new ArrayList<>();
-        admins.forEach(
-            student -> adminProfiles.add(
-                new AdminProfile(
-                    student.getFirstName(),
-                    student.getLastName(),
-                    student.getEmail()
-                )));
-        return adminProfiles;
+    private List<AdminProfile> findAllAdmins(Long pageNumber, Long pageSize) {
+        return adminService.findAllAdmins(pageNumber, pageSize);
     }
 
     private void registerTeacher(UserRegistrationRequest userRegistrationRequest) {
-        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
-        teacherDao.create(
-            new Teacher(
-                UUID.randomUUID(),
-                userRegistrationRequest.getFirstName(),
-                userRegistrationRequest.getLastName(),
-                userRegistrationRequest.getEmail(),
-                userRegistrationRequest.getPassword()
-            )
-        );
+        teacherService.register(userRegistrationRequest);
     }
 
     private TeacherProfile findTeacherByEmail(String email) {
-        Teacher teacher = teacherDao.findByEmail(email)
-            .orElseThrow(UserNotFoundException::new);
-        List<Course> coursesList = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId(), UserType.TEACHER);
-        List<CourseInfo> courseInfoList = new ArrayList<>();
-        coursesList.forEach(
-            course -> courseInfoList
-                .add(new CourseInfo(
-                    course.getCourseName(),
-                    course.getCourseDescription())
-                )
-        );
-        return new TeacherProfile(
-            teacher.getFirstName(),
-            teacher.getLastName(),
-            teacher.getEmail(),
-            courseInfoList);
+        return teacherService.findTeacherByEmail(email);
     }
 
     private void addTeacherToCourse(String email, String courseName) {
-        Teacher teacher = teacherDao.findByEmail(email)
-            .orElseThrow(UserNotFoundException::new);
-
-        teacherDao.addToCourse(teacher.getUserId(), courseName);
+        teacherService.addTeacherToCourse(email, courseName);
     }
 
     private void excludeTeacherFromCourse(String email, String courseName) {
-        Teacher teacher = teacherDao.findByEmail(email)
-            .orElseThrow(UserNotFoundException::new);
-
-        teacherDao.excludeFromCourse(teacher.getUserId(), courseName);
+        teacherService.excludeTeacherFromCourse(email, courseName);
     }
 
     private void createCourse(CourseInfo courseInfo) {
-        courseDao.create(new Course(UUID.randomUUID(), courseInfo.getCourseName(), courseInfo.getCourseDescription()));
+        courseService.createCourse(courseInfo);
     }
 
     private void deleteCourse(String courseName) {
-        courseDao.deleteById(courseDao.findByName(courseName).orElseThrow(CourseNotFoundException::new).getCourseId());
+        courseService.deleteCourse(courseName);
     }
 
     private void createGroup(GroupInfo groupInfo) {
-        Group group = new Group(UUID.randomUUID(), groupInfo.getGroupName());
-        groupDao.create(group);
+        groupService.createGroup(groupInfo);
     }
 
     private void deleteGroup(String groupName) {
-        groupDao.deleteById(groupDao.findByName(groupName).orElseThrow(GroupNotFoundException::new).getGroupId());
+        groupService.deleteGroup(groupName);
     }
 }

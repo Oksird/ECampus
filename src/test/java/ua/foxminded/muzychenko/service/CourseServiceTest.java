@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.controller.exception.InvalidInputException;
 import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dto.CourseInfo;
+import ua.foxminded.muzychenko.dao.exception.CourseNotFoundException;
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.service.mapper.CourseInfoMapper;
 import ua.foxminded.muzychenko.service.validator.CourseValidator;
 
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ class CourseServiceTest {
     private CourseDao courseDao;
     @MockBean
     private CourseValidator courseValidator;
+    @MockBean
+    private CourseInfoMapper courseInfoMapper;
     @Autowired
     private CourseService courseService;
 
@@ -60,6 +63,9 @@ class CourseServiceTest {
 
         CourseInfo expectedCourseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
 
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course))
+            .thenReturn(expectedCourseInfo);
+
         assertEquals(expectedCourseInfo, courseService.findCourseByName("cn"));
     }
 
@@ -70,7 +76,12 @@ class CourseServiceTest {
         when(courseDao.findById(any(UUID.class)))
             .thenReturn(Optional.of(course));
 
-        assertEquals(course, courseService.findCourseById(UUID.randomUUID()));
+        CourseInfo courseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
+
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course))
+            .thenReturn(courseInfo);
+
+        assertEquals(courseInfo, courseService.findCourseById(UUID.randomUUID()));
     }
 
     @Test
@@ -96,10 +107,20 @@ class CourseServiceTest {
 
         List<Course> expectedCourses = new ArrayList<>(List.of(course1, course2));
 
+        CourseInfo courseInfo1 = new CourseInfo(course1.getCourseName(), course1.getCourseDescription());
+        CourseInfo courseInfo2 = new CourseInfo(course2.getCourseName(), course2.getCourseDescription());
+
+        List<CourseInfo> courseInfoList = new ArrayList<>(List.of(courseInfo1, courseInfo2));
+
         when(courseDao.findAll(any(Long.class), any(Long.class)))
             .thenReturn(expectedCourses);
 
-        assertEquals(expectedCourses, courseService.findAllCourses(1L, 1L));
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course1))
+            .thenReturn(courseInfo1);
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course2))
+            .thenReturn(courseInfo2);
+
+        assertEquals(courseInfoList, courseService.findAllCourses(1L, 1L));
     }
 
     @Test
@@ -150,7 +171,7 @@ class CourseServiceTest {
     void findCourseByNameShouldThrowExceptionWhenNameDoesNotExist() {
         when(courseDao.findByName(any(String.class)))
             .thenReturn(Optional.empty());
-        assertThrows(InvalidInputException.class, () -> courseService.findCourseByName("bad name"));
+        assertThrows(CourseNotFoundException.class, () -> courseService.findCourseByName("bad name"));
     }
 
     @Test
@@ -158,7 +179,7 @@ class CourseServiceTest {
         when(courseDao.findById(any(UUID.class)))
             .thenReturn(Optional.empty());
         UUID wrongUUID = UUID.randomUUID();
-        assertThrows(InvalidInputException.class, () -> courseService.findCourseById(wrongUUID));
+        assertThrows(CourseNotFoundException.class, () -> courseService.findCourseById(wrongUUID));
     }
 
     @Test
@@ -166,7 +187,7 @@ class CourseServiceTest {
         when(courseDao.findByName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
-            InvalidInputException.class,
+            CourseNotFoundException.class,
             () -> courseService.changeCourseName("wrongName", "newName")
         );
     }
@@ -176,7 +197,7 @@ class CourseServiceTest {
         when(courseDao.findByName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
-            InvalidInputException.class,
+            CourseNotFoundException.class,
             () -> courseService.changeCourseDescription("wrongName", "desc")
         );
     }
@@ -186,8 +207,7 @@ class CourseServiceTest {
         when(courseDao.findByName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
-            InvalidInputException.class,
+            CourseNotFoundException.class,
             () -> courseService.deleteCourse("wrongName"));
     }
-
 }

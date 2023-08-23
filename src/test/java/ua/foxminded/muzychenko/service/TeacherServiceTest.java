@@ -15,6 +15,7 @@ import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
 import ua.foxminded.muzychenko.entity.UserType;
+import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
@@ -43,6 +44,8 @@ class TeacherServiceTest {
     private PasswordValidator passwordValidator;
     @MockBean
     private PasswordEncoder passwordEncoder;
+    @MockBean
+    private TeacherProfileMapper teacherProfileMapper;
     @Autowired
     private TeacherService teacherService;
 
@@ -56,9 +59,22 @@ class TeacherServiceTest {
             "pass"
         );
 
+        TeacherProfile teacherProfile = new TeacherProfile(
+            teacher.getFirstName(),
+            teacher.getLastName(),
+            teacher.getEmail(),
+            new ArrayList<>());
+
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.TEACHER)))
+            .thenReturn(new ArrayList<>());
+
         when(teacherDao.findById(any(UUID.class)))
             .thenReturn(Optional.of(teacher));
-        assertEquals(teacher, teacherService.findTeacherById(UUID.randomUUID()));
+
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher), any()))
+            .thenReturn(teacherProfile);
+
+        assertEquals(teacherProfile, teacherService.findTeacherById(UUID.randomUUID()));
     }
 
     @Test
@@ -80,10 +96,37 @@ class TeacherServiceTest {
             )
         ));
 
+        Teacher teacher1 = teacherList.get(0);
+        Teacher teacher2 = teacherList.get(1);
+
+        TeacherProfile teacherProfile1 = new TeacherProfile(
+            teacher1.getFirstName(),
+            teacher1.getLastName(),
+            teacher1.getEmail(),
+            new ArrayList<>()
+        );
+        TeacherProfile teacherProfile2 = new TeacherProfile(
+            teacher2.getFirstName(),
+            teacher2.getLastName(),
+            teacher2.getEmail(),
+            new ArrayList<>()
+        );
+
+        List<TeacherProfile> teacherProfileList = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));
+
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.TEACHER)))
+            .thenReturn(new ArrayList<>());
+
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1), any()))
+            .thenReturn(teacherProfile1);
+
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher2), any()))
+            .thenReturn(teacherProfile2);
+
         when(teacherDao.findAll(any(Long.class), any(Long.class)))
             .thenReturn(teacherList);
 
-        assertEquals(teacherList, teacherService.findAllTeachers(1L,1L));
+        assertEquals(teacherProfileList, teacherService.findAllTeachers(1L,1L));
     }
 
     @Test
@@ -105,10 +148,37 @@ class TeacherServiceTest {
             )
         ));
 
+        Teacher teacher1 = teacherList.get(0);
+        Teacher teacher2 = teacherList.get(1);
+
+        TeacherProfile teacherProfile1 = new TeacherProfile(
+            teacher1.getFirstName(),
+            teacher1.getLastName(),
+            teacher1.getEmail(),
+            new ArrayList<>()
+        );
+        TeacherProfile teacherProfile2 = new TeacherProfile(
+            teacher2.getFirstName(),
+            teacher2.getLastName(),
+            teacher2.getEmail(),
+            new ArrayList<>()
+        );
+
+        List<TeacherProfile> teacherProfileList = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));
+
         when(teacherDao.findByCourse(any(String.class)))
             .thenReturn(teacherList);
 
-        assertEquals(teacherList, teacherService.findTeachersByCourse("cn"));
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1), any()))
+            .thenReturn(teacherProfile1);
+
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher2), any()))
+            .thenReturn(teacherProfile2);
+
+        when(teacherDao.findAll(any(Long.class), any(Long.class)))
+            .thenReturn(teacherList);
+
+        assertEquals(teacherProfileList, teacherService.findTeachersByCourse("cn"));
     }
 
     @Test
@@ -294,6 +364,32 @@ class TeacherServiceTest {
 
         verify(teacherDao).findByEmail(teacher.getEmail());
         verify(teacherDao).addToCourse(teacher.getUserId(), "cN");
+    }
+
+    @Test
+    void findTeacherByEmailShouldReturnTeacherProfile() {
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass"
+        );
+
+        TeacherProfile teacherProfile = new TeacherProfile(
+            teacher.getFirstName(),
+            teacher.getLastName(),
+            teacher.getEmail(),
+            new ArrayList<>()
+        );
+
+        when(teacherDao.findByEmail(any(String.class)))
+            .thenReturn(Optional.of(teacher));
+
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher), any()))
+            .thenReturn(teacherProfile);
+
+        assertEquals(teacherProfile, teacherService.findTeacherByEmail("email"));
     }
 
 }

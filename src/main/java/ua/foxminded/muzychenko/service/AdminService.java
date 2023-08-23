@@ -10,11 +10,13 @@ import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
 import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
 import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Admin;
+import ua.foxminded.muzychenko.service.mapper.AdminProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,15 +27,21 @@ public class AdminService {
     private final RequestValidator requestValidator;
     private final PasswordEncoder passwordEncoder;
     private final PasswordValidator passwordValidator;
+    private final AdminProfileMapper adminProfileMapper;
 
-    public Admin findAdminById(UUID id) {
-        return adminDao.findById(id).orElseThrow(UserNotFoundException::new);
+    public AdminProfile findAdminById(UUID id) {
+        Admin admin = adminDao.findById(id).orElseThrow(UserNotFoundException::new);
+        return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
     }
 
-    public List<Admin> findAllAdmins(Long pageNumber, Long pageSize) {
-        return adminDao.findAll(pageNumber, pageSize);
+    public List<AdminProfile> findAllAdmins(Long pageNumber, Long pageSize) {
+        List<Admin> adminList = adminDao.findAll(pageNumber, pageSize);
+        List<AdminProfile> adminProfileList = new ArrayList<>(adminList.size());
+        adminList.forEach(admin -> adminProfileList.add(adminProfileMapper.mapAdminEntityToAdminProfile(admin)));
+        return adminProfileList;
     }
 
+    @Transactional
     public void deleteAdmin(String email) {
         adminDao.deleteById(getAdminIdByEmail(email));
     }
@@ -55,11 +63,7 @@ public class AdminService {
 
         Admin admin = adminDao.findByEmail(email).orElseThrow(BadCredentialsException::new);
 
-        return new AdminProfile(
-            admin.getFirstName(),
-            admin.getLastName(),
-            admin.getEmail()
-        );
+        return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
     }
 
     @Transactional
@@ -74,6 +78,11 @@ public class AdminService {
                 passwordEncoder.encode(userRegistrationRequest.getPassword())
             )
         );
+    }
+
+    public AdminProfile findAdminByEmail(String email) {
+        Admin admin = adminDao.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
     }
 
     private UUID getAdminIdByEmail(String email) {

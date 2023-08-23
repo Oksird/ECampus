@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.controller.exception.InvalidInputException;
 import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.dto.GroupInfo;
+import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
+import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.entity.Group;
+import ua.foxminded.muzychenko.service.mapper.GroupInfoMapper;
 import ua.foxminded.muzychenko.service.validator.GroupValidator;
 
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ class GroupServiceTest {
     private GroupDao groupDao;
     @MockBean
     private GroupValidator groupValidator;
+    @MockBean
+    private GroupInfoMapper groupInfoMapper;
     @Autowired
     private GroupService groupService;
 
@@ -60,6 +63,9 @@ class GroupServiceTest {
 
         GroupInfo expectedGroupInfo = new GroupInfo(group.getGroupName());
 
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group))
+            .thenReturn(expectedGroupInfo);
+
         assertEquals(expectedGroupInfo, groupService.findGroupByName("gn"));
     }
 
@@ -70,7 +76,12 @@ class GroupServiceTest {
         when(groupDao.findById(any(UUID.class)))
             .thenReturn(Optional.of(group));
 
-        assertEquals(group, groupService.findGroupById(UUID.randomUUID()));
+        GroupInfo groupInfo = new GroupInfo(group.getGroupName());
+
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group))
+            .thenReturn(groupInfo);
+
+        assertEquals(groupInfo, groupService.findGroupById(UUID.randomUUID()));
     }
 
     @Test
@@ -94,12 +105,21 @@ class GroupServiceTest {
         Group group1 = new Group(UUID.randomUUID(), "gn1");
         Group group2 = new Group(UUID.randomUUID(), "gn2");
 
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupName());
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupName());
+
         List<Group> expectedGroups = new ArrayList<>(List.of(group1, group2));
+        List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
 
         when(groupDao.findAll(any(Long.class), any(Long.class)))
             .thenReturn(expectedGroups);
 
-        assertEquals(expectedGroups, groupService.findAllGroups(1L, 1L));
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group1))
+            .thenReturn(groupInfo1);
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group2))
+            .thenReturn(groupInfo2);
+
+        assertEquals(groupInfoList, groupService.findAllGroups(1L, 1L));
     }
 
     @Test
@@ -129,7 +149,7 @@ class GroupServiceTest {
         when(groupDao.findById(any(UUID.class)))
             .thenReturn(Optional.empty());
         UUID wrongUUID = UUID.randomUUID();
-        assertThrows(InvalidInputException.class, () -> groupService.findGroupById(wrongUUID));
+        assertThrows(GroupNotFoundException.class, () -> groupService.findGroupById(wrongUUID));
     }
 
     @Test
@@ -137,7 +157,7 @@ class GroupServiceTest {
         when(groupDao.findByName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
-            InvalidInputException.class,
+            GroupNotFoundException.class,
             () -> groupService.changeGroupName("wrongName", "newName")
         );
     }
@@ -147,7 +167,7 @@ class GroupServiceTest {
         when(groupDao.findByName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
-            InvalidInputException.class,
+            GroupNotFoundException.class,
             () -> groupService.deleteGroup("wrongName"));
     }
 
@@ -156,17 +176,26 @@ class GroupServiceTest {
         Group group1 = new Group(UUID.randomUUID(), "gn1");
         Group group2 = new Group(UUID.randomUUID(), "gn2");
 
-        List<Group> groups = new ArrayList<>(List.of(group1, group2));
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupName());
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupName());
+
+        List<Group> expectedGroups = new ArrayList<>(List.of(group1, group2));
+        List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
 
         when(groupDao.findGroupWithLessOrEqualStudents(any(Integer.class)))
-            .thenReturn(groups);
-        assertEquals(groups, groupService.findGroupWithLessOrEqualStudents(5));
+            .thenReturn(expectedGroups);
+
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group1))
+            .thenReturn(groupInfo1);
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group2))
+            .thenReturn(groupInfo2);
+        assertEquals(groupInfoList, groupService.findGroupWithLessOrEqualStudents(5));
     }
 
     @Test
     void findGroupByNameShouldThrowExceptionWhenGroupNameIsIncorrect() {
         when(groupDao.findByName(any(String.class)))
             .thenReturn(Optional.empty());
-        assertThrows(InvalidInputException.class, () -> groupService.findGroupByName("gn"));
+        assertThrows(GroupNotFoundException.class, () -> groupService.findGroupByName("gn"));
     }
 }

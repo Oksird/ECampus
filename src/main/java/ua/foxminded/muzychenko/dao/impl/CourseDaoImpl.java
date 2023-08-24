@@ -51,6 +51,7 @@ public class CourseDaoImpl extends AbstractCrudDaoImpl<Course> implements Course
         return new Object[]{updatedCourse.getCourseName(), updatedCourse.getCourseDescription(), id};
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public List<Course> findCoursesByUserIdAndUserType(UUID userId, UserType userType) {
         String query = switch (userType) {

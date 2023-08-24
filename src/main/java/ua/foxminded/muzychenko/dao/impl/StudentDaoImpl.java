@@ -77,6 +77,7 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
         super(jdbcTemplate, studentRowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public List<Student> findByCourse(String nameOfCourse) {
         return jdbcTemplate.query(
@@ -86,6 +87,7 @@ public class StudentDaoImpl extends AbstractCrudDaoImpl<Student> implements Stud
         );
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public List<Student> findByGroup(String nameOfGroup) {
         return jdbcTemplate.query(

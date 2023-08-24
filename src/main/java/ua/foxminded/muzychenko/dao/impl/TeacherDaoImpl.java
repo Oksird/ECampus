@@ -48,6 +48,7 @@ public class TeacherDaoImpl extends AbstractCrudDaoImpl<Teacher> implements Teac
         super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public List<Teacher> findByCourse(String courseName) {
         return jdbcTemplate.query(

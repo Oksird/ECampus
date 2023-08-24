@@ -33,6 +33,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, UUID> {
         jdbcTemplate.update(updateQuery, getUpdateParameters(id, newEntity));
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Optional<E> findById(UUID id) {
         try {
@@ -60,6 +61,7 @@ public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, UUID> {
         return jdbcTemplate.query(query, rowMapper, pageSize, offset);
     }
 
+    @SuppressWarnings("deprecation")
     protected Optional<E> findByParam(String query, String param) {
         try {
             E result = jdbcTemplate.queryForObject(query, new Object[]{param}, rowMapper);

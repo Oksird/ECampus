@@ -25,6 +25,9 @@
         <spring.version>6.0.10</spring.version>
         <lombok.version>1.18.28</lombok.version>
         <spring.security.crypto.version>6.1.2</spring.security.crypto.version>
+        <project.info.reports.version>3.0.0</project.info.reports.version>
+        <mvn.site.plugin>3.7.1</mvn.site.plugin>
+        <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
     </properties>
 
     <dependencies>
@@ -118,6 +121,16 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${mvn.site.plugin}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>${project.info.reports.version}</version>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
@@ -198,5 +211,22 @@
             </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.plugin.version}</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>checkstyle</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
 
 </project>

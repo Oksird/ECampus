@@ -42,6 +42,7 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public List<Group> findGroupWithLessOrEqualStudents(Integer countOfStudents) {
         return jdbcTemplate.query(
             FIND_GROUP_WITH_LESS_OR_EQUAL_STUDENTS_QUERY,
@@ -50,6 +51,7 @@ public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao
         );
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Optional<Group> findUsersGroup(UUID id) {
         try {

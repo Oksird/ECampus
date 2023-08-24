@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import ua.foxminded.muzychenko.view.util.ConsoleWriter;
 
 import javax.sql.DataSource;
 import java.util.Scanner;
@@ -53,5 +54,10 @@ public class AppConfiguration {
     @Bean
     public Scanner scanner() {
         return new Scanner(System.in);
+    }
+
+    @Bean
+    public ConsoleWriter consoleWriter() {
+        return new ConsoleWriter(System.out);
     }
 }

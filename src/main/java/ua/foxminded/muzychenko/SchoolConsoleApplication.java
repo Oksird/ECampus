@@ -1,15 +1,24 @@
 package ua.foxminded.muzychenko;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import ua.foxminded.muzychenko.config.AppConfiguration;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-public class SchoolConsoleApplication {
+@SpringBootApplication
+public class SchoolConsoleApplication implements CommandLineRunner {
+
+    private final SchoolApplicationFacade schoolApplicationFacade;
+
+    public SchoolConsoleApplication(SchoolApplicationFacade schoolApplicationFacade) {
+        this.schoolApplicationFacade = schoolApplicationFacade;
+    }
 
     public static void main(String[] args) {
-        AnnotationConfigApplicationContext context =
-            new AnnotationConfigApplicationContext(AppConfiguration.class);
-        SchoolApplicationFacade schoolApplicationFacade
-            = context.getBean("schoolApplicationFacade", SchoolApplicationFacade.class);
+        SpringApplication.run(SchoolConsoleApplication.class, args);
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
         schoolApplicationFacade.runFrontController();
     }
 }

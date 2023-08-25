@@ -1,9 +1,10 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import lombok.NonNull;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import jakarta.persistence.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.dao.AdminDao;
 import ua.foxminded.muzychenko.entity.Admin;
 
@@ -13,41 +14,35 @@ import java.util.UUID;
 @Repository
 public class AdminDaoImpl extends AbstractCrudDaoImpl<Admin> implements AdminDao {
 
-    private static final String CREATE_QUERY = "INSERT INTO users VALUES (?, 'Admin', ?, ?, ? ,? )";
-    private static final String UPDATE_QUERY = "UPDATE users SET first_name=?, last_name=?, email=?, password=? WHERE user_id=?";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE user_id=?";
-    private static final String FIND_ALL_QUERY = "SELECT * FROM users WHERE user_type='Admin'";
-    private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE user_id=?";
-    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email= ? AND user_type='Admin'";
+    private static final String FIND_ALL_QUERY ="from Admin";
+    private static final String FIND_BY_EMAIL_QUERY = "from Admin a where a.email = :email";
 
-    protected AdminDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Admin> rowMapper) {
-        super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
+    protected AdminDaoImpl(SessionFactory sessionFactory) {
+        super(sessionFactory, FIND_ALL_QUERY, Admin.class);
     }
 
-    @Override
-    protected Object[] getCreateParameters(@NonNull Admin entity) {
-        return new Object[]{
-            entity.getUserId(),
-            entity.getFirstName(),
-            entity.getLastName(),
-            entity.getEmail(),
-            entity.getPassword()
-        };
-    }
-
-    @Override
-    protected Object[] getUpdateParameters(UUID id, @NonNull Admin newEntity) {
-        return new Object[]{
-            newEntity.getFirstName(),
-            newEntity.getLastName(),
-            newEntity.getEmail(),
-            newEntity.getPassword(),
-            id
-        };
-    }
-
+    @SuppressWarnings("deprecation")
+    @Transactional(readOnly = true)
     @Override
     public Optional<Admin> findByEmail(String email) {
-        return findByParam(FIND_BY_EMAIL_QUERY, email);
+        Session session = sessionFactory.getCurrentSession();
+
+        Query query = session.createQuery(FIND_BY_EMAIL_QUERY);
+
+        query.setParameter("email", email);
+
+        return Optional.of((Admin) query.getSingleResult());
+    }
+
+    @Override
+    protected void executeUpdateEntity(Session session, UUID id, Admin newEntity) {
+        Admin admin = session.get(Admin.class, id);
+
+        admin.setFirstName(newEntity.getFirstName());
+        admin.setLastName(newEntity.getLastName());
+        admin.setEmail(newEntity.getEmail());
+        admin.setPassword(newEntity.getPassword());
+
+        session.merge(admin);
     }
 }

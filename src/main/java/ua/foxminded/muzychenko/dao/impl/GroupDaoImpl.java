@@ -1,11 +1,10 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import jakarta.persistence.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
-import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.entity.Group;
 
@@ -16,64 +15,66 @@ import java.util.UUID;
 @Repository
 public class GroupDaoImpl extends AbstractCrudDaoImpl<Group> implements GroupDao {
 
-    private static final String CREATE_QUERY = "INSERT INTO groups VALUES (?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE groups SET group_name=? WHERE group_id=?";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM groups WHERE group_id=?";
-    private static final String FIND_ALL_QUERY = "SELECT * FROM groups";
-    private static final String DELETE_BY_ID_QUERY = "DELETE FROM groups WHERE group_id=?";
+    private static final String FIND_ALL_QUERY = "from Group";
+    private static final String FIND_NAME_QUERY = "from Group g where g.groupName = :name";
     private static final String FIND_GROUP_WITH_LESS_OR_EQUAL_STUDENTS_QUERY = """
-        SELECT g.group_id, g.group_name
-        FROM public.groups AS g
-        LEFT JOIN public.users AS u ON g.group_id = u.group_id AND u.user_type = 'Student'
-        GROUP BY g.group_id, g.group_name
-        HAVING COUNT(u.user_id) <= ?
-        """;
-    private static final String FIND_STUDENT_GROUP_QUERY = """
-        SELECT g.*
-        FROM groups g
-        JOIN users u ON u.group_id = g.group_id
-        WHERE u.user_id =?;
-        """;
-    private static final String FIND_GROUP_BY_NAME_QUERY = "SELECT * FROM groups WHERE group_name =?";
+        SELECT g
+        FROM Group g
+        WHERE size(g.students) <= :maxStudents
+    """;
+    private static final String FIND_USER_GROUP_QUERY = """
+        SELECT g
+        FROM Group g
+        JOIN g.students s
+        WHERE s.id = :userId
+    """;
 
-    @Autowired
-    protected GroupDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Group> rowMapper) {
-        super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
+    protected GroupDaoImpl(SessionFactory sessionFactory) {
+        super(sessionFactory, FIND_ALL_QUERY, Group.class);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    @SuppressWarnings("deprecation")
     public List<Group> findGroupWithLessOrEqualStudents(Integer countOfStudents) {
-        return jdbcTemplate.query(
-            FIND_GROUP_WITH_LESS_OR_EQUAL_STUDENTS_QUERY,
-            new Object[]{countOfStudents},
-            rowMapper
+        Session session = sessionFactory.getCurrentSession();
+        return session
+            .createQuery(FIND_GROUP_WITH_LESS_OR_EQUAL_STUDENTS_QUERY, Group.class)
+            .setParameter("maxStudents", countOfStudents)
+            .getResultList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Optional<Group> findUsersGroup(UUID userId) {
+        Session session = sessionFactory.getCurrentSession();
+
+        return Optional.of(
+            session
+                .createQuery(FIND_USER_GROUP_QUERY, Group.class)
+                .setParameter("userId", userId)
+                .getSingleResult()
         );
     }
 
+    @Transactional(readOnly = true)
     @SuppressWarnings("deprecation")
     @Override
-    public Optional<Group> findUsersGroup(UUID id) {
-        try {
-            Group result = jdbcTemplate.queryForObject(FIND_STUDENT_GROUP_QUERY, new Object[]{id}, rowMapper);
-            return Optional.ofNullable(result);
-        } catch (EmptyResultDataAccessException e) {
-            throw new GroupNotFoundException();
-        }
-    }
-
-    @Override
     public Optional<Group> findByName(String groupName) {
-        return findByParam(FIND_GROUP_BY_NAME_QUERY, groupName);
+        Session session = sessionFactory.getCurrentSession();
+
+        Query query = session.createQuery(FIND_NAME_QUERY);
+
+        query.setParameter("name", groupName);
+
+        return Optional.of((Group) query.getSingleResult());
     }
 
     @Override
-    protected Object[] getCreateParameters(Group group) {
-        return new Object[]{group.getGroupId(), group.getGroupName()};
-    }
+    protected void executeUpdateEntity(Session session, UUID id, Group newEntity) {
+        Group group = session.get(Group.class, id);
 
-    @Override
-    protected Object[] getUpdateParameters(UUID id, Group updatedGroup) {
-        return new Object[]{updatedGroup.getGroupName(), id};
+        group.setGroupName(newEntity.getGroupName());
+
+        session.merge(group);
     }
 }

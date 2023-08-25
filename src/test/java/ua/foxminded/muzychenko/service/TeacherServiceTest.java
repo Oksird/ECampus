@@ -14,7 +14,6 @@ import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
 import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
-import ua.foxminded.muzychenko.entity.UserType;
 import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
@@ -65,7 +64,7 @@ class TeacherServiceTest {
             teacher.getEmail(),
             new ArrayList<>());
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.TEACHER)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
             .thenReturn(new ArrayList<>());
 
         when(teacherDao.findById(any(UUID.class)))
@@ -114,7 +113,7 @@ class TeacherServiceTest {
 
         List<TeacherProfile> teacherProfileList = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.TEACHER)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
             .thenReturn(new ArrayList<>());
 
         when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1), any()))
@@ -214,7 +213,7 @@ class TeacherServiceTest {
             );
         when(teacherDao.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq (UserType.TEACHER)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
             .thenReturn(new ArrayList<>(List.of(course)));
 
         TeacherProfile expectedTeacherProfile = new TeacherProfile(

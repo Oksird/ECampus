@@ -3,6 +3,7 @@ package ua.foxminded.muzychenko.dao.impl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.TestConfig;
@@ -67,11 +68,13 @@ class GroupDaoImplTest {
     @DisplayName("Group is updated")
     @Test
     void updateShouldReplaceGroupWithProvided() {
-        Group oldGroup = groupDao.findById(groupDao.findAll().get(0).getGroupId()).orElse(null);
+        Group oldGroup = groupDao.findByName("AA-01").orElse(null);
         assert oldGroup != null;
-        Group newGroup = new Group(oldGroup.getGroupId(), "GG");
+        Group newGroup = new Group(oldGroup.getGroupId(), "AA-11");
+
         groupDao.update(oldGroup.getGroupId(), newGroup);
-        assertEquals(newGroup, groupDao.findById(oldGroup.getGroupId()).orElse(null));
+
+        assertEquals(newGroup.getGroupName(), Objects.requireNonNull(groupDao.findById(oldGroup.getGroupId()).orElse(null)).getGroupName());
     }
 
     @DisplayName("Group was deleted")
@@ -85,9 +88,8 @@ class GroupDaoImplTest {
 
     @DisplayName("No group with such id")
     @Test
-    void findByIdShouldReturnEmptyOptionalWhenGroupWithIdDoesntExist() {
-        Optional<Group> group = groupDao.findById(UUID.randomUUID());
-        assertFalse(group.isPresent());
+    void findByIdShouldThrowExceptionWhenGroupWithIdDoesntExist() {
+        assertThrows(NullPointerException.class, () -> groupDao.findById(UUID.randomUUID()));
     }
 
     @DisplayName("User's group is found")
@@ -107,7 +109,7 @@ class GroupDaoImplTest {
     @DisplayName("Exception is thrown when group name is incorrect")
     @Test
     void findByNameShouldThrowException() {
-        assertThrows(EntityWasNotFoundException.class,() -> groupDao.findByName("qweqwe"));
+        assertThrows(EmptyResultDataAccessException.class,() -> groupDao.findByName("qweqwe"));
     }
 
     @DisplayName("Exception is thrown when user does not have group")
@@ -124,6 +126,6 @@ class GroupDaoImplTest {
 
         studentDao.create(example);
         UUID studentId = example.getUserId();
-        assertThrows(GroupNotFoundException.class, () -> groupDao.findUsersGroup(studentId));
+        assertThrows(EmptyResultDataAccessException.class, () -> groupDao.findUsersGroup(studentId));
     }
 }

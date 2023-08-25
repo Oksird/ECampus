@@ -1,18 +1,16 @@
 package ua.foxminded.muzychenko.view.util;
 
-import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
 
-import java.io.Console;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 
-@Component
+@AllArgsConstructor
 public class ConsoleWriter {
-    private final Console console = System.console();
+
+    private PrintStream printStream;
 
     public void writeInConsole(String string) {
-        try (PrintWriter writer = console.writer()) {
-            writer.println(string);
-        }
+        printStream.println(string);
     }
 }
 

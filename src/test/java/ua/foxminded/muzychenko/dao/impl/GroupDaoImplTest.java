@@ -9,13 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.TestConfig;
 import ua.foxminded.muzychenko.dao.GroupDao;
 import ua.foxminded.muzychenko.dao.StudentDao;
-import ua.foxminded.muzychenko.dao.exception.EntityWasNotFoundException;
-import ua.foxminded.muzychenko.dao.exception.GroupNotFoundException;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;

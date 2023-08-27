@@ -18,6 +18,7 @@ import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
+import ua.foxminded.muzychenko.entity.UserType;
 import ua.foxminded.muzychenko.service.mapper.StudentProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
@@ -80,7 +81,7 @@ class StudentServiceTest {
         when(groupDao.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.of(new Group(UUID.randomUUID(), "gn")));
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq (UserType.STUDENT)))
             .thenReturn(new ArrayList<>());
 
         when(studentProfileMapper.mapStudentInfoToProfile(any(Student.class), any(Group.class), eq (new ArrayList<>())))
@@ -136,7 +137,7 @@ class StudentServiceTest {
         when(studentDao.findAll(any(Long.class), any(Long.class)))
             .thenReturn(studentList);
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
             .thenReturn(courseList);
 
         when(groupDao.findUsersGroup(any(UUID.class)))
@@ -198,7 +199,7 @@ class StudentServiceTest {
         when(studentDao.findByCourse(any(String.class)))
             .thenReturn(studentList);
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
             .thenReturn(courseList);
 
         when(groupDao.findUsersGroup(any(UUID.class)))
@@ -260,7 +261,7 @@ class StudentServiceTest {
         when(studentDao.findByGroup(any(String.class)))
             .thenReturn(studentList);
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
             .thenReturn(courseList);
 
         when(groupDao.findUsersGroup(any(UUID.class)))
@@ -309,7 +310,7 @@ class StudentServiceTest {
             );
         when(studentDao.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq (UserType.STUDENT)))
             .thenReturn(new ArrayList<>(List.of(course)));
         when(groupDao.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.of(new Group(UUID.randomUUID(), "gn")));
@@ -436,12 +437,12 @@ class StudentServiceTest {
 
         doNothing()
             .when(studentDao)
-            .excludeFromGroup(any(UUID.class));
+            .excludeFromGroup(any(UUID.class), any(String.class));
 
-        studentService.excludeStudentFromGroup(student.getEmail());
+        studentService.excludeStudentFromGroup(student.getEmail(), "gN");
 
         verify(studentDao).findByEmail(student.getEmail());
-        verify(studentDao).excludeFromGroup(student.getUserId());
+        verify(studentDao).excludeFromGroup(student.getUserId(), "gN");
     }
 
     @Test
@@ -518,17 +519,16 @@ class StudentServiceTest {
 
     @Test
     void findStudentByEmailShouldReturnStudent() {
-        Group group = new Group(UUID.randomUUID(), "GN");
-
         Student student = new Student(
             UUID.randomUUID(),
             "fn",
             "ln",
             "em",
             "pass",
-            group
+            UUID.randomUUID()
         );
 
+        Group group = new Group(UUID.randomUUID(), "GN");
         Course course1 = new Course(UUID.randomUUID(), "cn1", "cd1");
         Course course2 = new Course(UUID.randomUUID(), "cn2", "cd2");
 
@@ -544,7 +544,7 @@ class StudentServiceTest {
         when(groupDao.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.of(group));
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class), eq(UserType.STUDENT)))
             .thenReturn(new ArrayList<>(List.of(course1, course2)));
 
         StudentProfile studentProfile = new StudentProfile(

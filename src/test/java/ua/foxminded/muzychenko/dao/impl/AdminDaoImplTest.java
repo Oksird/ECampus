@@ -53,7 +53,7 @@ class AdminDaoImplTest {
     @DisplayName("Thrown exception when created admin is null")
     @Test
     void createShouldThrowExceptionWhenAdminIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> adminDao.create(null));
+        assertThrows(NullPointerException.class, () -> adminDao.create(null));
     }
 
     @DisplayName("Updated admin cant replaced with null")

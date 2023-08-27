@@ -1,15 +1,12 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import ua.foxminded.muzychenko.dao.CrudDao;
+import ua.foxminded.muzychenko.dao.exception.EntityWasNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,64 +15,64 @@ import java.util.UUID;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class AbstractCrudDaoImpl<E> implements CrudDao<E, UUID> {
 
-    protected final SessionFactory sessionFactory;
+    protected final JdbcTemplate jdbcTemplate;
+    protected final RowMapper<E> rowMapper;
+    private final String createQuery;
+    private final String updateQuery;
+    private final String findByIdQuery;
     private final String findAllQuery;
-    private final Class<E> entityClass;
+    private final String deleteByIdQuery;
 
-    @Transactional
     @Override
     public void create(E entity) {
-        Session session = sessionFactory.getCurrentSession();
-        session.persist(entity);
+        jdbcTemplate.update(createQuery, getCreateParameters(entity));
     }
 
-    @Transactional
     @Override
     public void update(UUID id, E newEntity) {
-        Session session = sessionFactory.getCurrentSession();
-        executeUpdateEntity(session, id, newEntity);
+        jdbcTemplate.update(updateQuery, getUpdateParameters(id, newEntity));
     }
 
-    @Transactional(readOnly = true)
+    @SuppressWarnings("deprecation")
     @Override
     public Optional<E> findById(UUID id) {
-        Session session = sessionFactory.getCurrentSession();
-        return Optional.of(session.get(entityClass, id));
+        try {
+            E result = jdbcTemplate.queryForObject(findByIdQuery, new Object[]{id}, rowMapper);
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<E> findAll() {
-        Session session = sessionFactory.getCurrentSession();
-
-        return session.createQuery(findAllQuery, entityClass).getResultList();
+        return jdbcTemplate.query(findAllQuery, rowMapper);
     }
 
-    @Transactional
     @Override
     public void deleteById(UUID id) {
-        Session session = sessionFactory.getCurrentSession();
-
-        session.remove(session.get(entityClass, id));
+        jdbcTemplate.update(deleteByIdQuery, id);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<E> findAll(Long pageNumber, Long pageSize) {
-        Session session = sessionFactory.getCurrentSession();
-
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-        CriteriaQuery<E> criteriaQuery = criteriaBuilder.createQuery(entityClass);
-        Root<E> root = criteriaQuery.from(entityClass);
-
-        criteriaQuery.select(root);
-
-        TypedQuery<E> query = session.createQuery(criteriaQuery);
-        query.setFirstResult((int) ((pageNumber - 1) * pageSize));
-        query.setMaxResults(Math.toIntExact(pageSize));
-
-        return query.getResultList();
+        long offset = (pageNumber - 1) * pageSize;
+        String query = findAllQuery + " LIMIT ? OFFSET ?";
+        return jdbcTemplate.query(query, rowMapper, pageSize, offset);
     }
 
-    protected abstract void executeUpdateEntity(Session session, UUID id, E newEntity);
+    @SuppressWarnings("deprecation")
+    protected Optional<E> findByParam(String query, String param) {
+        try {
+            E result = jdbcTemplate.queryForObject(query, new Object[]{param}, rowMapper);
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityWasNotFoundException();
+        }
+    }
+
+    protected abstract Object[] getCreateParameters(E entity);
+
+    protected abstract Object[] getUpdateParameters(UUID id, E newEntity);
+
 }

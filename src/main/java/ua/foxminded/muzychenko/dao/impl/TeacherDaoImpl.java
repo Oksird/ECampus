@@ -1,11 +1,9 @@
 package ua.foxminded.muzychenko.dao.impl;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.dao.TeacherDao;
-import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
 
 import java.util.List;
@@ -14,84 +12,94 @@ import java.util.UUID;
 
 @Repository
 public class TeacherDaoImpl extends AbstractCrudDaoImpl<Teacher> implements TeacherDao {
-
-    private static final String FIND_ALL_QUERY = "FROM Teacher";
+    private static final String CREATE_QUERY = "INSERT INTO users VALUES (?, 'Teacher', ?, ?, ? ,? )";
+    private static final String UPDATE_QUERY = "UPDATE users SET first_name=?, last_name=?, email=?, password=? WHERE user_id=?";
+    private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE user_id=?";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM users WHERE user_type='Teacher'";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE user_id=?";
     private static final String FIND_BY_COURSE_QUERY = """
-        SELECT t
-        FROM Teacher t
-        JOIN t.courses c
-        WHERE c.courseName = :courseName
+        SELECT u.*
+        FROM public.users AS u
+        JOIN public.teachers_courses AS tc ON u.user_id = tc.teacher_id
+        JOIN public.courses AS c ON tc.course_id = c.course_id
+        WHERE u.user_type = 'Teacher' AND c.course_name =?;
         """;
-    private static final String FIND_COURSE_TO_ADD_TEACHER_QUERY = """
-        FROM Course c
-        WHERE c.courseName = :courseName
+    private static final String ADD_TO_COURSE_QUERY = """
+        INSERT INTO public.teachers_courses (teacher_id, course_id)
+        SELECT user_id, (
+            SELECT course_id
+            FROM public.courses
+            WHERE course_name = ?
+        )
+        FROM public.users
+        WHERE user_id = ? AND user_type = 'Teacher';
         """;
-    private static final String FIND_BY_EMAIL_QUERY = """
-        FROM Teacher t
-        WHERE t.email = :email
+    private static final String EXCLUDE_FROM_COURSE_QUERY = """
+        DELETE FROM public.teachers_courses
+        WHERE teacher_id = ? AND course_id = (
+            SELECT course_id
+            FROM public.courses
+            WHERE course_name = ?
+        );
         """;
+    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email= ? AND user_type='Teacher'";
 
-    protected TeacherDaoImpl(SessionFactory sessionFactory) {
-        super(sessionFactory, FIND_ALL_QUERY, Teacher.class);
+    protected TeacherDaoImpl(JdbcTemplate jdbcTemplate, RowMapper<Teacher> rowMapper) {
+        super(jdbcTemplate, rowMapper, CREATE_QUERY, UPDATE_QUERY, FIND_BY_ID_QUERY, FIND_ALL_QUERY, DELETE_BY_ID_QUERY);
     }
 
-    @Transactional(readOnly = true)
+    @SuppressWarnings("deprecation")
     @Override
     public List<Teacher> findByCourse(String courseName) {
-        Session session = sessionFactory.getCurrentSession();
-
-        return session.createQuery(FIND_BY_COURSE_QUERY, Teacher.class)
-            .setParameter("courseName", courseName)
-            .getResultList();
+        return jdbcTemplate.query(
+            FIND_BY_COURSE_QUERY,
+            new Object[]{courseName},
+            rowMapper
+        );
     }
 
-    @Transactional
     @Override
     public void addToCourse(UUID id, String courseName) {
-        Session session = sessionFactory.getCurrentSession();
-
-        Teacher teacher = session.get(Teacher.class, id);
-        Course course = session.createQuery(FIND_COURSE_TO_ADD_TEACHER_QUERY, Course.class)
-            .setParameter("courseName", courseName)
-            .getSingleResult();
-
-        teacher.getCourses().add(course);
+        jdbcTemplate.update(
+            ADD_TO_COURSE_QUERY,
+            courseName,
+            id
+        );
     }
 
-    @Transactional
     @Override
     public void excludeFromCourse(UUID id, String courseName) {
-        Session session = sessionFactory.getCurrentSession();
-
-        Teacher teacher = session.get(Teacher.class, id);
-        Course course = session.createQuery(FIND_COURSE_TO_ADD_TEACHER_QUERY, Course.class)
-            .setParameter("courseName", courseName)
-            .getSingleResult();
-
-        teacher.getCourses().remove(course);
+        jdbcTemplate.update(
+            EXCLUDE_FROM_COURSE_QUERY,
+            id,
+            courseName
+        );
     }
 
-    @Transactional
+    @Override
+    protected Object[] getCreateParameters(Teacher entity) {
+        return new Object[]{
+            entity.getUserId(),
+            entity.getFirstName(),
+            entity.getLastName(),
+            entity.getEmail(),
+            entity.getPassword()
+        };
+    }
+
+    @Override
+    protected Object[] getUpdateParameters(UUID id, Teacher newEntity) {
+        return new Object[]{
+            newEntity.getFirstName(),
+            newEntity.getLastName(),
+            newEntity.getEmail(),
+            newEntity.getPassword(),
+            id
+        };
+    }
+
     @Override
     public Optional<Teacher> findByEmail(String email) {
-        Session session = sessionFactory.getCurrentSession();
-
-        Teacher teacher = session.createQuery(FIND_BY_EMAIL_QUERY, Teacher.class)
-            .setParameter("email", email)
-            .getSingleResult();
-
-        return Optional.of(teacher);
-    }
-
-    @Override
-    protected void executeUpdateEntity(Session session, UUID id, Teacher newEntity) {
-        Teacher teacher = session.get(Teacher.class, id);
-
-        teacher.setFirstName(newEntity.getFirstName());
-        teacher.setLastName(newEntity.getLastName());
-        teacher.setEmail(newEntity.getEmail());
-        teacher.setPassword(newEntity.getPassword());
-
-        session.merge(teacher);
+        return findByParam(FIND_BY_EMAIL_QUERY, email);
     }
 }

@@ -10,6 +10,7 @@ import ua.foxminded.muzychenko.dao.CourseDao;
 import ua.foxminded.muzychenko.dao.TeacherDao;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
+import ua.foxminded.muzychenko.entity.UserType;
 
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +54,7 @@ class TeacherDaoImplTest {
     void deleteFromCourseShouldDeleteTeacherFromCourse() {
         Teacher teacher = teacherDao.findByCourse("Course1").get(0);
         teacherDao.excludeFromCourse(teacher.getUserId(), "Course1");
-        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId());
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId(), UserType.TEACHER);
         assertTrue(courses.isEmpty());
     }
 
@@ -76,7 +77,7 @@ class TeacherDaoImplTest {
     @DisplayName("Exception when created teacher is null")
     @Test
     void createShouldThrowNullPointerException() {
-        assertThrows(IllegalArgumentException.class, () -> teacherDao.create(null));
+        assertThrows(NullPointerException.class, () -> teacherDao.create(null));
     }
 
     @DisplayName("Teacher is found by email")

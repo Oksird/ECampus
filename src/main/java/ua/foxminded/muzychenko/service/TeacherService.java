@@ -13,7 +13,6 @@ import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
 import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
-import ua.foxminded.muzychenko.entity.UserType;
 import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.util.PasswordEncoder;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
@@ -36,7 +35,7 @@ public class TeacherService {
 
     public TeacherProfile findTeacherById(UUID id) {
         Teacher teacher =teacherDao.findById(id).orElseThrow(UserNotFoundException::new);
-        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(id, UserType.TEACHER);
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(id);
         return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
     }
 
@@ -84,7 +83,7 @@ public class TeacherService {
 
         List<CourseInfo> courseInfoList = new ArrayList<>();
 
-        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId(), UserType.TEACHER);
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId());
 
         courses.forEach(course -> courseInfoList.add(new CourseInfo(course.getCourseName(), course.getCourseDescription())));
 
@@ -112,7 +111,7 @@ public class TeacherService {
 
     public TeacherProfile findTeacherByEmail(String email) {
         Teacher teacher = teacherDao.findByEmail(email).orElseThrow(UserNotFoundException::new);
-        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId(), UserType.TEACHER);
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(teacher.getUserId());
         return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
     }
 
@@ -126,7 +125,7 @@ public class TeacherService {
         for (Teacher teacher : students) {
             teacherProfiles.add(teacherProfileMapper.mapTeacherEntityToProfile(
                 teacher,
-                courseDao.findCoursesByUserIdAndUserType(teacher.getUserId(), UserType.TEACHER)
+                courseDao.findCoursesByUserIdAndUserType(teacher.getUserId())
             ));
         }
         return teacherProfiles;

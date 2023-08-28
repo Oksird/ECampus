@@ -17,7 +17,6 @@ import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
-import ua.foxminded.muzychenko.entity.UserType;
 import ua.foxminded.muzychenko.service.mapper.StudentProfileMapper;
 import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
@@ -44,7 +43,7 @@ public class StudentService {
     public StudentProfile findStudentById(UUID id) {
         Student student = studentDao.findById(id).orElseThrow(UserNotFoundException::new);
         Group group = groupDao.findUsersGroup(id).orElse(null);
-        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(id, UserType.STUDENT);
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(id);
         return studentProfileMapper.mapStudentInfoToProfile(student, group, courses);
     }
 
@@ -74,7 +73,7 @@ public class StudentService {
         GroupInfo groupInfo = new GroupInfo(Objects.requireNonNull(
             groupDao.findUsersGroup(student.getUserId()).orElse(null)).getGroupName());
 
-        List<Course> studentCourses = courseDao.findCoursesByUserIdAndUserType(student.getUserId(), UserType.STUDENT);
+        List<Course> studentCourses = courseDao.findCoursesByUserIdAndUserType(student.getUserId());
 
         List<CourseInfo> courseInfoList = studentCourses.stream()
             .map(course -> new CourseInfo(course.getCourseName(), course.getCourseDescription()))
@@ -121,8 +120,8 @@ public class StudentService {
         studentDao.deleteById(getStudentIdByEmail(email));
     }
 
-    public void excludeStudentFromGroup(String email, String nameOfGroup) {
-        studentDao.excludeFromGroup(getStudentIdByEmail(email), nameOfGroup);
+    public void excludeStudentFromGroup(String email) {
+        studentDao.excludeFromGroup(getStudentIdByEmail(email));
     }
 
     public void excludeStudentFromCourse(String email, String nameOfCourse) {
@@ -140,7 +139,7 @@ public class StudentService {
     public StudentProfile findStudentByEmail(String email) {
         Student student = studentDao.findByEmail(email).orElseThrow(UserNotFoundException::new);
         Group group = groupDao.findUsersGroup(student.getUserId()).orElseThrow(GroupNotFoundException::new);
-        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(student.getUserId(), UserType.STUDENT);
+        List<Course> courses = courseDao.findCoursesByUserIdAndUserType(student.getUserId());
         return studentProfileMapper.mapStudentInfoToProfile(student, group, courses);
     }
 
@@ -156,7 +155,7 @@ public class StudentService {
                 .mapStudentInfoToProfile(
                     student,
                     groupDao.findUsersGroup(student.getUserId()).orElse(null),
-                    courseDao.findCoursesByUserIdAndUserType(student.getUserId(), UserType.STUDENT)
+                    courseDao.findCoursesByUserIdAndUserType(student.getUserId())
                 )
             );
         }

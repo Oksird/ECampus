@@ -3,9 +3,12 @@ package ua.foxminded.muzychenko.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.dao.AdminDao;
+import ua.foxminded.muzychenko.dao.AdminRepository;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
 import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
@@ -23,7 +26,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,7 +33,7 @@ import static org.mockito.Mockito.when;
 @SpringJUnitConfig(TestConfig.class)
 class AdminServiceTest {
     @MockBean
-    private AdminDao adminDao;
+    private AdminRepository adminRepository;
     @MockBean
     private PasswordValidator passwordValidator;
     @MockBean
@@ -59,7 +61,7 @@ class AdminServiceTest {
           admin.getEmail()
         );
 
-        when(adminDao.findById(any(UUID.class)))
+        when(adminRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(admin));
 
         when(adminProfileMapper.mapAdminEntityToAdminProfile(any(Admin.class)))
@@ -100,10 +102,12 @@ class AdminServiceTest {
         when(adminProfileMapper.mapAdminEntityToAdminProfile(admin2))
             .thenReturn(adminProfile2);
 
-        when(adminDao.findAll(any(Long.class), any(Long.class)))
-            .thenReturn(adminList);
+        Page<Admin> expectedPage = new PageImpl<>(adminList);
 
-        assertEquals(adminProfileList, adminService.findAllAdmins(1L,1L));
+        when(adminRepository.findAll(any(Pageable.class)))
+                .thenReturn(expectedPage);
+
+        assertEquals(adminProfileList, adminService.findAllAdmins(1,1));
     }
 
     @Test
@@ -117,10 +121,8 @@ class AdminServiceTest {
             "pass"
         );
 
-        doNothing()
-            .when(adminDao)
-            .create(any(Admin.class)
-            );
+        when(adminRepository.save(any(Admin.class)))
+                .thenReturn(admin);
 
         doNothing()
             .when(passwordValidator)
@@ -137,7 +139,7 @@ class AdminServiceTest {
                 any(String.class)
             );
 
-        when(adminDao.findByEmail(any(String.class)))
+        when(adminRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(admin));
 
         AdminProfile expectedAdminProfile = new AdminProfile(
@@ -159,31 +161,32 @@ class AdminServiceTest {
 
     @Test
     void registerShouldCreateNewAdminEntityInDataBase() {
+        Admin admin = new Admin(UUID.randomUUID(), "fn", "ln", "em", "pass");
+
         doNothing()
             .when(requestValidator).
             validateUserRegistrationRequest(any(UserRegistrationRequest.class));
 
-        doNothing()
-            .when(adminDao)
-            .create(any(Admin.class));
+        when(adminRepository.save(any(Admin.class)))
+                .thenReturn(admin);
 
-        when(passwordEncoder.encode(any(String.class)))
-            .thenReturn("encodedString");
+        when(passwordEncoder.encode("pass"))
+            .thenReturn("encodedPassword");
 
 
         UserRegistrationRequest userRegistrationRequest = new UserRegistrationRequest(
             "email",
             "pass",
             "pass",
-            "fN",
-            "lN"
+            "fn",
+            "ln"
         );
 
         adminService.register(userRegistrationRequest);
 
         verify(passwordEncoder).encode(any(String.class));
         verify(requestValidator).validateUserRegistrationRequest(userRegistrationRequest);
-        verify(adminDao).create(any(Admin.class));
+        verify(adminRepository).save(any(Admin.class));
     }
 
     @Test
@@ -196,16 +199,15 @@ class AdminServiceTest {
             "pass"
         );
 
-        when(adminDao.findByEmail(any(String.class)))
+        when(adminRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(admin));
 
         doNothing()
             .when(passwordValidator)
             .validatePasswordChangeRequest(any(PasswordChangeRequest.class));
 
-        doNothing()
-            .when(adminDao)
-            .update(eq(admin.getUserId()), any(Admin.class));
+        when(adminRepository.save(any(Admin.class)))
+                .thenReturn(admin);
 
         PasswordChangeRequest passwordChangeRequest = new PasswordChangeRequest(
             "em",
@@ -217,9 +219,9 @@ class AdminServiceTest {
 
         adminService.changePassword(passwordChangeRequest);
 
-        verify(adminDao).findByEmail(any(String.class));
+        verify(adminRepository).findByEmail(any(String.class));
         verify(passwordValidator).validatePasswordChangeRequest(passwordChangeRequest);
-        verify(adminDao).update(eq(admin.getUserId()), any(Admin.class));
+        verify(adminRepository).save(any(Admin.class));
     }
 
     @Test
@@ -232,24 +234,24 @@ class AdminServiceTest {
             "pass"
         );
 
-        when(adminDao.findByEmail(any(String.class)))
+        when(adminRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(admin));
 
         doNothing()
-            .when(adminDao)
+            .when(adminRepository)
             .deleteById(any(UUID.class));
 
         adminService.deleteAdmin(admin.getEmail());
 
-        verify(adminDao).findByEmail(admin.getEmail());
-        verify(adminDao).deleteById(admin.getUserId());
+        verify(adminRepository).findByEmail(admin.getEmail());
+        verify(adminRepository).deleteById(admin.getUserId());
     }
 
     @Test
     void findAdminByEmailShouldReturnCorrectAdminProfile() {
         Admin admin = new Admin(UUID.randomUUID(), "fn", "ln", "em", "pas");
         AdminProfile adminProfile = new AdminProfile(admin.getFirstName(), admin.getLastName(), admin.getEmail());
-        when(adminDao.findByEmail(any(String.class)))
+        when(adminRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(admin));
         when(adminProfileMapper.mapAdminEntityToAdminProfile(admin))
             .thenReturn(adminProfile);

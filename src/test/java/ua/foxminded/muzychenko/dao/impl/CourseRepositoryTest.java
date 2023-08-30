@@ -5,19 +5,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.dao.CourseDao;
+import ua.foxminded.muzychenko.dao.CourseRepository;
 import ua.foxminded.muzychenko.entity.Course;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 @SpringJUnitConfig(TestConfig.class)
-class CourseDaoImplTest {
+@Transactional
+class CourseRepositoryTest {
 
     @Autowired
-    private CourseDao courseDao;
+    private CourseRepository courseRepository;
 
     @DisplayName("Course was created")
     @Test
@@ -27,28 +30,28 @@ class CourseDaoImplTest {
             "TestName",
             "TestDesc"
         );
-        courseDao.create(testCourse);
-        Course actualCourse = courseDao.findById(testCourse.getCourseId()).orElse(null);
+        courseRepository.save(testCourse);
+        Course actualCourse = courseRepository.findById(testCourse.getCourseId()).orElse(null);
         assertEquals(testCourse, actualCourse);
     }
 
     @DisplayName("Course was deleted")
     @Test
     void deleteByIdShouldDeleteSpecificCourse() {
-        int countOfCourses = courseDao.findAll().size();
-        courseDao.deleteById(courseDao.findAll().get(0).getCourseId());
+        int countOfCourses = courseRepository.findAll().size();
+        courseRepository.deleteById(courseRepository.findAll().get(0).getCourseId());
         int expectedCountOfCourses = countOfCourses - 1;
-        int actualCountOfCourses = courseDao.findAll().size();
+        int actualCountOfCourses = courseRepository.findAll().size();
         assertEquals(expectedCountOfCourses, actualCountOfCourses);
     }
 
     @DisplayName("Course was updated")
     @Test
     void updateShouldReplaceCourseWithProvidedOne() {
-        Course oldCourse = courseDao.findById(courseDao.findAll().get(0).getCourseId()).orElse(null);
+        Course oldCourse = courseRepository.findById(courseRepository.findAll().get(0).getCourseId()).orElse(null);
         assert oldCourse != null;
         Course newCourse = new Course(oldCourse.getCourseId(),"TEST", "TEST");
-        courseDao.update(oldCourse.getCourseId(), newCourse);
-        assertEquals(newCourse, courseDao.findById(oldCourse.getCourseId()).orElse(null));
+        courseRepository.save(newCourse);
+        assertEquals(newCourse, courseRepository.findById(oldCourse.getCourseId()).orElse(null));
     }
 }

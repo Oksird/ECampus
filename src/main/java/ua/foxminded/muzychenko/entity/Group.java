@@ -1,5 +1,6 @@
 package ua.foxminded.muzychenko.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -25,7 +26,7 @@ public final class Group {
     @Column(name = "group_name", nullable = false)
     private String groupName;
 
-    @OneToMany(mappedBy = "group")
+    @OneToMany(mappedBy = "group", cascade = CascadeType.REMOVE)
     private List<Student> students = new ArrayList<>();
 
     public Group(@NonNull UUID groupId , String groupName) {

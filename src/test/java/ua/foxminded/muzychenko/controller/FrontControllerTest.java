@@ -24,6 +24,7 @@ import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.view.ViewProvider;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -130,10 +131,10 @@ class FrontControllerTest {
             .thenReturn(1)
             .thenReturn(1)
             .thenReturn(0);
-        when(adminService.findAllAdmins(1L, 1L)).thenReturn(adminProfileList);
+        when(adminService.findAllAdmins(1, 1)).thenReturn(adminProfileList);
         frontController.run();
         verify(adminService).findAllAdmins(any(), any());
-        assertEquals(adminProfileList, adminService.findAllAdmins(1L, 1L));
+        assertEquals(adminProfileList, adminService.findAllAdmins(1, 1));
     }
 
     @Test
@@ -167,7 +168,7 @@ class FrontControllerTest {
             "ln",
             "em",
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         when(studentService.findStudentByEmail(any(String.class)))
@@ -207,14 +208,14 @@ class FrontControllerTest {
             student1.getLastName(),
             student1.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
         StudentProfile studentProfile2 = new StudentProfile(
             student2.getFirstName(),
             student2.getLastName(),
             student2.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         List<StudentProfile> studentProfileList = List.of(studentProfile1, studentProfile2);
@@ -227,8 +228,8 @@ class FrontControllerTest {
             .thenReturn(0);
         when(studentService.findAllStudents(any(), any())).thenReturn(studentProfileList);
         frontController.run();
-        verify(studentService).findAllStudents(1L, 1L);
-        assertEquals(studentProfileList, studentService.findAllStudents(1L, 1L));
+        verify(studentService).findAllStudents(1, 1);
+        assertEquals(studentProfileList, studentService.findAllStudents(1, 1));
     }
 
     @Test
@@ -295,7 +296,7 @@ class FrontControllerTest {
             "fn",
             "ln",
             "em",
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         when(teacherService.findTeacherByEmail(any(String.class))).thenReturn(teacherProfile);

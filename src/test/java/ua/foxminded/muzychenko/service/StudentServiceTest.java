@@ -3,11 +3,13 @@ package ua.foxminded.muzychenko.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dao.GroupDao;
-import ua.foxminded.muzychenko.dao.StudentDao;
+import ua.foxminded.muzychenko.dao.CourseRepository;
+import ua.foxminded.muzychenko.dao.GroupRepository;
+import ua.foxminded.muzychenko.dao.StudentRepository;
 import ua.foxminded.muzychenko.dao.exception.UserNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
@@ -24,11 +26,14 @@ import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -39,11 +44,11 @@ import static org.mockito.Mockito.when;
 class StudentServiceTest {
 
     @MockBean
-    private StudentDao studentDao;
+    private StudentRepository studentRepository;
     @MockBean
-    private CourseDao courseDao;
+    private CourseRepository courseRepository;
     @MockBean
-    private GroupDao groupDao;
+    private GroupRepository groupRepository;
     @MockBean
     private RequestValidator requestValidator;
     @MockBean
@@ -71,19 +76,19 @@ class StudentServiceTest {
             student.getLastName(),
             student.getEmail(),
             new GroupInfo("gn"),
-            new ArrayList<>()
+            new HashSet<>()
             );
 
-        when(studentDao.findById(any(UUID.class)))
+        when(studentRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(student));
 
-        when(groupDao.findUsersGroup(any(UUID.class)))
+        when(groupRepository.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.of(new Group(UUID.randomUUID(), "gn")));
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
-            .thenReturn(new ArrayList<>());
+        when(courseRepository.findUsersCourses(any(UUID.class)))
+            .thenReturn(new HashSet<>());
 
-        when(studentProfileMapper.mapStudentInfoToProfile(any(Student.class), any(Group.class), eq (new ArrayList<>())))
+        when(studentProfileMapper.mapStudentInfoToProfile(any(Student.class), any(Group.class), eq (new HashSet<>())))
             .thenReturn(studentProfile);
 
         assertEquals(studentProfile, studentService.findStudentById(UUID.randomUUID()));
@@ -118,7 +123,7 @@ class StudentServiceTest {
             student1.getLastName(),
             student1.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         StudentProfile studentProfile2 = new StudentProfile(
@@ -126,20 +131,20 @@ class StudentServiceTest {
             student2.getLastName(),
             student2.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
-        List<Course> courseList = new ArrayList<>();
+        Set<Course> courseList = new HashSet<>();
 
         List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
 
-        when(studentDao.findAll(any(Long.class), any(Long.class)))
-            .thenReturn(studentList);
+        when(studentRepository.findAll(any(Pageable.class)))
+            .thenReturn(new PageImpl<>(studentList));
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseRepository.findUsersCourses(any(UUID.class)))
             .thenReturn(courseList);
 
-        when(groupDao.findUsersGroup(any(UUID.class)))
+        when(groupRepository.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.empty());
 
         when(studentProfileMapper.mapStudentInfoToProfile(eq (student1), any(), eq(courseList)))
@@ -148,7 +153,7 @@ class StudentServiceTest {
         when(studentProfileMapper.mapStudentInfoToProfile(eq (student2), any(), eq(courseList)))
             .thenReturn(studentProfile2);
 
-        assertEquals(studentProfileList, studentService.findAllStudents(1L,1L));
+        assertEquals(studentProfileList, studentService.findAllStudents(1,1));
     }
 
     @Test
@@ -180,7 +185,7 @@ class StudentServiceTest {
             student1.getLastName(),
             student1.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         StudentProfile studentProfile2 = new StudentProfile(
@@ -188,20 +193,20 @@ class StudentServiceTest {
             student2.getLastName(),
             student2.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
 
-        List<Course> courseList = new ArrayList<>();
+        Set<Course> courseList = new HashSet<>();
 
-        when(studentDao.findByCourse(any(String.class)))
+        when(studentRepository.findByCourses_CourseName(any(String.class)))
             .thenReturn(studentList);
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseRepository.findUsersCourses(any(UUID.class)))
             .thenReturn(courseList);
 
-        when(groupDao.findUsersGroup(any(UUID.class)))
+        when(groupRepository.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.empty());
 
         when(studentProfileMapper.mapStudentInfoToProfile(eq (student1), any(), eq(courseList)))
@@ -242,7 +247,7 @@ class StudentServiceTest {
             student1.getLastName(),
             student1.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         StudentProfile studentProfile2 = new StudentProfile(
@@ -250,20 +255,20 @@ class StudentServiceTest {
             student2.getLastName(),
             student2.getEmail(),
             null,
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
 
-        List<Course> courseList = new ArrayList<>();
+        Set<Course> courseList = new HashSet<>();
 
-        when(studentDao.findByGroup(any(String.class)))
+        when(studentRepository.findByGroup_GroupName(any(String.class)))
             .thenReturn(studentList);
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
+        when(courseRepository.findUsersCourses(any(UUID.class)))
             .thenReturn(courseList);
 
-        when(groupDao.findUsersGroup(any(UUID.class)))
+        when(groupRepository.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.empty());
 
         when(studentProfileMapper.mapStudentInfoToProfile(eq (student1), any(), eq(courseList)))
@@ -288,10 +293,9 @@ class StudentServiceTest {
             "pass",
             null
         );
-        doNothing()
-            .when(studentDao)
-            .create(any(Student.class)
-            );
+
+        when(studentRepository.save(any(Student.class)))
+            .thenReturn(student);
 
         doNothing()
             .when(passwordValidator)
@@ -307,11 +311,11 @@ class StudentServiceTest {
                 any(String.class),
                 any(String.class)
             );
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
-            .thenReturn(new ArrayList<>(List.of(course)));
-        when(groupDao.findUsersGroup(any(UUID.class)))
+        when(courseRepository.findUsersCourses(any(UUID.class)))
+            .thenReturn(new HashSet<>(List.of(course)));
+        when(groupRepository.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.of(new Group(UUID.randomUUID(), "gn")));
 
         StudentProfile expectedStudentProfile = new StudentProfile(
@@ -319,7 +323,7 @@ class StudentServiceTest {
             student.getLastName(),
             student.getEmail(),
             new GroupInfo("gn"),
-            new ArrayList<>(List.of(new CourseInfo(course.getCourseName(), course.getCourseDescription())))
+            new HashSet<>(List.of(new CourseInfo(course.getCourseName(), course.getCourseDescription())))
         );
 
         UserLoginRequest userLoginRequest = new UserLoginRequest(
@@ -336,9 +340,8 @@ class StudentServiceTest {
             .when(requestValidator).
             validateUserRegistrationRequest(any(UserRegistrationRequest.class));
 
-        doNothing()
-            .when(studentDao)
-            .create(any(Student.class));
+        when(studentRepository.save(any(Student.class)))
+            .thenReturn(new Student());
 
         when(passwordEncoder.encode(any(String.class)))
             .thenReturn("encodedString");
@@ -356,7 +359,7 @@ class StudentServiceTest {
 
         verify(passwordEncoder).encode(any(String.class));
         verify(requestValidator).validateUserRegistrationRequest(userRegistrationRequest);
-        verify(studentDao).create(any(Student.class));
+        verify(studentRepository).save(any(Student.class));
     }
 
     @Test
@@ -370,16 +373,15 @@ class StudentServiceTest {
             null
         );
 
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
 
         doNothing()
             .when(passwordValidator)
             .validatePasswordChangeRequest(any(PasswordChangeRequest.class));
 
-        doNothing()
-            .when(studentDao)
-            .update(eq(student.getUserId()), any(Student.class));
+        when(studentRepository.save(any(Student.class)))
+                .thenReturn(student);
 
         PasswordChangeRequest passwordChangeRequest = new PasswordChangeRequest(
             "em",
@@ -391,9 +393,9 @@ class StudentServiceTest {
 
         studentService.changePassword(passwordChangeRequest);
 
-        verify(studentDao).findByEmail(any(String.class));
+        verify(studentRepository).findByEmail(any(String.class));
         verify(passwordValidator).validatePasswordChangeRequest(passwordChangeRequest);
-        verify(studentDao).update(eq(student.getUserId()), any(Student.class));
+        verify(studentRepository).save(any(Student.class));
     }
 
     @Test
@@ -407,17 +409,17 @@ class StudentServiceTest {
             null
         );
 
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
 
         doNothing()
-            .when(studentDao)
+            .when(studentRepository)
             .deleteById(any(UUID.class));
 
         studentService.deleteStudent(student.getEmail());
 
-        verify(studentDao).findByEmail(student.getEmail());
-        verify(studentDao).deleteById(student.getUserId());
+        verify(studentRepository).findByEmail(student.getEmail());
+        verify(studentRepository).deleteById(student.getUserId());
     }
 
     @Test
@@ -431,17 +433,13 @@ class StudentServiceTest {
             null
         );
 
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
-
-        doNothing()
-            .when(studentDao)
-            .excludeFromGroup(any(UUID.class));
 
         studentService.excludeStudentFromGroup(student.getEmail());
 
-        verify(studentDao).findByEmail(student.getEmail());
-        verify(studentDao).excludeFromGroup(student.getUserId());
+        verify(studentRepository).findByEmail(student.getEmail());
+        verify(studentRepository).save(any(Student.class));
     }
 
     @Test
@@ -455,17 +453,17 @@ class StudentServiceTest {
             null
         );
 
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
 
-        doNothing()
-            .when(studentDao)
-            .excludeFromCourse(any(UUID.class), any(String.class));
+        when(courseRepository.findByCourseName(any(String.class)))
+            .thenReturn(Optional.of(new Course(UUID.randomUUID(), "cn", "cd")));
 
         studentService.excludeStudentFromCourse(student.getEmail(), "cn");
 
-        verify(studentDao).findByEmail(student.getEmail());
-        verify(studentDao).excludeFromCourse(student.getUserId(), "cn");
+        verify(studentRepository).findByEmail(student.getEmail());
+        verify(courseRepository).findByCourseName("cn");
+        verify(studentRepository).save(any(Student.class));
     }
 
     @Test
@@ -479,17 +477,16 @@ class StudentServiceTest {
             null
         );
 
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
 
-        doNothing()
-            .when(studentDao)
-            .addToCourse(any(UUID.class), any(String.class));
+        when(courseRepository.findByCourseName(any(String.class)))
+            .thenReturn(Optional.of(new Course(UUID.randomUUID(), "cn", "cd")));
 
-        studentService.addStudentToCourse(student.getEmail(), "cN");
+        studentService.addStudentToCourse(student.getEmail(), "cn");
 
-        verify(studentDao).findByEmail(student.getEmail());
-        verify(studentDao).addToCourse(student.getUserId(), "cN");
+        verify(studentRepository).findByEmail(student.getEmail());
+        verify(studentRepository).save(any(Student.class));
     }
 
     @Test
@@ -503,17 +500,16 @@ class StudentServiceTest {
             null
         );
 
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
 
-        doNothing()
-            .when(studentDao)
-            .addToGroup(any(UUID.class), any(String.class));
+        when(groupRepository.findByGroupName(any(String.class)))
+            .thenReturn(Optional.of(new Group(UUID.randomUUID(), "gN")));
 
         studentService.addStudentToGroup(student.getEmail(), "gN");
 
-        verify(studentDao).findByEmail(student.getEmail());
-        verify(studentDao).addToGroup(student.getUserId(), "gN");
+        verify(studentRepository).findByEmail(student.getEmail());
+        verify(studentRepository).save(any(Student.class));
     }
 
     @Test
@@ -541,24 +537,24 @@ class StudentServiceTest {
             course2.getCourseDescription()
         );
 
-        when(groupDao.findUsersGroup(any(UUID.class)))
+        when(groupRepository.findUsersGroup(any(UUID.class)))
             .thenReturn(Optional.of(group));
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
-            .thenReturn(new ArrayList<>(List.of(course1, course2)));
+        when(courseRepository.findUsersCourses(any(UUID.class)))
+            .thenReturn(new HashSet<>(List.of(course1, course2)));
 
         StudentProfile studentProfile = new StudentProfile(
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
             new GroupInfo(group.getGroupName()),
-            new ArrayList<>(List.of(courseInfo1, courseInfo2))
+            new HashSet<>(List.of(courseInfo1, courseInfo2))
         );
 
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(student));
 
-        when(studentProfileMapper.mapStudentInfoToProfile(student, group, new ArrayList<>(List.of(course1, course2))))
+        when(studentProfileMapper.mapStudentInfoToProfile(student, group, new HashSet<>(List.of(course1, course2))))
             .thenReturn(studentProfile);
 
         assertEquals(studentProfile, studentService.findStudentByEmail("email"));
@@ -566,7 +562,7 @@ class StudentServiceTest {
 
     @Test
     void findStudentByEmailShouldThrowExceptionWhenEmailIsWrong() {
-        when(studentDao.findByEmail(any(String.class)))
+        when(studentRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> studentService.findStudentByEmail("email"));

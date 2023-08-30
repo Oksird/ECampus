@@ -1,5 +1,6 @@
 package ua.foxminded.muzychenko.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -30,10 +31,10 @@ public class Course {
     @Column(name = "course_description")
     private String courseDescription;
 
-    @ManyToMany(mappedBy = "courses")
+    @ManyToMany(mappedBy = "courses", cascade = CascadeType.REMOVE)
     private Set<Student> students = new HashSet<>();
 
-    @ManyToMany(mappedBy = "courses")
+    @ManyToMany(mappedBy = "courses", cascade = CascadeType.REMOVE)
     private Set<Teacher> teachers = new HashSet<>();
 
     public Course(@NonNull UUID courseId , String courseName, String courseDescription) {

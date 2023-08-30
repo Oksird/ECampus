@@ -1,9 +1,11 @@
 package ua.foxminded.muzychenko.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.foxminded.muzychenko.dao.AdminDao;
+import ua.foxminded.muzychenko.dao.AdminRepository;
 import ua.foxminded.muzychenko.dao.exception.UserNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
@@ -23,19 +25,20 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class AdminService {
-    private final AdminDao adminDao;
+    private final AdminRepository adminRepository;
     private final RequestValidator requestValidator;
     private final PasswordEncoder passwordEncoder;
     private final PasswordValidator passwordValidator;
     private final AdminProfileMapper adminProfileMapper;
 
     public AdminProfile findAdminById(UUID id) {
-        Admin admin = adminDao.findById(id).orElseThrow(UserNotFoundException::new);
+        Admin admin = adminRepository.findById(id).orElseThrow(UserNotFoundException::new);
         return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
     }
 
-    public List<AdminProfile> findAllAdmins(Long pageNumber, Long pageSize) {
-        List<Admin> adminList = adminDao.findAll(pageNumber, pageSize);
+    public List<AdminProfile> findAllAdmins(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        List<Admin> adminList = adminRepository.findAll(pageable).getContent();
         List<AdminProfile> adminProfileList = new ArrayList<>(adminList.size());
         adminList.forEach(admin -> adminProfileList.add(adminProfileMapper.mapAdminEntityToAdminProfile(admin)));
         return adminProfileList;
@@ -43,25 +46,25 @@ public class AdminService {
 
     @Transactional
     public void deleteAdmin(String email) {
-        adminDao.deleteById(getAdminIdByEmail(email));
+        adminRepository.deleteById(getAdminIdByEmail(email));
     }
 
     @Transactional
     public void changePassword(PasswordChangeRequest passwordChangeRequest) {
-        Admin admin = adminDao.findByEmail(passwordChangeRequest.getEmail()).orElseThrow(BadCredentialsException::new);
+        Admin admin = adminRepository.findByEmail(passwordChangeRequest.getEmail()).orElseThrow(BadCredentialsException::new);
 
         passwordValidator.validatePasswordChangeRequest(passwordChangeRequest);
 
         admin.setPassword(passwordChangeRequest.getNewPassword());
 
-        adminDao.update(admin.getUserId(), admin);
+        adminRepository.save(admin);
     }
 
     @Transactional
     public AdminProfile login(UserLoginRequest userLoginRequest) {
         String email = userLoginRequest.getEmail();
 
-        Admin admin = adminDao.findByEmail(email).orElseThrow(BadCredentialsException::new);
+        Admin admin = adminRepository.findByEmail(email).orElseThrow(BadCredentialsException::new);
 
         return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
     }
@@ -69,7 +72,7 @@ public class AdminService {
     @Transactional
     public void register(UserRegistrationRequest userRegistrationRequest) {
         requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
-        adminDao.create(
+        adminRepository.save(
             new Admin(
                 UUID.randomUUID(),
                 userRegistrationRequest.getFirstName(),
@@ -81,11 +84,11 @@ public class AdminService {
     }
 
     public AdminProfile findAdminByEmail(String email) {
-        Admin admin = adminDao.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        Admin admin = adminRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
         return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
     }
 
     private UUID getAdminIdByEmail(String email) {
-        return adminDao.findByEmail(email).orElseThrow(UserNotFoundException::new).getUserId();
+        return adminRepository.findByEmail(email).orElseThrow(UserNotFoundException::new).getUserId();
     }
 }

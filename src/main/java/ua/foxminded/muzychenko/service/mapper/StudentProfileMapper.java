@@ -8,25 +8,26 @@ import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
 
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper
 public class StudentProfileMapper {
-    public StudentProfile mapStudentInfoToProfile(Student student, Group group, List<Course> courses) {
+    public StudentProfile mapStudentInfoToProfile(Student student, Group group, Set<Course> courses) {
         GroupInfo groupInfo = new GroupInfo(null);
         if (group != null) {
             groupInfo = new GroupInfo(group.getGroupName());
         }
-        List<CourseInfo> courseInfoList = courses.stream()
+        Set<CourseInfo> courseInfos = courses.stream()
             .map(course -> new CourseInfo(course.getCourseName(), course.getCourseDescription()))
-            .toList();
+            .collect(Collectors.toSet());
 
         return new StudentProfile(
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
             groupInfo,
-            courseInfoList
+            courseInfos
         );
     }
 }

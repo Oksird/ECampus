@@ -86,7 +86,7 @@ public class FrontController {
                     int pageNumber = viewProvider.readInt();
                     viewProvider.printMessage("Enter page size");
                     int pageSize = viewProvider.readInt();
-                    List<AdminProfile> adminProfiles = findAllAdmins((long) pageNumber, (long) pageSize);
+                    List<AdminProfile> adminProfiles = findAllAdmins(pageNumber, pageSize);
                     adminProfiles.forEach(studentInfo -> System.out.println(studentInfo.toString()));
                 }
                 case 0 -> {
@@ -125,7 +125,7 @@ public class FrontController {
                     int pageNumber = viewProvider.readInt();
                     viewProvider.printMessage("Enter page size");
                     int pageSize = viewProvider.readInt();
-                    List<StudentProfile> studentProfiles = findAllStudents((long) pageNumber, (long) pageSize);
+                    List<StudentProfile> studentProfiles = findAllStudents(pageNumber, pageSize);
                     studentProfiles.forEach(studentInfo -> System.out.println(studentInfo.toString()));
                 }
                 case 4 -> {
@@ -273,7 +273,7 @@ public class FrontController {
         return studentService.findStudentByEmail(email);
     }
 
-    private List<StudentProfile> findAllStudents(Long pageNumber, Long pageSize) {
+    private List<StudentProfile> findAllStudents(Integer pageNumber, Integer pageSize) {
         return studentService.findAllStudents(pageNumber, pageSize);
     }
 
@@ -311,7 +311,7 @@ public class FrontController {
         return adminService.findAdminByEmail(email);
     }
 
-    private List<AdminProfile> findAllAdmins(Long pageNumber, Long pageSize) {
+    private List<AdminProfile> findAllAdmins(Integer pageNumber, Integer pageSize) {
         return adminService.findAllAdmins(pageNumber, pageSize);
     }
 

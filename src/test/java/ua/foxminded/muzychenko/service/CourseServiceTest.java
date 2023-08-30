@@ -3,9 +3,11 @@ package ua.foxminded.muzychenko.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.dao.CourseDao;
+import ua.foxminded.muzychenko.dao.CourseRepository;
 import ua.foxminded.muzychenko.dao.exception.CourseNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.entity.Course;
@@ -28,7 +30,7 @@ import static org.mockito.Mockito.when;
 class CourseServiceTest {
 
     @MockBean
-    private CourseDao courseDao;
+    private CourseRepository courseRepository;
     @MockBean
     private CourseValidator courseValidator;
     @MockBean
@@ -38,19 +40,20 @@ class CourseServiceTest {
 
     @Test
     void createCourseShouldCreateNewCourseWithCorrectFields() {
+        Course course = new Course(UUID.randomUUID(), "cn", "cd");
+
         doNothing()
             .when(courseValidator)
             .validateCourseInfo(any(CourseInfo.class));
-        doNothing()
-            .when(courseDao)
-            .create(any(Course.class));
+        when(courseRepository.save(any(Course.class)))
+             .thenReturn(course);
 
-        CourseInfo courseInfo = new CourseInfo("name", "desc");
+        CourseInfo courseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
 
         courseService.createCourse(courseInfo);
 
         verify(courseValidator).validateCourseInfo(courseInfo);
-        verify(courseDao).create(any(Course.class));
+        verify(courseRepository).save(any(Course.class));
     }
 
     @Test
@@ -58,7 +61,7 @@ class CourseServiceTest {
 
         Course course = new Course(UUID.randomUUID(), "cn", "cdesc");
 
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.of(course));
 
         CourseInfo expectedCourseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
@@ -73,7 +76,7 @@ class CourseServiceTest {
     void findCourseByIdShouldReturnCourseWhenIdIsCorrect() {
         Course course = new Course(UUID.randomUUID(), "cn", "cdesc");
 
-        when(courseDao.findById(any(UUID.class)))
+        when(courseRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(course));
 
         CourseInfo courseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
@@ -88,16 +91,16 @@ class CourseServiceTest {
     void deleteCourseShouldDeleteCourseFromDataBase() {
         Course course = new Course(UUID.randomUUID(), "cn", "cdesc");
 
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.of(course));
 
         doNothing()
-            .when(courseDao)
+            .when(courseRepository)
             .deleteById(any(UUID.class));
 
         courseService.deleteCourse("cn");
 
-        verify(courseDao).deleteById(any(UUID.class));
+        verify(courseRepository).deleteById(any(UUID.class));
     }
 
     @Test
@@ -112,71 +115,69 @@ class CourseServiceTest {
 
         List<CourseInfo> courseInfoList = new ArrayList<>(List.of(courseInfo1, courseInfo2));
 
-        when(courseDao.findAll(any(Long.class), any(Long.class)))
-            .thenReturn(expectedCourses);
+        when(courseRepository.findAll(any(Pageable.class)))
+            .thenReturn(new PageImpl<>(expectedCourses));
 
         when(courseInfoMapper.mapCourseEntityToCourseInfo(course1))
             .thenReturn(courseInfo1);
         when(courseInfoMapper.mapCourseEntityToCourseInfo(course2))
             .thenReturn(courseInfo2);
 
-        assertEquals(courseInfoList, courseService.findAllCourses(1L, 1L));
+        assertEquals(courseInfoList, courseService.findAllCourses(1, 1));
     }
 
     @Test
     void changeCourseNameShouldChangeCourseNameIfNewNameIsCorrect() {
         Course course = new Course(UUID.randomUUID(), "cn1", "cdesc1");
 
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.of(course));
 
         doNothing()
             .when(courseValidator)
             .validateCourseInfo(any(CourseInfo.class));
 
-        doNothing()
-            .when(courseDao)
-            .update(any(UUID.class), any(Course.class));
+        when(courseRepository.save(any(Course.class)))
+            .thenReturn(course);
 
         courseService.changeCourseName("cn", "cnn");
 
-        verify(courseDao).findByName("cn");
+        verify(courseRepository).findByCourseName("cn");
         verify(courseValidator).validateCourseInfo(any(CourseInfo.class));
-        verify(courseDao).update(any(UUID.class), any(Course.class));
+        verify(courseRepository).save(any(Course.class));
     }
 
     @Test
     void changeCourseDescriptionShouldChangeCourseDescriptionIfNewDescriptionIsCorrect() {
         Course course = new Course(UUID.randomUUID(), "cn1", "cdesc1");
 
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.of(course));
 
         doNothing()
             .when(courseValidator)
             .validateCourseInfo(any(CourseInfo.class));
 
-        doNothing()
-            .when(courseDao)
-            .update(any(UUID.class), any(Course.class));
+        when(courseRepository.save(any(Course.class)))
+            .thenReturn(course);
 
         courseService.changeCourseDescription("cn", "description example");
 
-        verify(courseDao).findByName("cn");
+        verify(courseRepository).findByCourseName("cn");
         verify(courseValidator).validateCourseInfo(any(CourseInfo.class));
-        verify(courseDao).update(any(UUID.class), any(Course.class));
+        verify(courseRepository).save(any(Course.class));
     }
 
     @Test
     void findCourseByNameShouldThrowExceptionWhenNameDoesNotExist() {
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(CourseNotFoundException.class, () -> courseService.findCourseByName("bad name"));
     }
 
     @Test
     void findCourseByIdShouldThrowExceptionWhenCourseDoesNotExist() {
-        when(courseDao.findById(any(UUID.class)))
+        when(courseRepository.findById(any(UUID.class)))
             .thenReturn(Optional.empty());
         UUID wrongUUID = UUID.randomUUID();
         assertThrows(CourseNotFoundException.class, () -> courseService.findCourseById(wrongUUID));
@@ -184,7 +185,7 @@ class CourseServiceTest {
 
     @Test
     void changeCourseNameShouldThrowExceptionWhenCourseWithNameDoesNotExist() {
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
             CourseNotFoundException.class,
@@ -194,7 +195,7 @@ class CourseServiceTest {
 
     @Test
     void changeCourseDescriptionShouldThrowExceptionWhenCourseWithNameDoesNotExist() {
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
             CourseNotFoundException.class,
@@ -204,7 +205,7 @@ class CourseServiceTest {
 
     @Test
     void deleteCourseShouldThrowExceptionWhenCourseWithIdDoesNotExist() {
-        when(courseDao.findByName(any(String.class)))
+        when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(
             CourseNotFoundException.class,

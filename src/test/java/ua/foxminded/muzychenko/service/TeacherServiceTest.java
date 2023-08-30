@@ -3,10 +3,12 @@ package ua.foxminded.muzychenko.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.TestConfig;
-import ua.foxminded.muzychenko.dao.CourseDao;
-import ua.foxminded.muzychenko.dao.TeacherDao;
+import ua.foxminded.muzychenko.dao.CourseRepository;
+import ua.foxminded.muzychenko.dao.TeacherRepository;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
@@ -20,6 +22,7 @@ import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,9 +37,9 @@ import static org.mockito.Mockito.when;
 @SpringJUnitConfig(TestConfig.class)
 class TeacherServiceTest {
     @MockBean
-    private TeacherDao teacherDao;
+    private TeacherRepository teacherRepository;
     @MockBean
-    private CourseDao courseDao;
+    private CourseRepository courseRepository;
     @MockBean
     private RequestValidator requestValidator;
     @MockBean
@@ -62,12 +65,12 @@ class TeacherServiceTest {
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new ArrayList<>());
+            new HashSet<>());
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
-            .thenReturn(new ArrayList<>());
+        when(courseRepository.findUsersCourses(any(UUID.class)))
+            .thenReturn(new HashSet<>());
 
-        when(teacherDao.findById(any(UUID.class)))
+        when(teacherRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(teacher));
 
         when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher), any()))
@@ -102,19 +105,19 @@ class TeacherServiceTest {
             teacher1.getFirstName(),
             teacher1.getLastName(),
             teacher1.getEmail(),
-            new ArrayList<>()
+            new HashSet<>()
         );
         TeacherProfile teacherProfile2 = new TeacherProfile(
             teacher2.getFirstName(),
             teacher2.getLastName(),
             teacher2.getEmail(),
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         List<TeacherProfile> teacherProfileList = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));
 
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
-            .thenReturn(new ArrayList<>());
+        when(courseRepository.findUsersCourses(any(UUID.class)))
+            .thenReturn(new HashSet<>());
 
         when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1), any()))
             .thenReturn(teacherProfile1);
@@ -122,10 +125,10 @@ class TeacherServiceTest {
         when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher2), any()))
             .thenReturn(teacherProfile2);
 
-        when(teacherDao.findAll(any(Long.class), any(Long.class)))
-            .thenReturn(teacherList);
+        when(teacherRepository.findAll(any(Pageable.class)))
+            .thenReturn(new PageImpl<>(teacherList));
 
-        assertEquals(teacherProfileList, teacherService.findAllTeachers(1L,1L));
+        assertEquals(teacherProfileList, teacherService.findAllTeachers(1,1));
     }
 
     @Test
@@ -154,18 +157,18 @@ class TeacherServiceTest {
             teacher1.getFirstName(),
             teacher1.getLastName(),
             teacher1.getEmail(),
-            new ArrayList<>()
+            new HashSet<>()
         );
         TeacherProfile teacherProfile2 = new TeacherProfile(
             teacher2.getFirstName(),
             teacher2.getLastName(),
             teacher2.getEmail(),
-            new ArrayList<>()
+            new HashSet<>()
         );
 
         List<TeacherProfile> teacherProfileList = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));
 
-        when(teacherDao.findByCourse(any(String.class)))
+        when(teacherRepository.findByCourses_CourseName(any(String.class)))
             .thenReturn(teacherList);
 
         when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1), any()))
@@ -174,8 +177,8 @@ class TeacherServiceTest {
         when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher2), any()))
             .thenReturn(teacherProfile2);
 
-        when(teacherDao.findAll(any(Long.class), any(Long.class)))
-            .thenReturn(teacherList);
+        when(teacherRepository.findAll(any(Pageable.class)))
+            .thenReturn(new PageImpl<>(teacherList));
 
         assertEquals(teacherProfileList, teacherService.findTeachersByCourse("cn"));
     }
@@ -192,10 +195,8 @@ class TeacherServiceTest {
             "em",
             "pass"
         );
-        doNothing()
-            .when(teacherDao)
-            .create(any(Teacher.class)
-            );
+        when(teacherRepository.save(any(Teacher.class)))
+            .thenReturn(teacher);
 
         doNothing()
             .when(passwordValidator)
@@ -211,16 +212,16 @@ class TeacherServiceTest {
                 any(String.class),
                 any(String.class)
             );
-        when(teacherDao.findByEmail(any(String.class)))
+        when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
-        when(courseDao.findCoursesByUserIdAndUserType(any(UUID.class)))
-            .thenReturn(new ArrayList<>(List.of(course)));
+        when(courseRepository.findUsersCourses(any(UUID.class)))
+            .thenReturn(new HashSet<>(List.of(course)));
 
         TeacherProfile expectedTeacherProfile = new TeacherProfile(
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new ArrayList<>(List.of(new CourseInfo(course.getCourseName(), course.getCourseDescription())))
+            new HashSet<>(List.of(new CourseInfo(course.getCourseName(), course.getCourseDescription())))
         );
 
         UserLoginRequest userLoginRequest = new UserLoginRequest(
@@ -237,9 +238,8 @@ class TeacherServiceTest {
             .when(requestValidator).
             validateUserRegistrationRequest(any(UserRegistrationRequest.class));
 
-        doNothing()
-            .when(teacherDao)
-            .create(any(Teacher.class));
+        when(teacherRepository.save(any(Teacher.class)))
+                .thenReturn(new Teacher());
 
         when(passwordEncoder.encode(any(String.class)))
             .thenReturn("encodedString");
@@ -257,7 +257,7 @@ class TeacherServiceTest {
 
         verify(passwordEncoder).encode(any(String.class));
         verify(requestValidator).validateUserRegistrationRequest(userRegistrationRequest);
-        verify(teacherDao).create(any(Teacher.class));
+        verify(teacherRepository).save(any(Teacher.class));
     }
 
     @Test
@@ -270,16 +270,15 @@ class TeacherServiceTest {
             "pass"
         );
 
-        when(teacherDao.findByEmail(any(String.class)))
+        when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
 
         doNothing()
             .when(passwordValidator)
             .validatePasswordChangeRequest(any(PasswordChangeRequest.class));
 
-        doNothing()
-            .when(teacherDao)
-            .update(eq(teacher.getUserId()), any(Teacher.class));
+        when(teacherRepository.save(any(Teacher.class)))
+            .thenReturn(teacher);
 
         PasswordChangeRequest passwordChangeRequest = new PasswordChangeRequest(
             "em",
@@ -291,9 +290,9 @@ class TeacherServiceTest {
 
         teacherService.changePassword(passwordChangeRequest);
 
-        verify(teacherDao).findByEmail(any(String.class));
+        verify(teacherRepository).findByEmail(any(String.class));
         verify(passwordValidator).validatePasswordChangeRequest(passwordChangeRequest);
-        verify(teacherDao).update(eq(teacher.getUserId()), any(Teacher.class));
+        verify(teacherRepository).save(any(Teacher.class));
     }
 
     @Test
@@ -306,17 +305,17 @@ class TeacherServiceTest {
             "pass"
         );
 
-        when(teacherDao.findByEmail(any(String.class)))
+        when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
 
         doNothing()
-            .when(teacherDao)
+            .when(teacherRepository)
             .deleteById(any(UUID.class));
 
         teacherService.deleteTeacher(teacher.getEmail());
 
-        verify(teacherDao).findByEmail(teacher.getEmail());
-        verify(teacherDao).deleteById(teacher.getUserId());
+        verify(teacherRepository).findByEmail(teacher.getEmail());
+        verify(teacherRepository).deleteById(teacher.getUserId());
     }
 
     @Test
@@ -329,17 +328,16 @@ class TeacherServiceTest {
             "pass"
         );
 
-        when(teacherDao.findByEmail(any(String.class)))
+        when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
 
-        doNothing()
-            .when(teacherDao)
-            .excludeFromCourse(any(UUID.class), any(String.class));
+        when(courseRepository.findByCourseName(any(String.class)))
+            .thenReturn(Optional.of(new Course(UUID.randomUUID(), "cn", "cd")));
 
         teacherService.excludeTeacherFromCourse(teacher.getEmail(), "cn");
 
-        verify(teacherDao).findByEmail(teacher.getEmail());
-        verify(teacherDao).excludeFromCourse(teacher.getUserId(), "cn");
+        verify(teacherRepository).findByEmail(teacher.getEmail());
+        verify(teacherRepository).save(any(Teacher.class));
     }
 
     @Test
@@ -352,17 +350,16 @@ class TeacherServiceTest {
             "pass"
         );
 
-        when(teacherDao.findByEmail(any(String.class)))
+        when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
 
-        doNothing()
-            .when(teacherDao)
-            .addToCourse(any(UUID.class), any(String.class));
+        when(courseRepository.findByCourseName(any(String.class)))
+            .thenReturn(Optional.of(new Course(UUID.randomUUID(), "cn", "cd")));
 
         teacherService.addTeacherToCourse(teacher.getEmail(), "cN");
 
-        verify(teacherDao).findByEmail(teacher.getEmail());
-        verify(teacherDao).addToCourse(teacher.getUserId(), "cN");
+        verify(teacherRepository).findByEmail(teacher.getEmail());
+        verify(teacherRepository).save(any(Teacher.class));
     }
 
     @Test
@@ -379,10 +376,10 @@ class TeacherServiceTest {
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new ArrayList<>()
+            new HashSet<>()
         );
 
-        when(teacherDao.findByEmail(any(String.class)))
+        when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
 
         when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher), any()))

@@ -16,4 +16,4 @@ services:
       - PGADMIN_DEFAULT_EMAIL=m.muz.al3105@gmail.com
       - PGADMIN_DEFAULT_PASSWORD=password
     ports:
-      - 5050:80
+      - "5050:80"

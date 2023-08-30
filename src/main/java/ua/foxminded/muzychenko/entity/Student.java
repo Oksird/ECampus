@@ -1,5 +1,6 @@
 package ua.foxminded.muzychenko.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,12 +12,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, exclude = "courses")
+@ToString(callSuper = true)
 @Data
 @Entity
 @NoArgsConstructor
@@ -28,7 +31,7 @@ public class Student extends User {
     @JoinColumn(name = "group_id")
     private Group group;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
         name = "students_courses",
         joinColumns = {

@@ -2,14 +2,13 @@ package ua.foxminded.muzychenko.university;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.flywaydb.core.Flyway;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.ext.ScriptUtils;
-import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.junit.jupiter.Container;
 import ua.foxminded.muzychenko.university.config.AppConfiguration;
 
@@ -27,11 +26,6 @@ public class TestUniversityApplication {
 
     static {
         postgreSQLContainer.start();
-
-        var containerDelegate = new JdbcDatabaseDelegate(postgreSQLContainer, "");
-
-        ScriptUtils.runInitScript(containerDelegate, "sql/createTestTables.sql");
-        ScriptUtils.runInitScript(containerDelegate, "sql/generateTestData.sql");
     }
 
     @Bean
@@ -41,5 +35,13 @@ public class TestUniversityApplication {
         hikariConfig.setUsername(postgreSQLContainer.getUsername());
         hikariConfig.setPassword(postgreSQLContainer.getPassword());
         return new HikariDataSource(hikariConfig);
+    }
+
+    @Bean(initMethod = "migrate")
+    public Flyway flyway() {
+        return Flyway.configure()
+            .dataSource(dataSource())
+            .locations("classpath:db/migration/test")
+            .load();
     }
 }

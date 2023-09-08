@@ -94,3 +94,31 @@ INSERT INTO teachers_courses VALUES ((SELECT user_id FROM users WHERE email = 'e
 INSERT INTO teachers_courses VALUES ((SELECT user_id FROM users WHERE email = 'et8'), (SELECT course_id FROM courses WHERE course_name = 'Course2'));
 INSERT INTO teachers_courses VALUES ((SELECT user_id FROM users WHERE email = 'et9'), (SELECT course_id FROM courses WHERE course_name = 'Course3'));
 INSERT INTO teachers_courses VALUES ((SELECT user_id FROM users WHERE email = 'et10'), (SELECT course_id FROM courses WHERE course_name = 'Course1'));
+
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course1'), (SELECT group_id FROM groups WHERE group_name = 'AA-01'), (SELECT user_id FROM users WHERE email = 'et1'), '2023-09-06', '08:30:00', '09:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course2'), (SELECT group_id FROM groups WHERE group_name = 'AA-01'), (SELECT user_id FROM users WHERE email = 'et1'), '2023-09-06', '09:30:00', '10:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course3'), (SELECT group_id FROM groups WHERE group_name = 'AA-01'), (SELECT user_id FROM users WHERE email = 'et2'), '2023-09-06', '10:30:00', '11:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course1'), (SELECT group_id FROM groups WHERE group_name = 'AA-02'), (SELECT user_id FROM users WHERE email = 'et2'), '2023-09-07', '08:30:00', '09:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course2'), (SELECT group_id FROM groups WHERE group_name = 'AA-02'), (SELECT user_id FROM users WHERE email = 'et3'), '2023-09-07', '09:30:00', '10:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course3'), (SELECT group_id FROM groups WHERE group_name = 'AA-02'), (SELECT user_id FROM users WHERE email = 'et3'), '2023-09-07', '10:30:00', '11:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course1'), (SELECT group_id FROM groups WHERE group_name = 'AA-03'), (SELECT user_id FROM users WHERE email = 'et4'), '2023-09-08', '08:30:00', '09:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course2'), (SELECT group_id FROM groups WHERE group_name = 'AA-03'), (SELECT user_id FROM users WHERE email = 'et4'), '2023-09-08', '09:30:00', '10:30:00');
+INSERT INTO Lessons (lesson_id, course_id, group_id, teacher_id, date, start_time, end_time)
+VALUES
+    (uuid_generate_v4(), (SELECT course_id FROM courses WHERE course_name = 'Course3'), (SELECT group_id FROM groups WHERE group_name = 'AA-03'), (SELECT user_id FROM users WHERE email = 'et5'), '2023-09-08', '10:30:00', '11:30:00');

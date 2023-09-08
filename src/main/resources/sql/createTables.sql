@@ -56,3 +56,13 @@ CREATE TABLE Students_Courses
     PRIMARY KEY (student_id, course_id),
     CHECK (is_student(student_id))
 );
+
+CREATE TABLE Lessons (
+                         lesson_id UUID PRIMARY KEY,
+                         course_id UUID REFERENCES Courses(course_id) ON DELETE CASCADE,
+                         group_id UUID REFERENCES public.Groups(group_id) ON DELETE CASCADE,
+                         teacher_id UUID REFERENCES Users(user_id) ON DELETE CASCADE,
+                         date DATE,
+                         start_time TIME,
+                         end_time TIME
+);

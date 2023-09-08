@@ -1,8 +1,11 @@
 DROP TABLE IF EXISTS Students_Courses;
 DROP TABLE IF EXISTS Teachers_Courses;
+DROP TABLE IF EXISTS teachers_lessons;
+DROP TABLE IF EXISTS groups_lessons;
 DROP TABLE IF EXISTS Courses;
 DROP TABLE IF EXISTS Groups;
 DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS lessons;
 
 CREATE TABLE Courses
 (
@@ -45,4 +48,15 @@ CREATE TABLE Students_Courses
     student_id UUID REFERENCES Users (user_id) ON DELETE CASCADE,
     course_id  UUID REFERENCES Courses (course_id) ON DELETE CASCADE,
     PRIMARY KEY (student_id, course_id)
+);
+
+-- Create the Lessons table
+CREATE TABLE Lessons (
+                         lesson_id UUID PRIMARY KEY,
+                         course_id UUID REFERENCES Courses(course_id) ON DELETE CASCADE,
+                         group_id UUID REFERENCES public.Groups(group_id) ON DELETE CASCADE,
+                         teacher_id UUID REFERENCES Users(user_id) ON DELETE CASCADE,
+                         date DATE,
+                         start_time TIME,
+                         end_time TIME
 );

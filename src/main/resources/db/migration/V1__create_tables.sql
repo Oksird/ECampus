@@ -1,17 +1,17 @@
-CREATE TABLE Courses
+CREATE TABLE IF NOT EXISTS Courses
 (
     course_id          UUID PRIMARY KEY,
     course_name        VARCHAR(255) NOT NULL,
     course_description TEXT
 );
 
-CREATE TABLE Groups
+CREATE TABLE IF NOT EXISTS Groups
 (
     group_id   UUID PRIMARY KEY,
     group_name VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE Users
+CREATE TABLE IF NOT EXISTS Users
 (
     user_id    UUID PRIMARY KEY,
     user_type  VARCHAR(10)  NOT NULL CHECK (user_type IN ('Admin', 'Student', 'Teacher')),
@@ -41,7 +41,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE TABLE Teachers_Courses
+CREATE TABLE IF NOT EXISTS Teachers_Courses
 (
     teacher_id UUID REFERENCES Users (user_id) ON DELETE CASCADE,
     course_id  UUID REFERENCES Courses (course_id) ON DELETE CASCADE,
@@ -49,7 +49,7 @@ CREATE TABLE Teachers_Courses
     CHECK (is_teacher(teacher_id))
 );
 
-CREATE TABLE Students_Courses
+CREATE TABLE IF NOT EXISTS Students_Courses
 (
     student_id UUID REFERENCES Users (user_id) ON DELETE CASCADE,
     course_id  UUID REFERENCES Courses (course_id) ON DELETE CASCADE,
@@ -57,12 +57,13 @@ CREATE TABLE Students_Courses
     CHECK (is_student(student_id))
 );
 
-CREATE TABLE Lessons (
-                         lesson_id UUID PRIMARY KEY,
-                         course_id UUID REFERENCES Courses(course_id) ON DELETE CASCADE,
-                         group_id UUID REFERENCES public.Groups(group_id) ON DELETE CASCADE,
-                         teacher_id UUID REFERENCES Users(user_id) ON DELETE CASCADE,
-                         date DATE,
-                         start_time TIME,
-                         end_time TIME
+CREATE TABLE IF NOT EXISTS Lessons
+(
+    lesson_id UUID PRIMARY KEY,
+    course_id UUID REFERENCES Courses(course_id) ON DELETE CASCADE,
+    group_id UUID REFERENCES public.Groups(group_id) ON DELETE CASCADE,
+    teacher_id UUID REFERENCES Users(user_id) ON DELETE CASCADE,
+    date DATE,
+    start_time TIME,
+    end_time TIME
 );

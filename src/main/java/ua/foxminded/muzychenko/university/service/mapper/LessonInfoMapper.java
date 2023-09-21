@@ -11,7 +11,9 @@ public class LessonInfoMapper {
     private final TeacherProfileMapper teacherProfileMapper;
 
     public LessonInfo mapLessonEntityToLessonInfo(Lesson lesson) {
+
         return new LessonInfo(
+            lesson.getLessonId().toString(),
             lesson.getCourse().getCourseName(),
             teacherProfileMapper.mapTeacherEntityToProfile(lesson.getTeacher(), lesson.getTeacher().getCourses()),
             lesson.getGroup().getGroupName(),

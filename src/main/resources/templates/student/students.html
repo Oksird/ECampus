@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+  <title>University - Students</title>
+
+  <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css} "/>
+  <script type="text/javascript" th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.min.js}"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<h1>Students</h1>
+
+<form action="/students/" id="searchForm" class="form-inline">
+  <div class="form-group">
+    <label class="mr-2">Choose page size:</label>
+    <select name="size" th:value="${pageSize}" onchange="changePageSize()" class="custom-select">
+      <option th:each="s : ${ {5, 10, 15, 20} }" th:value="${s}" th:text="${s}" th:selected="${s == pageSize}"></option>
+    </select>
+  </div>
+</form>
+
+<button type="button" class="btn btn-primary" th:href ="@{/students/new}">Add Student</button>
+
+<div th:if="${students.size() > 0}">
+  <table class="table table-hover table-responsive-xl">
+    <thead class="thead-light">
+    <tr>
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Group</th>
+      <th scope="col">Courses</th>
+      <th scope="col">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="student : ${students}">
+      <td>[[${student.getFirstName()}]]</td>
+      <td>[[${student.getLastName()}]]</td>
+      <td>[[${student.getEmail()}]]</td>
+      <td>[[${student.getGroupInfo.getGroupName()}]]</td>
+      <td>
+        <ul>
+          <li th:each="courseInfo : ${student.getCoursesInfo()}">
+            <div>
+              <strong th:text="${courseInfo.getCourseName()}"></strong><br />
+              <span th:text="${courseInfo.getCourseDescription()}"></span>
+            </div>
+          </li>
+        </ul>
+      </td>
+      <td>
+        <a th:href="@{'/students/' + ${student.getUserId()}}" title="Edit this student">
+          <button type="button" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+        </a>
+        <a th:href="@{'/students/delete/' + ${student.getUserId()}}" th:email="${student.getEmail()}" id="btnDelete"
+           title="Delete this admin">
+          <button type="button" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div th:unless="${students.size() > 0}">
+  <span>No students found!</span>
+</div>
+
+<nav aria-label="Pagination" th:if="${totalPages > 0}">
+  <ul class="pagination justify-content-center">
+    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+      <a th:replace="~{fragments/paging :: paging('/students/' ,1, '<<', 'First Page')}"></a>
+    </li>
+    <li class="page-item font-weight-bold" th:classappend="${currentPage == 1} ? 'disabled'">
+      <a th:replace="~{fragments/paging :: paging('/students/' ,${currentPage - 1}, 'Prev', 'Previous Page')}"></a>
+    </li>
+    <li class="page-item disabled" th:if="${currentPage - 2 > 1}">
+      <a class="page-link" href="#">...</a>
+    </li>
+    <li class="page-item" th:classappend="${page == currentPage} ? 'active'"
+        th:each="page : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 1, currentPage + 2 < totalPages ? currentPage + 2 : totalPages)}">
+      <a th:replace="~{fragments/paging :: paging('/students/' ,${page}, ${page}, 'Page ' + ${page})}"></a>
+    </li>
+    <li class="page-item disabled" th:if="${currentPage + 2 < totalPages}">
+      <a class="page-link" href="#">...</a>
+    </li>
+    <li class="page-item font-weight-bold" th:classappend="${currentPage == totalPages} ? 'disabled'">
+      <a th:replace="~{fragments/paging :: paging('/students/' ,${currentPage + 1},'Next', 'Next Page')}"></a>
+    </li>
+    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+      <a th:replace="~{fragments/paging :: paging('/students/' ,${totalPages}, '>>', 'Last Page')}"></a>
+    </li>
+  </ul>
+</nav>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+
+    $("#btnClear").on("click", function (e) {
+      e.preventDefault();
+      $("#keyword").text("");
+      window.location = "[[@{/students/}]]";
+    });
+  });
+
+  function changePageSize() {
+    $("#searchForm").submit();
+  }
+</script>
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.min.js}"></script>
+</body>
+
+<footer>
+  <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+
+</html>

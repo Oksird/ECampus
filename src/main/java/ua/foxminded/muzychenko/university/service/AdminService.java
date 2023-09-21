@@ -1,6 +1,7 @@
 package ua.foxminded.muzychenko.university.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,6 @@ import ua.foxminded.muzychenko.university.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.university.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.university.service.validator.exception.BadCredentialsException;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,17 +30,10 @@ public class AdminService {
     private final PasswordValidator passwordValidator;
     private final AdminProfileMapper adminProfileMapper;
 
+    @Transactional(readOnly = true)
     public AdminProfile findAdminById(UUID id) {
         Admin admin = adminRepository.findById(id).orElseThrow(UserNotFoundException::new);
         return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
-    }
-
-    public List<AdminProfile> findAllAdmins(Integer pageNumber, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        List<Admin> adminList = adminRepository.findAll(pageable).getContent();
-        List<AdminProfile> adminProfileList = new ArrayList<>(adminList.size());
-        adminList.forEach(admin -> adminProfileList.add(adminProfileMapper.mapAdminEntityToAdminProfile(admin)));
-        return adminProfileList;
     }
 
     @Transactional
@@ -83,9 +75,17 @@ public class AdminService {
         );
     }
 
+    @Transactional(readOnly = true)
     public AdminProfile findAdminByEmail(String email) {
         Admin admin = adminRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
         return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminProfile> findAll(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<Admin> adminPage = adminRepository.findAll(pageable);
+        return adminPage.map(adminProfileMapper::mapAdminEntityToAdminProfile);
     }
 
     private UUID getAdminIdByEmail(String email) {

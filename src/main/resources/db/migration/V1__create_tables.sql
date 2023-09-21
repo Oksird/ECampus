@@ -20,10 +20,7 @@ CREATE TABLE IF NOT EXISTS Users
     email      VARCHAR(255) NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,
     course_id  UUID REFERENCES Courses (course_id),
-    group_id   UUID REFERENCES Groups (group_id),
-    CHECK ((user_type = 'Admin' AND course_id IS NULL AND group_id IS NULL) OR
-           (user_type = 'Student' AND course_id IS NOT NULL AND group_id IS NOT NULL) OR
-           (user_type = 'Teacher' AND course_id IS NOT NULL AND group_id IS NULL))
+    group_id   UUID REFERENCES Groups (group_id)
 );
 
 CREATE OR REPLACE FUNCTION is_teacher(teacher_id UUID) RETURNS BOOLEAN AS

@@ -11,8 +11,8 @@ import java.util.Set;
 @EqualsAndHashCode
 public class TeacherProfile extends UserProfile {
     private Set<CourseInfo> coursesInfo;
-    public TeacherProfile(String firstName, String lastName, String email, Set<CourseInfo> coursesInfo) {
-        super(firstName, lastName, email);
+    public TeacherProfile(String userId ,String firstName, String lastName, String email, Set<CourseInfo> coursesInfo) {
+        super(userId ,firstName, lastName, email);
         this.coursesInfo = coursesInfo;
     }
 }

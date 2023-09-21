@@ -8,5 +8,6 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class GroupInfo {
+    private String groupId;
     private String groupName;
 }

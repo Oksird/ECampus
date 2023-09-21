@@ -3,11 +3,13 @@ package ua.foxminded.muzychenko.university.dao;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.university.TestUniversityApplication;
 import ua.foxminded.muzychenko.university.entity.Group;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -92,5 +94,20 @@ class GroupRepositoryTest {
     void findByNameShouldReturnGroupEntityWithCorrectName() {
         Group expectedGroup = new Group(UUID.randomUUID(), "AA-01");
         assertEquals(expectedGroup.getGroupName(), Objects.requireNonNull(groupRepository.findByGroupName("AA-01").orElse(null)).getGroupName());
+    }
+
+    @Test
+    void findByGroupNameContainingIgnoreCaseShouldReturnPageOfAllGroupsWithNamePart() {
+        String groupNamePart = "A";
+
+        List<Group> groups = groupRepository.findAll()
+            .stream()
+            .filter(
+                group -> group.getGroupName()
+                    .contains(groupNamePart)
+            )
+            .toList();
+
+        assertEquals(groups ,groupRepository.findByGroupNameContainingIgnoreCase(groupNamePart, PageRequest.of(0, 3)).getContent());
     }
 }

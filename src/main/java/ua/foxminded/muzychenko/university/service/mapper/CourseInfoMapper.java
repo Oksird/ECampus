@@ -7,6 +7,6 @@ import ua.foxminded.muzychenko.university.entity.Course;
 @Mapper
 public class CourseInfoMapper {
     public CourseInfo mapCourseEntityToCourseInfo(Course course) {
-        return new CourseInfo(course.getCourseName(), course.getCourseDescription());
+        return new CourseInfo(course.getCourseId().toString() ,course.getCourseName(), course.getCourseDescription());
     }
 }

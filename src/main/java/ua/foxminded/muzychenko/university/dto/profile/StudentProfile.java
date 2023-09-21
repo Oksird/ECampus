@@ -14,8 +14,8 @@ import java.util.Set;
 public class StudentProfile extends UserProfile {
     private GroupInfo groupInfo;
     private Set<CourseInfo> coursesInfo;
-    public StudentProfile(String firstName, String lastName, String email, GroupInfo groupInfo, Set<CourseInfo> coursesInfo) {
-        super(firstName, lastName, email);
+    public StudentProfile(String userId ,String firstName, String lastName, String email, GroupInfo groupInfo, Set<CourseInfo> coursesInfo) {
+        super(userId ,firstName, lastName, email);
         this.groupInfo = groupInfo;
         this.coursesInfo = coursesInfo;
     }

@@ -76,13 +76,15 @@ class LessonServiceTest {
         );
 
         TeacherProfile teacherProfile = new TeacherProfile(
+            teacher.getUserId().toString(),
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new HashSet<>(List.of(new CourseInfo(course.getCourseName(), course.getCourseDescription())))
+            new HashSet<>(List.of(new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription())))
         );
 
         lessonInfo = new LessonInfo(
+            lesson.getLessonId().toString(),
             course.getCourseName(),
             teacherProfile,
             group.getGroupName(),
@@ -149,7 +151,7 @@ class LessonServiceTest {
 
         assertEquals(
             new ArrayList<>(Collections.singletonList(lessonInfo)),
-            lessonService.findAllLessons(1, 1)
+            lessonService.findAll(1, 1).getContent()
         );
     }
 

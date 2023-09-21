@@ -1,6 +1,7 @@
 package ua.foxminded.muzychenko.university.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -62,20 +63,6 @@ public class LessonService {
         List<LessonInfo> lessonInfos = new ArrayList<>();
         lessonRepository
             .findAll()
-            .forEach(
-                lesson -> lessonInfos.add(lessonInfoMapper.mapLessonEntityToLessonInfo(lesson))
-            );
-
-        return lessonInfos;
-    }
-
-    @Transactional(readOnly = true)
-    public List<LessonInfo> findAllLessons(Integer pageNumber, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        List<LessonInfo> lessonInfos = new ArrayList<>();
-        lessonRepository
-            .findAll(pageable)
-            .getContent()
             .forEach(
                 lesson -> lessonInfos.add(lessonInfoMapper.mapLessonEntityToLessonInfo(lesson))
             );
@@ -195,6 +182,13 @@ public class LessonService {
     @Transactional
     public void deleteLesson(UUID lessonId) {
         lessonRepository.deleteById(lessonId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<LessonInfo> findAll(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<Lesson> lessonPage = lessonRepository.findAll(pageable);
+        return lessonPage.map(lessonInfoMapper::mapLessonEntityToLessonInfo);
     }
 
     private Lesson getLessonById(UUID id) {

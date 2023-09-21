@@ -13,10 +13,11 @@ import java.util.stream.Collectors;
 public class TeacherProfileMapper {
     public TeacherProfile mapTeacherEntityToProfile(Teacher teacher, Set<Course> courses) {
         Set<CourseInfo> courseInfos = courses.stream()
-            .map(course -> new CourseInfo(course.getCourseName(), course.getCourseDescription()))
+            .map(course -> new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription()))
             .collect(Collectors.toSet());
 
         return new TeacherProfile(
+            teacher.getUserId().toString(),
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),

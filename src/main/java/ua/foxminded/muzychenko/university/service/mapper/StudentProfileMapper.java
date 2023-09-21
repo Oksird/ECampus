@@ -14,15 +14,16 @@ import java.util.stream.Collectors;
 @Mapper
 public class StudentProfileMapper {
     public StudentProfile mapStudentInfoToProfile(Student student, Group group, Set<Course> courses) {
-        GroupInfo groupInfo = new GroupInfo(null);
+        GroupInfo groupInfo = null;
         if (group != null) {
-            groupInfo = new GroupInfo(group.getGroupName());
+            groupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName());
         }
         Set<CourseInfo> courseInfos = courses.stream()
-            .map(course -> new CourseInfo(course.getCourseName(), course.getCourseDescription()))
+            .map(course -> new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription()))
             .collect(Collectors.toSet());
 
         return new StudentProfile(
+            student.getUserId().toString(),
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),

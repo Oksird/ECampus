@@ -72,10 +72,11 @@ class StudentServiceTest {
         );
 
         StudentProfile studentProfile = new StudentProfile(
+            student.getUserId().toString(),
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
-            new GroupInfo("gn"),
+            new GroupInfo("str" ,"gn"),
             new HashSet<>()
             );
 
@@ -119,6 +120,7 @@ class StudentServiceTest {
         Student student2 = studentList.get(1);
 
         StudentProfile studentProfile1 = new StudentProfile(
+            student1.getUserId().toString(),
             student1.getFirstName(),
             student1.getLastName(),
             student1.getEmail(),
@@ -127,6 +129,7 @@ class StudentServiceTest {
         );
 
         StudentProfile studentProfile2 = new StudentProfile(
+            student2.getUserId().toString(),
             student2.getFirstName(),
             student2.getLastName(),
             student2.getEmail(),
@@ -153,7 +156,7 @@ class StudentServiceTest {
         when(studentProfileMapper.mapStudentInfoToProfile(eq (student2), any(), eq(courseList)))
             .thenReturn(studentProfile2);
 
-        assertEquals(studentProfileList, studentService.findAllStudents(1,1));
+        assertEquals(studentProfileList, studentService.findAll(1,1).getContent());
     }
 
     @Test
@@ -181,6 +184,7 @@ class StudentServiceTest {
         Student student2 = studentList.get(1);
 
         StudentProfile studentProfile1 = new StudentProfile(
+            student1.getUserId().toString(),
             student1.getFirstName(),
             student1.getLastName(),
             student1.getEmail(),
@@ -189,6 +193,7 @@ class StudentServiceTest {
         );
 
         StudentProfile studentProfile2 = new StudentProfile(
+            student2.getUserId().toString(),
             student2.getFirstName(),
             student2.getLastName(),
             student2.getEmail(),
@@ -243,6 +248,7 @@ class StudentServiceTest {
         Student student2 = studentList.get(1);
 
         StudentProfile studentProfile1 = new StudentProfile(
+            student1.getUserId().toString(),
             student1.getFirstName(),
             student1.getLastName(),
             student1.getEmail(),
@@ -251,6 +257,7 @@ class StudentServiceTest {
         );
 
         StudentProfile studentProfile2 = new StudentProfile(
+            student2.getUserId().toString(),
             student2.getFirstName(),
             student2.getLastName(),
             student2.getEmail(),
@@ -294,6 +301,8 @@ class StudentServiceTest {
             null
         );
 
+        UUID groupId = UUID.randomUUID();
+
         when(studentRepository.save(any(Student.class)))
             .thenReturn(student);
 
@@ -316,14 +325,15 @@ class StudentServiceTest {
         when(courseRepository.findUsersCourses(any(UUID.class)))
             .thenReturn(new HashSet<>(List.of(course)));
         when(groupRepository.findUsersGroup(any(UUID.class)))
-            .thenReturn(Optional.of(new Group(UUID.randomUUID(), "gn")));
+            .thenReturn(Optional.of(new Group(groupId, "gn")));
 
         StudentProfile expectedStudentProfile = new StudentProfile(
+            student.getUserId().toString(),
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
-            new GroupInfo("gn"),
-            new HashSet<>(List.of(new CourseInfo(course.getCourseName(), course.getCourseDescription())))
+            new GroupInfo(groupId.toString() ,"gn"),
+            new HashSet<>(List.of(new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription())))
         );
 
         UserLoginRequest userLoginRequest = new UserLoginRequest(
@@ -529,10 +539,12 @@ class StudentServiceTest {
         Course course2 = new Course(UUID.randomUUID(), "cn2", "cd2");
 
         CourseInfo courseInfo1 = new CourseInfo(
+            course1.getCourseId().toString(),
             course1.getCourseName(),
             course1.getCourseDescription()
         );
         CourseInfo courseInfo2 = new CourseInfo(
+            course2.getCourseId().toString(),
             course2.getCourseName(),
             course2.getCourseDescription()
         );
@@ -544,10 +556,11 @@ class StudentServiceTest {
             .thenReturn(new HashSet<>(List.of(course1, course2)));
 
         StudentProfile studentProfile = new StudentProfile(
+            student.getUserId().toString(),
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
-            new GroupInfo(group.getGroupName()),
+            new GroupInfo(group.getGroupId().toString() ,group.getGroupName()),
             new HashSet<>(List.of(courseInfo1, courseInfo2))
         );
 

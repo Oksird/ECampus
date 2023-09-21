@@ -7,6 +7,6 @@ import ua.foxminded.muzychenko.university.entity.Admin;
 @Mapper
 public class AdminProfileMapper {
     public AdminProfile mapAdminEntityToAdminProfile(Admin admin) {
-        return new AdminProfile(admin.getFirstName(), admin.getLastName(), admin.getEmail());
+        return new AdminProfile(admin.getUserId().toString() ,admin.getFirstName(), admin.getLastName(), admin.getEmail());
     }
 }

@@ -1,6 +1,7 @@
 package ua.foxminded.muzychenko.university.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class CourseService {
         courseRepository.save(new Course(UUID.randomUUID(), courseInfo.getCourseName(), courseInfo.getCourseDescription()));
     }
 
+    @Transactional(readOnly = true)
     public CourseInfo findCourseByName(String courseName) {
         Course course = courseRepository
             .findByCourseName(courseName)
@@ -36,6 +38,7 @@ public class CourseService {
         return courseInfoMapper.mapCourseEntityToCourseInfo(course);
     }
 
+    @Transactional(readOnly = true)
     public CourseInfo findCourseById(UUID courseID) {
         Course course = courseRepository.findById(courseID)
             .orElseThrow(CourseNotFoundException::new);
@@ -47,9 +50,23 @@ public class CourseService {
         courseRepository.deleteById(getCourseIdByName(courseName));
     }
 
-    public List<CourseInfo> findAllCourses(Integer pageNumber, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        List<Course> courseList = courseRepository.findAll(pageable).getContent();
+    @Transactional(readOnly = true)
+    public Page<CourseInfo> findAll(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<Course> coursePage = courseRepository.findAll(pageable);
+        return coursePage.map(courseInfoMapper::mapCourseEntityToCourseInfo);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CourseInfo> findCoursesPagesByNamePart(String courseNamePart , Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<Course> coursePage = courseRepository.findByCourseNameContainingIgnoreCase(courseNamePart, pageable);
+        return coursePage.map(courseInfoMapper::mapCourseEntityToCourseInfo);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseInfo> findAll() {
+        List<Course> courseList = courseRepository.findAll();
         List<CourseInfo> courseInfoList = new ArrayList<>(courseList.size());
         courseList.forEach(course -> courseInfoList.add(courseInfoMapper.mapCourseEntityToCourseInfo(course)));
         return courseInfoList;
@@ -62,7 +79,7 @@ public class CourseService {
             .orElseThrow(CourseNotFoundException::new);
         Course newCourse = new Course(oldCourse.getCourseId(), newCourseName, oldCourse.getCourseDescription());
 
-        courseValidator.validateCourseInfo(new CourseInfo(newCourse.getCourseName(), newCourse.getCourseDescription()));
+        courseValidator.validateCourseInfo(new CourseInfo(newCourse.getCourseId().toString() ,newCourse.getCourseName(), newCourse.getCourseDescription()));
 
         courseRepository.save(newCourse);
     }
@@ -74,7 +91,7 @@ public class CourseService {
             .orElseThrow(CourseNotFoundException::new);
         Course newCourse = new Course(oldCourse.getCourseId(), oldCourse.getCourseName(), newCourseDescription);
 
-        courseValidator.validateCourseInfo(new CourseInfo(newCourse.getCourseName(), newCourse.getCourseDescription()));
+        courseValidator.validateCourseInfo(new CourseInfo(newCourse.getCourseId().toString() ,newCourse.getCourseName(), newCourse.getCourseDescription()));
 
         courseRepository.save(newCourse);
     }

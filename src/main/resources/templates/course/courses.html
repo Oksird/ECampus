@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+    <title>University - Courses</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css} "/>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.min.js}"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<h1>Courses</h1>
+
+<form action="/courses/" id="searchForm" class="form-inline">
+
+    <div class="form-group col-md-2">
+        <input type="search" name="keyword" th:value="${keyword}" placeholder="Enter course name" class="form-control" id="keyword">
+    </div>
+
+    <button type="submit" class="btn btn-light">Search</button>
+
+    <div class="form-group">
+        <label class="mr-2">Choose page size:</label>
+        <select name="size" th:value="${pageSize}" onchange="changePageSize()" class="custom-select">
+            <option th:each="s : ${ {5, 10, 15, 20} }" th:value="${s}" th:text="${s}" th:selected="${s == pageSize}"></option>
+        </select>
+    </div>
+
+    <button id="btnClear" class="btn btn-light" th:href="@{/courses/}">Clear</button>
+
+</form>
+
+<button type="button" class="btn btn-primary" th:href ="@{/courses/new}">Add Course</button>
+
+<div th:if="${courses.size() > 0}">
+    <table class="table table-hover table-responsive-xl">
+        <thead class="thead-light">
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="course : ${courses}">
+            <th scope="row">[[${course.getCourseId()}]]</th>
+            <td>[[${course.getCourseName()}]]</td>
+            <td>[[${course.getCourseDescription()}]]</td>
+            <td>
+                <a th:href="@{'/courses/' + ${course.getCourseId()}}" title="Edit this course">
+                    <button type="button" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </a>
+                <a th:href="@{'/courses/delete/' + ${course.getCourseId()}}" th:courseName="${course.getCourseName()}" id="btnDelete"
+                   title="Delete this tutorial">
+                    <button type="button" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:unless="${courses.size() > 0}">
+    <span>No courses found!</span>
+</div>
+
+<nav aria-label="Pagination" th:if="${totalPages > 0}">
+    <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/courses/' ,1, '<<', 'First Page')}"></a>
+        </li>
+        <li class="page-item font-weight-bold" th:classappend="${currentPage == 1} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/courses/' ,${currentPage - 1}, 'Prev', 'Previous Page')}"></a>
+        </li>
+        <li class="page-item disabled" th:if="${currentPage - 2 > 1}">
+            <a class="page-link" href="#">...</a>
+        </li>
+        <li class="page-item" th:classappend="${page == currentPage} ? 'active'"
+            th:each="page : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 1, currentPage + 2 < totalPages ? currentPage + 2 : totalPages)}">
+            <a th:replace="~{fragments/paging :: paging('/courses/' ,${page}, ${page}, 'Page ' + ${page})}"></a>
+        </li>
+        <li class="page-item disabled" th:if="${currentPage + 2 < totalPages}">
+            <a class="page-link" href="#">...</a>
+        </li>
+        <li class="page-item font-weight-bold" th:classappend="${currentPage == totalPages} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/courses/' ,${currentPage + 1},'Next', 'Next Page')}"></a>
+        </li>
+        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/courses/' ,${totalPages}, '>>', 'Last Page')}"></a>
+        </li>
+    </ul>
+</nav>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#btnClear").on("click", function (e) {
+            e.preventDefault();
+            $("#keyword").text("");
+            window.location = "[[@{/courses/}]]";
+        });
+    });
+
+    function changePageSize() {
+        $("#searchForm").submit();
+    }
+</script>
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.min.js}"></script>
+</body>
+
+<footer>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+
+</html>

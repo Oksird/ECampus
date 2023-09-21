@@ -8,6 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class CourseInfo {
+    private String courseId;
     private String courseName;
     private String courseDescription;
 }

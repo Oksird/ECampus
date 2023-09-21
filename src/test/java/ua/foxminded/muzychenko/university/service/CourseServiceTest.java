@@ -3,7 +3,9 @@ package ua.foxminded.muzychenko.university.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import ua.foxminded.muzychenko.university.TestUniversityApplication;
@@ -48,7 +50,7 @@ class CourseServiceTest {
         when(courseRepository.save(any(Course.class)))
              .thenReturn(course);
 
-        CourseInfo courseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
+        CourseInfo courseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription());
 
         courseService.createCourse(courseInfo);
 
@@ -64,7 +66,7 @@ class CourseServiceTest {
         when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.of(course));
 
-        CourseInfo expectedCourseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
+        CourseInfo expectedCourseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription());
 
         when(courseInfoMapper.mapCourseEntityToCourseInfo(course))
             .thenReturn(expectedCourseInfo);
@@ -79,7 +81,7 @@ class CourseServiceTest {
         when(courseRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(course));
 
-        CourseInfo courseInfo = new CourseInfo(course.getCourseName(), course.getCourseDescription());
+        CourseInfo courseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription());
 
         when(courseInfoMapper.mapCourseEntityToCourseInfo(course))
             .thenReturn(courseInfo);
@@ -104,26 +106,26 @@ class CourseServiceTest {
     }
 
     @Test
-    void findAllCoursesShouldReturnAllCoursesByPage() {
-        Course course1 = new Course(UUID.randomUUID(), "cn1", "cdesc1");
-        Course course2 = new Course(UUID.randomUUID(), "cn2", "cdesc2");
+    void testGetCoursesPage() {
+        List<Course> courses = new ArrayList<>(List.of(
+            new Course(UUID.randomUUID(), "cn1", "cdesc1"),
+            new Course(UUID.randomUUID(), "cn2", "cdesc2"))
+        );
 
-        List<Course> expectedCourses = new ArrayList<>(List.of(course1, course2));
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        Page<Course> coursePage = new PageImpl<>(courses, pageRequest, courses.size());
 
-        CourseInfo courseInfo1 = new CourseInfo(course1.getCourseName(), course1.getCourseDescription());
-        CourseInfo courseInfo2 = new CourseInfo(course2.getCourseName(), course2.getCourseDescription());
+        when(courseRepository.findAll(pageRequest)).thenReturn(coursePage);
 
-        List<CourseInfo> courseInfoList = new ArrayList<>(List.of(courseInfo1, courseInfo2));
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(any())).thenAnswer(
+            invocation -> {
+                Course courseEntity = invocation.getArgument(0);
+                return new CourseInfo(courseEntity.getCourseId().toString(), courseEntity.getCourseName(), courseEntity.getCourseDescription());
+            });
 
-        when(courseRepository.findAll(any(Pageable.class)))
-            .thenReturn(new PageImpl<>(expectedCourses));
+        Page<CourseInfo> result = courseService.findAll(1, 10);
 
-        when(courseInfoMapper.mapCourseEntityToCourseInfo(course1))
-            .thenReturn(courseInfo1);
-        when(courseInfoMapper.mapCourseEntityToCourseInfo(course2))
-            .thenReturn(courseInfo2);
-
-        assertEquals(courseInfoList, courseService.findAllCourses(1, 1));
+        assertEquals(courses.size(), result.getTotalElements());
     }
 
     @Test
@@ -210,5 +212,67 @@ class CourseServiceTest {
         assertThrows(
             CourseNotFoundException.class,
             () -> courseService.deleteCourse("wrongName"));
+    }
+
+    @Test
+    void findAllCoursesShouldReturnAllCourses() {
+        Course course1 = new Course(UUID.randomUUID(), "cn1", "cd1");
+        Course course2 = new Course(UUID.randomUUID(), "cn2", "cd2");
+
+        CourseInfo courseInfo1 = new CourseInfo(
+            course1.getCourseId().toString(),
+            course1.getCourseName(),
+            course1.getCourseDescription()
+        );
+        CourseInfo courseInfo2 = new CourseInfo(
+            course2.getCourseId().toString(),
+            course2.getCourseName(),
+            course2.getCourseDescription()
+        );
+
+        when(courseRepository.findAll())
+            .thenReturn(new ArrayList<>(List.of(course1, course2)));
+
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course1))
+            .thenReturn(courseInfo1);
+
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course2))
+            .thenReturn(courseInfo2);
+
+        courseService.findAll();
+
+        assertEquals(new ArrayList<>(List.of(courseInfo1, courseInfo2)), courseService.findAll());
+    }
+
+    @Test
+    void findCoursesPagesByNamePart() {
+        Course course1 = new Course(UUID.randomUUID(), "cn1", "cd1");
+        Course course2 = new Course(UUID.randomUUID(), "cn2", "cd2");
+
+        CourseInfo courseInfo1 = new CourseInfo(
+            course1.getCourseId().toString(),
+            course1.getCourseName(),
+            course1.getCourseDescription()
+        );
+        CourseInfo courseInfo2 = new CourseInfo(
+            course2.getCourseId().toString(),
+            course2.getCourseName(),
+            course2.getCourseDescription()
+        );
+
+        when(courseRepository.findByCourseNameContainingIgnoreCase(any(String.class), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(List.of(course1, course2)));
+
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course1))
+            .thenReturn(courseInfo1);
+
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course2))
+            .thenReturn(courseInfo2);
+
+        assertEquals(
+            new PageImpl<>(List.of(courseInfo1, courseInfo2)),
+            courseService.findCoursesPagesByNamePart("asd", 1, 1)
+        );
+
     }
 }

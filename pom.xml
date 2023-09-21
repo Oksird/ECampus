@@ -19,6 +19,9 @@
         <jacoco.version>0.8.10</jacoco.version>
         <project.info.reports.version>3.0.0</project.info.reports.version>
         <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
+        <bootstrap.version>5.3.1</bootstrap.version>
+        <jquery.version>3.7.1</jquery.version>
+        <font-awesome.version>6.4.2</font-awesome.version>
     </properties>
 
     <dependencies>
@@ -83,6 +86,25 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>${bootstrap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>${jquery.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>font-awesome</artifactId>
+            <version>${font-awesome.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -139,7 +161,7 @@
                                     <element>CLASS</element>
                                     <excludes>
                                         <exclude>ua.foxminded.muzychenko.entity*</exclude>
-                                        <exclude>ua.foxminded.muzychenko.university.UniversityConsoleApplication</exclude>
+                                        <exclude>ua.foxminded.muzychenko.university.UniversityApplication</exclude>
                                     </excludes>
                                     <limits>
                                         <limit>

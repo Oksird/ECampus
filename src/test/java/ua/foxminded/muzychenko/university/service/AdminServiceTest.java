@@ -56,6 +56,7 @@ class AdminServiceTest {
         );
 
         AdminProfile adminProfile = new AdminProfile(
+          admin.getUserId().toString(),
           admin.getFirstName(),
           admin.getLastName(),
           admin.getEmail()
@@ -92,8 +93,8 @@ class AdminServiceTest {
         Admin admin1 = adminList.get(0);
         Admin admin2 = adminList.get(1);
 
-        AdminProfile adminProfile1 = new AdminProfile(admin1.getFirstName(), admin1.getLastName(), admin1.getEmail());
-        AdminProfile adminProfile2 = new AdminProfile(admin2.getFirstName(), admin2.getLastName(), admin2.getEmail());
+        AdminProfile adminProfile1 = new AdminProfile(admin1.getUserId().toString() ,admin1.getFirstName(), admin1.getLastName(), admin1.getEmail());
+        AdminProfile adminProfile2 = new AdminProfile(admin2.getUserId().toString() ,admin2.getFirstName(), admin2.getLastName(), admin2.getEmail());
 
         List<AdminProfile> adminProfileList = new ArrayList<>(List.of(adminProfile1, adminProfile2));
 
@@ -107,7 +108,7 @@ class AdminServiceTest {
         when(adminRepository.findAll(any(Pageable.class)))
                 .thenReturn(expectedPage);
 
-        assertEquals(adminProfileList, adminService.findAllAdmins(1,1));
+        assertEquals(adminProfileList, adminService.findAll(1,1).getContent());
     }
 
     @Test
@@ -143,6 +144,7 @@ class AdminServiceTest {
             .thenReturn(Optional.of(admin));
 
         AdminProfile expectedAdminProfile = new AdminProfile(
+            admin.getUserId().toString(),
             admin.getFirstName(),
             admin.getLastName(),
             admin.getEmail()
@@ -250,7 +252,7 @@ class AdminServiceTest {
     @Test
     void findAdminByEmailShouldReturnCorrectAdminProfile() {
         Admin admin = new Admin(UUID.randomUUID(), "fn", "ln", "em", "pas");
-        AdminProfile adminProfile = new AdminProfile(admin.getFirstName(), admin.getLastName(), admin.getEmail());
+        AdminProfile adminProfile = new AdminProfile(admin.getUserId().toString() ,admin.getFirstName(), admin.getLastName(), admin.getEmail());
         when(adminRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(admin));
         when(adminProfileMapper.mapAdminEntityToAdminProfile(admin))

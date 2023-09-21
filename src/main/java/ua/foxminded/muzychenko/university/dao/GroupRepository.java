@@ -1,5 +1,7 @@
 package ua.foxminded.muzychenko.university.dao;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -19,4 +21,6 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
     Optional<Group> findUsersGroup(UUID userId);
 
     Optional<Group> findByGroupName(String groupName);
+
+    Page<Group> findByGroupNameContainingIgnoreCase(String groupName, Pageable pageable);
 }

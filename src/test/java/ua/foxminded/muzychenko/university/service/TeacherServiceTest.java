@@ -62,6 +62,7 @@ class TeacherServiceTest {
         );
 
         TeacherProfile teacherProfile = new TeacherProfile(
+            teacher.getUserId().toString(),
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
@@ -102,12 +103,14 @@ class TeacherServiceTest {
         Teacher teacher2 = teacherList.get(1);
 
         TeacherProfile teacherProfile1 = new TeacherProfile(
+            teacher1.getUserId().toString(),
             teacher1.getFirstName(),
             teacher1.getLastName(),
             teacher1.getEmail(),
             new HashSet<>()
         );
         TeacherProfile teacherProfile2 = new TeacherProfile(
+            teacher2.getUserId().toString(),
             teacher2.getFirstName(),
             teacher2.getLastName(),
             teacher2.getEmail(),
@@ -128,7 +131,7 @@ class TeacherServiceTest {
         when(teacherRepository.findAll(any(Pageable.class)))
             .thenReturn(new PageImpl<>(teacherList));
 
-        assertEquals(teacherProfileList, teacherService.findAllTeachers(1,1));
+        assertEquals(teacherProfileList, teacherService.findAll(1,1).getContent());
     }
 
     @Test
@@ -154,12 +157,14 @@ class TeacherServiceTest {
         Teacher teacher2 = teacherList.get(1);
 
         TeacherProfile teacherProfile1 = new TeacherProfile(
+            teacher1.getUserId().toString(),
             teacher1.getFirstName(),
             teacher1.getLastName(),
             teacher1.getEmail(),
             new HashSet<>()
         );
         TeacherProfile teacherProfile2 = new TeacherProfile(
+            teacher2.getUserId().toString(),
             teacher2.getFirstName(),
             teacher2.getLastName(),
             teacher2.getEmail(),
@@ -218,10 +223,11 @@ class TeacherServiceTest {
             .thenReturn(new HashSet<>(List.of(course)));
 
         TeacherProfile expectedTeacherProfile = new TeacherProfile(
+            teacher.getUserId().toString(),
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new HashSet<>(List.of(new CourseInfo(course.getCourseName(), course.getCourseDescription())))
+            new HashSet<>(List.of(new CourseInfo(course.getCourseId().toString() ,course.getCourseName(), course.getCourseDescription())))
         );
 
         UserLoginRequest userLoginRequest = new UserLoginRequest(
@@ -373,6 +379,7 @@ class TeacherServiceTest {
         );
 
         TeacherProfile teacherProfile = new TeacherProfile(
+            teacher.getUserId().toString(),
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),

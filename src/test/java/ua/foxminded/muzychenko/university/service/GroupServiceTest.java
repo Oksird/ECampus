@@ -50,7 +50,7 @@ class GroupServiceTest {
         when(groupRepository.save(any(Group.class)))
              .thenReturn(new Group(UUID.randomUUID(), "gn"));
 
-        GroupInfo groupInfo = new GroupInfo("name");
+        GroupInfo groupInfo = new GroupInfo(UUID.randomUUID().toString() ,"name");
 
         groupService.createGroup(groupInfo);
 
@@ -66,7 +66,7 @@ class GroupServiceTest {
         when(groupRepository.findByGroupName(any(String.class)))
             .thenReturn(Optional.of(group));
 
-        GroupInfo expectedGroupInfo = new GroupInfo(group.getGroupName());
+        GroupInfo expectedGroupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName());
 
         when(groupInfoMapper.mapGroupEntityToGroupInfo(group))
             .thenReturn(expectedGroupInfo);
@@ -81,7 +81,7 @@ class GroupServiceTest {
         when(groupRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(group));
 
-        GroupInfo groupInfo = new GroupInfo(group.getGroupName());
+        GroupInfo groupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName());
 
         when(groupInfoMapper.mapGroupEntityToGroupInfo(group))
             .thenReturn(groupInfo);
@@ -110,8 +110,8 @@ class GroupServiceTest {
         Group group1 = new Group(UUID.randomUUID(), "gn1");
         Group group2 = new Group(UUID.randomUUID(), "gn2");
 
-        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupName());
-        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupName());
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString() ,group1.getGroupName());
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString() ,group2.getGroupName());
 
         List<Group> expectedGroups = new ArrayList<>(List.of(group1, group2));
         List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
@@ -126,7 +126,7 @@ class GroupServiceTest {
         when(groupInfoMapper.mapGroupEntityToGroupInfo(group2))
             .thenReturn(groupInfo2);
 
-        assertEquals(groupInfoList, groupService.findAllGroups(1, 1));
+        assertEquals(groupInfoList, groupService.findAll(1, 1).getContent());
     }
 
     @Test
@@ -182,8 +182,8 @@ class GroupServiceTest {
         Group group1 = new Group(UUID.randomUUID(), "gn1");
         Group group2 = new Group(UUID.randomUUID(), "gn2");
 
-        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupName());
-        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupName());
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString(), group1.getGroupName());
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString(), group2.getGroupName());
 
         Set<Group> expectedGroups = new HashSet<>(List.of(group1, group2));
         List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
@@ -203,5 +203,27 @@ class GroupServiceTest {
         when(groupRepository.findByGroupName(any(String.class)))
             .thenReturn(Optional.empty());
         assertThrows(GroupNotFoundException.class, () -> groupService.findGroupByName("gn"));
+    }
+
+    @Test
+    void findGroupsPagesByNamePartShouldReturnPageWithGroupInfos() {
+        Group group1 = new Group(UUID.randomUUID(), "gn1");
+        Group group2 = new Group(UUID.randomUUID(), "gn2");
+
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString(), group1.getGroupName());
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString(), group2.getGroupName());
+
+        List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
+
+        when(groupRepository.findByGroupNameContainingIgnoreCase(any(String.class), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(List.of(group1, group2)));
+
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group1))
+            .thenReturn(groupInfo1);
+
+        when(groupInfoMapper.mapGroupEntityToGroupInfo(group2))
+            .thenReturn(groupInfo2);
+
+        assertEquals(new PageImpl<>(groupInfoList), groupService.findGroupsPagesByNamePart("aa", 1 , 1));
     }
 }

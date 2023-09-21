@@ -1,6 +1,7 @@
 package ua.foxminded.muzychenko.university.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,18 +39,14 @@ public class TeacherService {
     private final PasswordValidator passwordValidator;
     private final TeacherProfileMapper teacherProfileMapper;
 
+    @Transactional(readOnly = true)
     public TeacherProfile findTeacherById(UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(UserNotFoundException::new);
         Set<Course> courses = courseRepository.findUsersCourses(id);
         return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
     }
 
-    public List<TeacherProfile> findAllTeachers(Integer pageNumber, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-        return getTeacherProfiles(teacherRepository.findAll(pageable).getContent());
-    }
-
+    @Transactional(readOnly = true)
     public List<TeacherProfile> findTeachersByCourse(String nameOfCourse) {
         return getTeacherProfiles(teacherRepository.findByCourses_CourseName(nameOfCourse));
     }
@@ -99,10 +96,11 @@ public class TeacherService {
         Set<Course> teacherCourses = courseRepository.findUsersCourses(teacher.getUserId());
 
         Set<CourseInfo> courseInfoSet = teacherCourses.stream()
-            .map(course -> new CourseInfo(course.getCourseName(), course.getCourseDescription()))
+            .map(course -> new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription()))
             .collect(Collectors.toSet());
 
         return new TeacherProfile(
+            teacher.getUserId().toString(),
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
@@ -124,10 +122,18 @@ public class TeacherService {
         );
     }
 
+    @Transactional(readOnly = true)
     public TeacherProfile findTeacherByEmail(String email) {
         Teacher teacher = teacherRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
         Set<Course> courses = courseRepository.findUsersCourses(teacher.getUserId());
         return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TeacherProfile> findAll(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<Teacher> teacherPage = teacherRepository.findAll(pageable);
+        return teacherPage.map(teacher -> teacherProfileMapper.mapTeacherEntityToProfile(teacher, teacher.getCourses()));
     }
 
     private UUID getTeacherIdByEmail(String email) {

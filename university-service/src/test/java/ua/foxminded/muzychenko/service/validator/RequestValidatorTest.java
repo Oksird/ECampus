@@ -6,24 +6,24 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
 import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 import ua.foxminded.muzychenko.service.validator.exception.InvalidFieldException;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = RequestValidator.class)
 class RequestValidatorTest {
 
     @MockBean
-    private PasswordValidator passwordValidator;
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private RequestValidator requestValidator;
 
@@ -61,55 +61,65 @@ class RequestValidatorTest {
     }
 
     @Test
-    void validateUserLoginRequestShouldNotThrowAnyException() {
-        String encodedPass = "d(ASNU";
-
-        UserLoginRequest request = new UserLoginRequest(
-            "email@gmail.com",
-            "password123!W"
-        );
-
-        doNothing().when(passwordValidator).validateEnteredPassword(any(String.class), eq(request.getPassword()));
-
-        assertDoesNotThrow(() -> requestValidator.validateUserLoginRequest(request, encodedPass, request.getEmail()));
-    }
-
-    @Test
-    void validateUserLoginRequestShouldThrowBadCredentialsExceptionWhenEmailIsIncorrect() {
-        String encodedPass = "d(ASNU";
-        String realEmail = "real@email.com";
-
-        UserLoginRequest request = new UserLoginRequest(
-            "email@gmail.com",
-            "password123!W"
-        );
-
-        doNothing().when(passwordValidator).validateEnteredPassword(any(String.class), eq(request.getPassword()));
-
-        assertThrows(BadCredentialsException.class,
-            () -> requestValidator.validateUserLoginRequest(request, encodedPass, realEmail));
-    }
-
-    @Test
-    void validateUserLoginRequestShouldThrowBadCredentialsExceptionWhenPasswordIsWrong() {
-        String encodedPass = "d(ASNU";
-        String realEmail = "real@email.com";
-
-        UserLoginRequest request = new UserLoginRequest(
-            "email@gmail.com",
-            "password123!W"
-        );
-
-        doThrow(BadCredentialsException.class)
-            .when(passwordValidator).validateEnteredPassword(encodedPass, request.getPassword());
-
-        assertThrows(BadCredentialsException.class,
-            () -> requestValidator.validateUserLoginRequest(request, encodedPass, realEmail));
-    }
-
-    @Test
     void validateUserRegistrationRequestShouldThrowNPEWhenRequestIsNull() {
         assertThrows(NullPointerException.class, () -> requestValidator.validateUserRegistrationRequest(null));
+    }
+
+    @Test
+    void validatePasswordChangeRequestShouldThrowInvalidFieldExceptionWhenNewPasswordIsWrongFormat() {
+        PasswordChangeRequest passwordChangeRequest = new PasswordChangeRequest(
+            "email",
+            "encrp",
+            "old",
+            "нвірпс",
+            "нвірпс"
+        );
+
+        when(passwordEncoder.matches(any(String.class), any(String.class)))
+            .thenReturn(true);
+
+        assertThrows(
+            InvalidFieldException.class,
+            () -> requestValidator.validatePasswordChangeRequest(passwordChangeRequest)
+        );
+    }
+
+    @Test
+    void validatePasswordChangeRequestShouldThrowBadCredExceptionWhenRepeatedPassNotEqualsOld() {
+        PasswordChangeRequest passwordChangeRequest = new PasswordChangeRequest(
+            "email",
+            "encrp",
+            "old",
+            "dajs7asd!dSSJ",
+            "passwordQWE123!"
+        );
+
+        when(passwordEncoder.matches(any(String.class), any(String.class)))
+            .thenReturn(true);
+
+        assertThrows(
+            BadCredentialsException.class,
+            () -> requestValidator.validatePasswordChangeRequest(passwordChangeRequest)
+        );
+    }
+
+    @Test
+    void validatePasswordChangeRequestShouldThrowBadCredExcWhenOldPassIsIncorrect() {
+        PasswordChangeRequest passwordChangeRequest = new PasswordChangeRequest(
+            "email",
+            "encrp",
+            "old",
+            "dajs7asd!dSSJ",
+            "passwordQWE123!"
+        );
+
+        when(passwordEncoder.matches(any(String.class), any(String.class)))
+            .thenReturn(false);
+
+        assertThrows(
+            BadCredentialsException.class,
+            () -> requestValidator.validatePasswordChangeRequest(passwordChangeRequest)
+        );
     }
 
     static Stream<UserRegistrationRequest> userRegistrationRequests() {

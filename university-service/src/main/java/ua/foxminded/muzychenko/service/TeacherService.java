@@ -6,20 +6,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.foxminded.muzychenko.repository.CourseRepository;
-import ua.foxminded.muzychenko.repository.TeacherRepository;
-import ua.foxminded.muzychenko.exception.CourseNotFoundException;
-import ua.foxminded.muzychenko.exception.UserNotFoundException;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
+import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
-import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.entity.PendingUser;
 import ua.foxminded.muzychenko.entity.Teacher;
+import ua.foxminded.muzychenko.exception.CourseNotFoundException;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
+import ua.foxminded.muzychenko.repository.CourseRepository;
+import ua.foxminded.muzychenko.repository.PendingUserRepository;
+import ua.foxminded.muzychenko.repository.TeacherRepository;
 import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
-import ua.foxminded.muzychenko.service.util.PasswordEncoder;
-import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 
@@ -27,17 +25,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class TeacherService {
     private final TeacherRepository teacherRepository;
     private final CourseRepository courseRepository;
-    private final RequestValidator requestValidator;
-    private final PasswordEncoder passwordEncoder;
-    private final PasswordValidator passwordValidator;
     private final TeacherProfileMapper teacherProfileMapper;
+    private final PendingUserRepository pendingUserRepository;
+    private final RequestValidator requestValidator;
+
+    @Transactional
+    public void createTeacherFromPendingUser(PendingUserProfile pendingUserProfile) {
+
+        PendingUser pendingUser = pendingUserRepository.findById(UUID.fromString(pendingUserProfile.getUserId()))
+            .orElseThrow(UserNotFoundException::new);
+
+        pendingUserRepository.delete(pendingUser);
+
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            pendingUser.getFirstName(),
+            pendingUser.getLastName(),
+            pendingUser.getEmail(),
+            pendingUser.getPassword()
+        );
+
+        teacherRepository.save(teacher);
+    }
 
     @Transactional(readOnly = true)
     public TeacherProfile findTeacherById(UUID id) {
@@ -76,50 +91,13 @@ public class TeacherService {
 
     @Transactional
     public void changePassword(PasswordChangeRequest passwordChangeRequest) {
-        Teacher teacher = teacherRepository.findByEmail(passwordChangeRequest.getEmail()).orElseThrow(BadCredentialsException::new);
+        requestValidator.validatePasswordChangeRequest(passwordChangeRequest);
 
-        passwordValidator.validatePasswordChangeRequest(passwordChangeRequest);
+        Teacher teacher = teacherRepository.findByEmail(passwordChangeRequest.getEmail()).orElseThrow(BadCredentialsException::new);
 
         teacher.setPassword(passwordChangeRequest.getNewPassword());
 
         teacherRepository.save(teacher);
-    }
-
-    @Transactional
-    public TeacherProfile login(UserLoginRequest userLoginRequest) {
-        String email = userLoginRequest.getEmail();
-
-        Teacher teacher = teacherRepository.findByEmail(email).orElseThrow(BadCredentialsException::new);
-
-        requestValidator.validateUserLoginRequest(userLoginRequest, teacher.getPassword(), email);
-
-        Set<Course> teacherCourses = courseRepository.findUsersCourses(teacher.getUserId());
-
-        Set<CourseInfo> courseInfoSet = teacherCourses.stream()
-            .map(course -> new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription()))
-            .collect(Collectors.toSet());
-
-        return new TeacherProfile(
-            teacher.getUserId().toString(),
-            teacher.getFirstName(),
-            teacher.getLastName(),
-            teacher.getEmail(),
-            courseInfoSet
-        );
-    }
-
-    @Transactional
-    public void register(UserRegistrationRequest userRegistrationRequest) {
-        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
-        teacherRepository.save(
-            new Teacher(
-                UUID.randomUUID(),
-                userRegistrationRequest.getFirstName(),
-                userRegistrationRequest.getLastName(),
-                userRegistrationRequest.getEmail(),
-                passwordEncoder.encode(userRegistrationRequest.getPassword())
-            )
-        );
     }
 
     @Transactional(readOnly = true)

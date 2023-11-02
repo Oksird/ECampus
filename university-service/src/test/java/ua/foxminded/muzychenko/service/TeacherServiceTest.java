@@ -6,18 +6,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import ua.foxminded.muzychenko.repository.CourseRepository;
-import ua.foxminded.muzychenko.repository.TeacherRepository;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
+import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
-import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.entity.PendingUser;
 import ua.foxminded.muzychenko.entity.Teacher;
+import ua.foxminded.muzychenko.repository.CourseRepository;
+import ua.foxminded.muzychenko.repository.PendingUserRepository;
+import ua.foxminded.muzychenko.repository.TeacherRepository;
 import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
-import ua.foxminded.muzychenko.service.util.PasswordEncoder;
-import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
@@ -43,9 +41,7 @@ class TeacherServiceTest {
     @MockBean
     private RequestValidator requestValidator;
     @MockBean
-    private PasswordValidator passwordValidator;
-    @MockBean
-    private PasswordEncoder passwordEncoder;
+    private PendingUserRepository pendingUserRepository;
     @MockBean
     private TeacherProfileMapper teacherProfileMapper;
     @Autowired
@@ -189,84 +185,6 @@ class TeacherServiceTest {
     }
 
     @Test
-    void loginShouldReturnCorrectTeacherProfile() {
-
-        Course course = new Course(UUID.randomUUID(), "cName", "cDesc");
-
-        Teacher teacher = new Teacher(
-            UUID.randomUUID(),
-            "fn",
-            "ln",
-            "em",
-            "pass"
-        );
-        when(teacherRepository.save(any(Teacher.class)))
-            .thenReturn(teacher);
-
-        doNothing()
-            .when(passwordValidator)
-            .validateEnteredPassword(
-                any(String.class),
-                any(String.class)
-            );
-
-        doNothing()
-            .when(requestValidator)
-            .validateUserLoginRequest(
-                any(UserLoginRequest.class),
-                any(String.class),
-                any(String.class)
-            );
-        when(teacherRepository.findByEmail(any(String.class)))
-            .thenReturn(Optional.of(teacher));
-        when(courseRepository.findUsersCourses(any(UUID.class)))
-            .thenReturn(new HashSet<>(List.of(course)));
-
-        TeacherProfile expectedTeacherProfile = new TeacherProfile(
-            teacher.getUserId().toString(),
-            teacher.getFirstName(),
-            teacher.getLastName(),
-            teacher.getEmail(),
-            new HashSet<>(List.of(new CourseInfo(course.getCourseId().toString() ,course.getCourseName(), course.getCourseDescription())))
-        );
-
-        UserLoginRequest userLoginRequest = new UserLoginRequest(
-            teacher.getEmail(),
-            teacher.getPassword()
-        );
-
-        assertEquals(expectedTeacherProfile, teacherService.login(userLoginRequest));
-    }
-
-    @Test
-    void registerShouldCreateNewTeacherEntityInDataBase() {
-        doNothing()
-            .when(requestValidator).
-            validateUserRegistrationRequest(any(UserRegistrationRequest.class));
-
-        when(teacherRepository.save(any(Teacher.class)))
-                .thenReturn(new Teacher());
-
-        when(passwordEncoder.encode(any(String.class)))
-            .thenReturn("encodedString");
-
-
-        UserRegistrationRequest userRegistrationRequest = new UserRegistrationRequest(
-            "email",
-            "pass",
-            "pass",
-            "fN",
-            "lN"
-        );
-
-        teacherService.register(userRegistrationRequest);
-
-        verify(passwordEncoder).encode(any(String.class));
-        verify(requestValidator).validateUserRegistrationRequest(userRegistrationRequest);
-        verify(teacherRepository).save(any(Teacher.class));
-    }
-
-    @Test
     void changePasswordShouldUpdatePasswordFieldOfTeacherInDataBase() {
         Teacher teacher = new Teacher(
             UUID.randomUUID(),
@@ -278,10 +196,6 @@ class TeacherServiceTest {
 
         when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
-
-        doNothing()
-            .when(passwordValidator)
-            .validatePasswordChangeRequest(any(PasswordChangeRequest.class));
 
         when(teacherRepository.save(any(Teacher.class)))
             .thenReturn(teacher);
@@ -297,7 +211,6 @@ class TeacherServiceTest {
         teacherService.changePassword(passwordChangeRequest);
 
         verify(teacherRepository).findByEmail(any(String.class));
-        verify(passwordValidator).validatePasswordChangeRequest(passwordChangeRequest);
         verify(teacherRepository).save(any(Teacher.class));
     }
 
@@ -395,4 +308,42 @@ class TeacherServiceTest {
         assertEquals(teacherProfile, teacherService.findTeacherByEmail("email"));
     }
 
+    @Test
+    void createTeacherFromPendingUserShouldCreateNewTeacherFromPUserInfo() {
+        PendingUser pendingUser = new PendingUser(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass"
+        );
+
+        PendingUserProfile pendingUserProfile = new PendingUserProfile(
+            pendingUser.getUserId().toString(),
+            pendingUser.getFirstName(),
+            pendingUser.getLastName(),
+            pendingUser.getEmail()
+        );
+
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            pendingUser.getFirstName(),
+            pendingUser.getLastName(),
+            pendingUser.getEmail(),
+            pendingUser.getPassword()
+        );
+
+        when(pendingUserRepository.findById(any(UUID.class)))
+            .thenReturn(Optional.of(pendingUser));
+
+        doNothing().when(pendingUserRepository).delete(pendingUser);
+
+        when(teacherRepository.save(teacher)).thenReturn(teacher);
+
+        teacherService.createTeacherFromPendingUser(pendingUserProfile);
+
+        assertEquals(pendingUserRepository.findById(UUID.randomUUID()).get(), pendingUser);
+        verify(pendingUserRepository).delete(pendingUser);
+        assertEquals(teacherRepository.save(teacher), teacher);
+    }
 }

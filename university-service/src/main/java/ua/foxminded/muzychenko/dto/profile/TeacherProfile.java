@@ -8,10 +8,10 @@ import java.util.Set;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-public class TeacherProfile extends UserProfile {
+@EqualsAndHashCode(callSuper = true)
+public class TeacherProfile extends AbstractUserProfile {
     private Set<CourseInfo> coursesInfo;
-    public TeacherProfile(String userId ,String firstName, String lastName, String email, Set<CourseInfo> coursesInfo) {
+    public TeacherProfile(String userId , String firstName, String lastName, String email, Set<CourseInfo> coursesInfo) {
         super(userId ,firstName, lastName, email);
         this.coursesInfo = coursesInfo;
     }

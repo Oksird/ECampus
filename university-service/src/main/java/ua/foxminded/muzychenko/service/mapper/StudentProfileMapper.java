@@ -16,7 +16,7 @@ public class StudentProfileMapper {
     public StudentProfile mapStudentInfoToProfile(Student student, Group group, Set<Course> courses) {
         GroupInfo groupInfo = null;
         if (group != null) {
-            groupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName());
+            groupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName(), group.getStudents().size());
         }
         Set<CourseInfo> courseInfos = courses.stream()
             .map(course -> new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription()))

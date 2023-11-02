@@ -21,9 +21,9 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @Entity
-@DiscriminatorValue("Teacher")
-public class Teacher extends User {
-    private static final String USER_TYPE = "Teacher";
+@DiscriminatorValue("ROLE_TEACHER")
+public class Teacher extends AbstractUser {
+    private static final String USER_ROLE = "ROLE_TEACHER";
 
     @ManyToMany
     @JoinTable(
@@ -41,6 +41,6 @@ public class Teacher extends User {
     private Set<Lesson> lessons;
 
     public Teacher(@NonNull UUID teacherId, String firstName, String lastName, String email, String password) {
-        super(teacherId, USER_TYPE, firstName, lastName, email, password);
+        super(teacherId, USER_ROLE, firstName, lastName, email, password);
     }
 }

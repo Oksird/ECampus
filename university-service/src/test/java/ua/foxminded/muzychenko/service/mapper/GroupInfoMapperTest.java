@@ -25,7 +25,8 @@ class GroupInfoMapperTest {
 
         GroupInfo expectedGroupInfo = new GroupInfo(
             group.getGroupId().toString(),
-            group.getGroupName()
+            group.getGroupName(),
+            group.getStudents().size()
         );
 
         assertEquals(expectedGroupInfo, mapper.mapGroupEntityToGroupInfo(group));

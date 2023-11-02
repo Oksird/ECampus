@@ -6,22 +6,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import ua.foxminded.muzychenko.repository.CourseRepository;
-import ua.foxminded.muzychenko.repository.GroupRepository;
-import ua.foxminded.muzychenko.repository.StudentRepository;
-import ua.foxminded.muzychenko.exception.UserNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
+import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
-import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
+import ua.foxminded.muzychenko.entity.PendingUser;
 import ua.foxminded.muzychenko.entity.Student;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
+import ua.foxminded.muzychenko.repository.CourseRepository;
+import ua.foxminded.muzychenko.repository.GroupRepository;
+import ua.foxminded.muzychenko.repository.PendingUserRepository;
+import ua.foxminded.muzychenko.repository.StudentRepository;
 import ua.foxminded.muzychenko.service.mapper.StudentProfileMapper;
-import ua.foxminded.muzychenko.service.util.PasswordEncoder;
-import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
@@ -51,11 +50,9 @@ class StudentServiceTest {
     @MockBean
     private RequestValidator requestValidator;
     @MockBean
-    private PasswordValidator passwordValidator;
-    @MockBean
-    private PasswordEncoder passwordEncoder;
-    @MockBean
     private StudentProfileMapper studentProfileMapper;
+    @MockBean
+    private PendingUserRepository pendingUserRepository;
     @Autowired
     private StudentService studentService;
 
@@ -75,7 +72,7 @@ class StudentServiceTest {
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
-            new GroupInfo("str" ,"gn"),
+            new GroupInfo("str" ,"gn", 1),
             new HashSet<>()
             );
 
@@ -287,91 +284,6 @@ class StudentServiceTest {
     }
 
     @Test
-    void loginShouldReturnCorrectUserProfile() {
-
-        Course course = new Course(UUID.randomUUID(), "cName", "cDesc");
-
-        Student student = new Student(
-            UUID.randomUUID(),
-            "fn",
-            "ln",
-            "em",
-            "pass",
-            null
-        );
-
-        UUID groupId = UUID.randomUUID();
-
-        when(studentRepository.save(any(Student.class)))
-            .thenReturn(student);
-
-        doNothing()
-            .when(passwordValidator)
-            .validateEnteredPassword(
-                any(String.class),
-                any(String.class)
-            );
-
-        doNothing()
-            .when(requestValidator)
-            .validateUserLoginRequest(
-                any(UserLoginRequest.class),
-                any(String.class),
-                any(String.class)
-            );
-        when(studentRepository.findByEmail(any(String.class)))
-            .thenReturn(Optional.of(student));
-        when(courseRepository.findUsersCourses(any(UUID.class)))
-            .thenReturn(new HashSet<>(List.of(course)));
-        when(groupRepository.findUsersGroup(any(UUID.class)))
-            .thenReturn(Optional.of(new Group(groupId, "gn")));
-
-        StudentProfile expectedStudentProfile = new StudentProfile(
-            student.getUserId().toString(),
-            student.getFirstName(),
-            student.getLastName(),
-            student.getEmail(),
-            new GroupInfo(groupId.toString() ,"gn"),
-            new HashSet<>(List.of(new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription())))
-        );
-
-        UserLoginRequest userLoginRequest = new UserLoginRequest(
-            student.getEmail(),
-            student.getPassword()
-        );
-
-        assertEquals(expectedStudentProfile, studentService.login(userLoginRequest));
-    }
-
-    @Test
-    void registerShouldCreateNewStudentEntityInDataBase() {
-        doNothing()
-            .when(requestValidator).
-            validateUserRegistrationRequest(any(UserRegistrationRequest.class));
-
-        when(studentRepository.save(any(Student.class)))
-            .thenReturn(new Student());
-
-        when(passwordEncoder.encode(any(String.class)))
-            .thenReturn("encodedString");
-
-
-        UserRegistrationRequest userRegistrationRequest = new UserRegistrationRequest(
-            "email",
-            "pass",
-            "pass",
-            "fN",
-            "lN"
-        );
-
-        studentService.register(userRegistrationRequest);
-
-        verify(passwordEncoder).encode(any(String.class));
-        verify(requestValidator).validateUserRegistrationRequest(userRegistrationRequest);
-        verify(studentRepository).save(any(Student.class));
-    }
-
-    @Test
     void changePasswordShouldUpdatePasswordFieldOfStudentInDataBase() {
         Student student = new Student(
             UUID.randomUUID(),
@@ -386,7 +298,7 @@ class StudentServiceTest {
             .thenReturn(Optional.of(student));
 
         doNothing()
-            .when(passwordValidator)
+            .when(requestValidator)
             .validatePasswordChangeRequest(any(PasswordChangeRequest.class));
 
         when(studentRepository.save(any(Student.class)))
@@ -403,7 +315,7 @@ class StudentServiceTest {
         studentService.changePassword(passwordChangeRequest);
 
         verify(studentRepository).findByEmail(any(String.class));
-        verify(passwordValidator).validatePasswordChangeRequest(passwordChangeRequest);
+        verify(requestValidator).validatePasswordChangeRequest(passwordChangeRequest);
         verify(studentRepository).save(any(Student.class));
     }
 
@@ -559,7 +471,7 @@ class StudentServiceTest {
             student.getFirstName(),
             student.getLastName(),
             student.getEmail(),
-            new GroupInfo(group.getGroupId().toString() ,group.getGroupName()),
+            new GroupInfo(group.getGroupId().toString() ,group.getGroupName(), 1),
             new HashSet<>(List.of(courseInfo1, courseInfo2))
         );
 
@@ -578,5 +490,45 @@ class StudentServiceTest {
             .thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> studentService.findStudentByEmail("email"));
+    }
+
+    @Test
+    void createStudentFromPendingUserShouldCreateNewStudentFromPUserInfo() {
+        PendingUser pendingUser = new PendingUser(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass"
+        );
+
+        PendingUserProfile pendingUserProfile = new PendingUserProfile(
+            pendingUser.getUserId().toString(),
+            pendingUser.getFirstName(),
+            pendingUser.getLastName(),
+            pendingUser.getEmail()
+        );
+
+        Student student = new Student(
+            UUID.randomUUID(),
+            pendingUser.getFirstName(),
+            pendingUser.getLastName(),
+            pendingUser.getEmail(),
+            pendingUser.getPassword(),
+            null
+        );
+
+        when(pendingUserRepository.findById(any(UUID.class)))
+            .thenReturn(Optional.of(pendingUser));
+
+        doNothing().when(pendingUserRepository).delete(pendingUser);
+
+        when(studentRepository.save(student)).thenReturn(student);
+
+        studentService.createStudentFromPendingUser(pendingUserProfile);
+
+        assertEquals(pendingUserRepository.findById(UUID.randomUUID()).get(), pendingUser);
+        verify(pendingUserRepository).delete(pendingUser);
+        assertEquals(studentRepository.save(student), student);
     }
 }

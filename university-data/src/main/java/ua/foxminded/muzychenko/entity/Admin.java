@@ -13,11 +13,10 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @Entity
-@DiscriminatorValue("Admin")
-public class Admin extends User {
-    private static final String USER_TYPE = "Admin";
+@DiscriminatorValue("ROLE_ADMIN")
+public class Admin extends AbstractUser {
+    private static final String USER_ROLE = "ROLE_ADMIN";
     public Admin(@NonNull UUID adminId , String firstName, String lastName, String email, String password) {
-        super(adminId,USER_TYPE, firstName, lastName, email, password);
+        super(adminId, USER_ROLE, firstName, lastName, email, password);
     }
-
 }

@@ -64,7 +64,7 @@ public class GroupService {
             .orElseThrow(GroupNotFoundException::new);
         Group newGroup = new Group(oldGroup.getGroupId(), newGroupName);
 
-        groupValidator.validateGroupName(new GroupInfo(newGroup.getGroupId().toString(), newGroup.getGroupName()));
+        groupValidator.validateGroupName(new GroupInfo(newGroup.getGroupId().toString(), newGroup.getGroupName(), newGroup.getStudents().size()));
 
         groupRepository.save(newGroup);
     }

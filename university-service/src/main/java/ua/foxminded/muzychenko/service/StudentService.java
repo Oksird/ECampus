@@ -6,33 +6,27 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.foxminded.muzychenko.repository.CourseRepository;
-import ua.foxminded.muzychenko.repository.GroupRepository;
-import ua.foxminded.muzychenko.repository.StudentRepository;
+import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
+import ua.foxminded.muzychenko.dto.profile.StudentProfile;
+import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
+import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.entity.Group;
+import ua.foxminded.muzychenko.entity.PendingUser;
+import ua.foxminded.muzychenko.entity.Student;
 import ua.foxminded.muzychenko.exception.CourseNotFoundException;
 import ua.foxminded.muzychenko.exception.GroupNotFoundException;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
-import ua.foxminded.muzychenko.dto.profile.GroupInfo;
-import ua.foxminded.muzychenko.dto.profile.StudentProfile;
-import ua.foxminded.muzychenko.dto.profile.UserProfile;
-import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
-import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
-import ua.foxminded.muzychenko.entity.Course;
-import ua.foxminded.muzychenko.entity.Group;
-import ua.foxminded.muzychenko.entity.Student;
+import ua.foxminded.muzychenko.repository.CourseRepository;
+import ua.foxminded.muzychenko.repository.GroupRepository;
+import ua.foxminded.muzychenko.repository.PendingUserRepository;
+import ua.foxminded.muzychenko.repository.StudentRepository;
 import ua.foxminded.muzychenko.service.mapper.StudentProfileMapper;
-import ua.foxminded.muzychenko.service.util.PasswordEncoder;
-import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
-import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -40,10 +34,29 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
     private final GroupRepository groupRepository;
-    private final RequestValidator requestValidator;
-    private final PasswordEncoder passwordEncoder;
-    private final PasswordValidator passwordValidator;
     private final StudentProfileMapper studentProfileMapper;
+    private final PendingUserRepository pendingUserRepository;
+    private final RequestValidator requestValidator;
+
+    @Transactional
+    public void createStudentFromPendingUser(PendingUserProfile pendingUserProfile) {
+
+        PendingUser pendingUser = pendingUserRepository.findById(UUID.fromString(pendingUserProfile.getUserId()))
+            .orElseThrow(UserNotFoundException::new);
+
+        pendingUserRepository.delete(pendingUser);
+
+        Student student = new Student(
+            UUID.randomUUID(),
+            pendingUser.getFirstName(),
+            pendingUser.getLastName(),
+            pendingUser.getEmail(),
+            pendingUser.getPassword(),
+            null
+        );
+
+        studentRepository.save(student);
+    }
 
     @Transactional(readOnly = true)
     public StudentProfile findStudentById(UUID id) {
@@ -66,55 +79,12 @@ public class StudentService {
     }
 
     @Transactional
-    public UserProfile login(UserLoginRequest userLoginRequest) {
-        String email = userLoginRequest.getEmail();
-
-        Student student = studentRepository.findByEmail(email).orElseThrow(BadCredentialsException::new);
-
-        requestValidator.validateUserLoginRequest(userLoginRequest, student.getPassword(), student.getEmail());
-
-        Group group = groupRepository.findUsersGroup(student.getUserId()).orElseThrow(GroupNotFoundException::new);
-
-        GroupInfo groupInfo = new GroupInfo(group.getGroupId().toString(), group.getGroupName());
-
-        Set<Course> studentCourses = courseRepository.findUsersCourses(student.getUserId());
-
-        Set<CourseInfo> courseInfoSet = studentCourses.stream()
-            .map(course -> new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription()))
-            .collect(Collectors.toSet());
-
-        return new StudentProfile(
-            student.getUserId().toString(),
-            student.getFirstName(),
-            student.getLastName(),
-            student.getEmail(),
-            groupInfo,
-            courseInfoSet
-            );
-    }
-
-    @Transactional
-    public void register(UserRegistrationRequest userRegistrationRequest) {
-        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
-        studentRepository.save(
-            new Student(
-                UUID.randomUUID(),
-                userRegistrationRequest.getFirstName(),
-                userRegistrationRequest.getLastName(),
-                userRegistrationRequest.getEmail(),
-                passwordEncoder.encode(userRegistrationRequest.getPassword()),
-                null
-            )
-        );
-    }
-
-    @Transactional
     public void changePassword(PasswordChangeRequest passwordChangeRequest) {
+        requestValidator.validatePasswordChangeRequest(passwordChangeRequest);
+
         Student student = studentRepository
             .findByEmail(passwordChangeRequest.getEmail())
             .orElseThrow(UserNotFoundException::new);
-
-        passwordValidator.validatePasswordChangeRequest(passwordChangeRequest);
 
         student.setPassword(passwordChangeRequest.getNewPassword());
 

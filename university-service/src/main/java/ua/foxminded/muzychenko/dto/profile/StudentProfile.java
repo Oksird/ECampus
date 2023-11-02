@@ -10,11 +10,11 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
-public class StudentProfile extends UserProfile {
+@EqualsAndHashCode(callSuper = true)
+public class StudentProfile extends AbstractUserProfile {
     private GroupInfo groupInfo;
     private Set<CourseInfo> coursesInfo;
-    public StudentProfile(String userId ,String firstName, String lastName, String email, GroupInfo groupInfo, Set<CourseInfo> coursesInfo) {
+    public StudentProfile(String userId , String firstName, String lastName, String email, GroupInfo groupInfo, Set<CourseInfo> coursesInfo) {
         super(userId ,firstName, lastName, email);
         this.groupInfo = groupInfo;
         this.coursesInfo = coursesInfo;

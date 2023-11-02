@@ -23,17 +23,12 @@ CREATE TABLE Groups
 CREATE TABLE Users
 (
     user_id    UUID PRIMARY KEY,
-    user_type  VARCHAR(10) NOT NULL CHECK (user_type IN ('Admin', 'Student', 'Teacher')),
+    role  VARCHAR(25) NOT NULL ,
     first_name VARCHAR(100) NOT NULL,
     last_name  VARCHAR(100) NOT NULL,
     email      VARCHAR(255) NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,
-    group_id   UUID,
-    CHECK (
-            (user_type = 'Admin' AND group_id IS NULL) OR
-            (user_type = 'Teacher' AND group_id IS NULL) OR
-            (user_type = 'Student')
-        )
+    group_id   UUID
 );
 
 CREATE TABLE Teachers_Courses

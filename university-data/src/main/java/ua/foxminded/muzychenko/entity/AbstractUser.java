@@ -19,18 +19,18 @@ import java.util.UUID;
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "role", discriminatorType = DiscriminatorType.STRING)
 @NoArgsConstructor
 @Data
 @ToString
 @EqualsAndHashCode
-public abstract class User {
+public abstract class AbstractUser {
     @Id
     @Column(name = "user_id", updatable = false, nullable = false)
     protected UUID userId;
 
-    @Column(name = "user_type", insertable = false, updatable = false)
-    protected String userType;
+    @Column(name = "role", insertable = false, updatable = false)
+    protected String role;
 
     @Column(name = "first_name")
     protected String firstName;
@@ -44,9 +44,9 @@ public abstract class User {
     @Column(name = "password")
     protected String password;
 
-    protected User(@NonNull UUID userId, @NonNull String userType, String firstName, String lastName, String email, String password) {
+    protected AbstractUser(@NonNull UUID userId, @NonNull String role, String firstName, String lastName, String email, String password) {
         this.userId = userId;
-        this.userType = userType;
+        this.role = role;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;

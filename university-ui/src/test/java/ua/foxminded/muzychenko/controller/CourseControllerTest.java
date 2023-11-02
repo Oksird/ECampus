@@ -2,11 +2,11 @@ package ua.foxminded.muzychenko.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import ua.foxminded.muzychenko.UniversityApplication;
@@ -27,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(CourseController.class)
-@AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = UniversityApplication.class)
+@WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
 class CourseControllerTest {
 
     @Autowired

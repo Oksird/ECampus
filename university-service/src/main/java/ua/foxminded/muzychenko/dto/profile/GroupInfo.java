@@ -10,4 +10,5 @@ import lombok.EqualsAndHashCode;
 public class GroupInfo {
     private String groupId;
     private String groupName;
+    private Integer countOfStudents;
 }

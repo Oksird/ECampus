@@ -7,6 +7,6 @@ import ua.foxminded.muzychenko.entity.Group;
 @Mapper
 public class GroupInfoMapper {
     public GroupInfo mapGroupEntityToGroupInfo(Group group) {
-        return new GroupInfo(group.getGroupId().toString(), group.getGroupName());
+        return new GroupInfo(group.getGroupId().toString(), group.getGroupName(), group.getStudents().size());
     }
 }

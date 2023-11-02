@@ -44,7 +44,8 @@ class StudentProfileMapperTest {
 
         GroupInfo groupInfo = new GroupInfo(
             group.getGroupId().toString(),
-            group.getGroupName()
+            group.getGroupName(),
+            0
         );
 
         Student student = new Student(

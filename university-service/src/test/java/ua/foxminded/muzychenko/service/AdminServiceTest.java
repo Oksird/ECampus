@@ -10,12 +10,8 @@ import org.springframework.data.domain.Pageable;
 import ua.foxminded.muzychenko.repository.AdminRepository;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
-import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.entity.Admin;
 import ua.foxminded.muzychenko.service.mapper.AdminProfileMapper;
-import ua.foxminded.muzychenko.service.util.PasswordEncoder;
-import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
@@ -35,11 +31,7 @@ class AdminServiceTest {
     @MockBean
     private AdminRepository adminRepository;
     @MockBean
-    private PasswordValidator passwordValidator;
-    @MockBean
-    private RequestValidator requestValidator;
-    @MockBean
-    private PasswordEncoder passwordEncoder;
+    private RequestValidator passwordValidator;
     @MockBean
     private AdminProfileMapper adminProfileMapper;
     @Autowired
@@ -109,86 +101,6 @@ class AdminServiceTest {
                 .thenReturn(expectedPage);
 
         assertEquals(adminProfileList, adminService.findAll(1,1).getContent());
-    }
-
-    @Test
-    void loginShouldReturnCorrectAdminProfile() {
-
-        Admin admin = new Admin(
-            UUID.randomUUID(),
-            "fn",
-            "ln",
-            "em",
-            "pass"
-        );
-
-        when(adminRepository.save(any(Admin.class)))
-                .thenReturn(admin);
-
-        doNothing()
-            .when(passwordValidator)
-            .validateEnteredPassword(
-                any(String.class),
-                any(String.class)
-            );
-
-        doNothing()
-            .when(requestValidator)
-            .validateUserLoginRequest(
-                any(UserLoginRequest.class),
-                any(String.class),
-                any(String.class)
-            );
-
-        when(adminRepository.findByEmail(any(String.class)))
-            .thenReturn(Optional.of(admin));
-
-        AdminProfile expectedAdminProfile = new AdminProfile(
-            admin.getUserId().toString(),
-            admin.getFirstName(),
-            admin.getLastName(),
-            admin.getEmail()
-        );
-
-        when(adminProfileMapper.mapAdminEntityToAdminProfile(admin))
-            .thenReturn(expectedAdminProfile);
-
-        UserLoginRequest userLoginRequest = new UserLoginRequest(
-            admin.getEmail(),
-            admin.getPassword()
-        );
-
-        assertEquals(expectedAdminProfile, adminService.login(userLoginRequest));
-    }
-
-    @Test
-    void registerShouldCreateNewAdminEntityInDataBase() {
-        Admin admin = new Admin(UUID.randomUUID(), "fn", "ln", "em", "pass");
-
-        doNothing()
-            .when(requestValidator).
-            validateUserRegistrationRequest(any(UserRegistrationRequest.class));
-
-        when(adminRepository.save(any(Admin.class)))
-                .thenReturn(admin);
-
-        when(passwordEncoder.encode("pass"))
-            .thenReturn("encodedPassword");
-
-
-        UserRegistrationRequest userRegistrationRequest = new UserRegistrationRequest(
-            "email",
-            "pass",
-            "pass",
-            "fn",
-            "ln"
-        );
-
-        adminService.register(userRegistrationRequest);
-
-        verify(passwordEncoder).encode(any(String.class));
-        verify(requestValidator).validateUserRegistrationRequest(userRegistrationRequest);
-        verify(adminRepository).save(any(Admin.class));
     }
 
     @Test

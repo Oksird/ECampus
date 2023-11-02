@@ -23,9 +23,9 @@ import java.util.UUID;
 @Data
 @Entity
 @NoArgsConstructor
-@DiscriminatorValue("Student")
-public class Student extends User {
-    private static final String USER_TYPE = "Student";
+@DiscriminatorValue("ROLE_STUDENT")
+public class Student extends AbstractUser {
+    private static final String USER_ROLE = "ROLE_STUDENT";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
@@ -45,7 +45,7 @@ public class Student extends User {
 
     public Student(@NonNull UUID studentId , String firstName, String lastName, String email, String password,
                    Group group) {
-        super(studentId, USER_TYPE, firstName, lastName, email, password);
+        super(studentId, USER_ROLE, firstName, lastName, email, password);
         this.group = group;
     }
 }

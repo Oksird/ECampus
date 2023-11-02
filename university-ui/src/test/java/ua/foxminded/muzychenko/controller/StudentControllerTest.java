@@ -2,11 +2,11 @@ package ua.foxminded.muzychenko.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import ua.foxminded.muzychenko.UniversityApplication;
@@ -30,8 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(StudentController.class)
-@AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = UniversityApplication.class)
+@WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
 class StudentControllerTest {
 
     @Autowired
@@ -46,9 +46,34 @@ class StudentControllerTest {
         int page = 1;
         int size = 5;
 
+        List<StudentProfile> studentProfiles = getStudentProfiles();
+
+        Page<StudentProfile> studentPage = new PageImpl<>(studentProfiles);
+
+        when(paramValidator
+            .getValidatedPageRequest(anyString(), anyString()))
+            .thenReturn(Map.of("page", page, "size", size));
+        when(studentService
+            .findAll(page, size))
+            .thenReturn(studentPage);
+
+        mockMvc.perform(get("/students/")
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size)))
+            .andExpect(status().isOk())
+            .andExpect(model().attribute("students", studentProfiles))
+            .andExpect(model().attribute("currentPage", page))
+            .andExpect(model().attribute("totalItems", studentPage.getTotalElements()))
+            .andExpect(model().attribute("totalPages", studentPage.getTotalPages()))
+            .andExpect(model().attribute("pageSize", String.valueOf(size)))
+            .andExpect(view().name("student/students"));
+    }
+
+    private static List<StudentProfile> getStudentProfiles() {
         GroupInfo groupInfo = new GroupInfo(
             "id",
-            "gn"
+            "gn",
+            1
         );
 
         CourseInfo courseInfo = new CourseInfo(
@@ -76,25 +101,6 @@ class StudentControllerTest {
         );
 
         List<StudentProfile> studentProfiles = new ArrayList<>(List.of(studentProfile1, studentProfile2));
-
-        Page<StudentProfile> studentPage = new PageImpl<>(studentProfiles);
-
-        when(paramValidator
-            .getValidatedPageRequest(anyString(), anyString()))
-            .thenReturn(Map.of("page", page, "size", size));
-        when(studentService
-            .findAll(page, size))
-            .thenReturn(studentPage);
-
-        mockMvc.perform(get("/students/")
-                .param("page", String.valueOf(page))
-                .param("size", String.valueOf(size)))
-            .andExpect(status().isOk())
-            .andExpect(model().attribute("students", studentProfiles))
-            .andExpect(model().attribute("currentPage", page))
-            .andExpect(model().attribute("totalItems", studentPage.getTotalElements()))
-            .andExpect(model().attribute("totalPages", studentPage.getTotalPages()))
-            .andExpect(model().attribute("pageSize", String.valueOf(size)))
-            .andExpect(view().name("student/students"));
+        return studentProfiles;
     }
 }

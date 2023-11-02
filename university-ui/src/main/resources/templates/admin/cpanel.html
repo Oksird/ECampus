@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+  <title>University - Admins</title>
+
+  <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css} "/>
+    <link th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/css/app.css}" rel="stylesheet" />
+    <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}" defer></script>
+    <script th:src="@{/js/app.js}" defer></script>
+    <style>
+      .block {
+        background-color: #f2f2f2; /* Светлосерый фон */
+        border: 1px solid #ccc; /* Граница блока */
+        padding: 20px;
+        margin: 10px;
+        width: fit-content;
+        text-align: center; /* Чтобы контент был по центру блока */
+      }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+  <div class="row">
+    <!-- Pending users -->
+    <div class="col-md-6">
+      <div class="block">
+        <div th:if="${pendingUsers.size() == 0}" class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Pending users</h2>
+            <p class="card-text">Nothing was found</p>
+          </div>
+        </div>
+
+        <div th:if="${pendingUsers.size() > 0}">
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <h4>Pending Users</h4>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="pendingUser : ${pendingUsers}">
+              <td>[[${pendingUser.getFirstName()}]]</td>
+              <td>[[${pendingUser.getLastName()}]]</td>
+              <td>[[${pendingUser.getEmail()}]]</td>
+              <td>
+                <div class="btn-group">
+                  <button type="button" class="btn btn-primary" href="#">View</button>
+                  <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                          data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <li>
+                      <form th:action="@{'/admins/change-user-role/' + ${pendingUser.getUserId()}}"
+                            method="post">
+                        <input type="hidden" name="role" value="Student" />
+                        <button type="submit" class="dropdown-item">Student</button>
+                      </form>
+                    </li>
+                    <li>
+                      <form th:action="@{'/admins/change-user-role/' + ${pendingUser.getUserId()}}"
+                            method="post">
+                        <input type="hidden" name="role" value="Teacher" />
+                        <button type="submit" class="dropdown-item">Teacher</button>
+                      </form>
+                    </li>
+                    <li>
+                      <form th:action="@{'/admins/change-user-role/' + ${pendingUser.getUserId()}}"
+                            method="post">
+                        <input type="hidden" name="role" value="Staff" />
+                        <button type="submit" class="dropdown-item">Staff</button>
+                      </form>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <a th:href="@{/pending-users/}" class="btn btn-outline-primary">View all pending users</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <!-- Students -->
+      <div class="block">
+        <div th:if="${students.size() == 0}" class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Students</h2>
+            <p class="card-text">Nothing was found</p>
+          </div>
+        </div>
+
+        <div th:if="${students.size() > 0}">
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <h4>Students</h4>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="student : ${students}">
+              <td>[[${student.getFirstName()}]]</td>
+              <td>[[${student.getLastName()}]]</td>
+              <td>[[${student.getEmail()}]]</td>
+              <td>
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                  <a th:href="@{'/students/' + ${student.getUserId()}}" type="button" class="btn btn-outline-primary">View</a>
+                  <a th:href="@{'/students/delete/' + ${student.getUserId()}}" type="button" class="btn btn-outline-primary">Delete</a>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <a th:href="@{/students/}" class="btn btn-outline-primary">View all students</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-6">
+      <!-- Teachers -->
+      <div class="block">
+        <div th:if="${teachers.size() == 0}" class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Teachers</h2>
+            <p class="card-text">Nothing was found</p>
+          </div>
+        </div>
+
+        <div th:if="${teachers.size() > 0}">
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <h4>Teachers</h4>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="teacher : ${teachers}">
+              <td>[[${teacher.getFirstName()}]]</td>
+              <td>[[${teacher.getLastName()}]]</td>
+              <td>[[${teacher.getEmail()}]]</td>
+              <td>
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                  <a th:href="@{'/teachers/' + ${teacher.getUserId()}}" type="button" class="btn btn-outline-primary">View</a>
+                  <a th:href="@{'/teachers/delete/' + ${teacher.getUserId()}}" type="button" class="btn btn-outline-primary">Delete</a>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <a th:href="@{/teachers/}" class="btn btn-outline-primary">View all teachers</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <!-- Staff -->
+      <div class="block">
+        <div th:if="${staffProfiles.size() == 0}" class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Staff</h2>
+            <p class="card-text">Nothing was found</p>
+          </div>
+        </div>
+
+        <div th:if="${staffProfiles.size() > 0}">
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <h4>Staff</h4>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="staff : ${staffProfiles}">
+              <td>[[${staff.getFirstName()}]]</td>
+              <td>[[${staff.getLastName()}]]</td>
+              <td>[[${staff.getEmail()}]]</td>
+              <td>
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                  <a th:href="@{'/staff/' + ${staff.getUserId()}}" type="button" class="btn btn-outline-primary">View</a>
+                  <a th:href="@{'/staff/delete/' + ${staff.getUserId()}}" type="button" class="btn btn-outline-primary">Delete</a>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <a th:href="@{/staff/}" class="btn btn-outline-primary">View all staff</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Groups -->
+    <div class="col-md-6">
+      <div class="block">
+        <div th:if="${groups.size() == 0}" class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Groups</h2>
+            <p class="card-text">Nothing was found</p>
+          </div>
+        </div>
+
+        <div th:if="${groups.size() > 0}">
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <h4>Groups</h4>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="group : ${groups}">
+              <td>[[${group.getGroupName()}]]</td>
+              <td>[[${group.getCountOfStudents()}]]</td>
+              <td>
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                  <a th:href="@{'/groups/' + ${group.getGroupId()}}" type="button" class="btn btn-outline-primary">View</a>
+                  <a th:href="@{'/groups/delete/' + ${group.getGroupId()}}" type="button" class="btn btn-outline-primary">Delete</a>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <a th:href="@{/groups/}" class="btn btn-outline-primary">View all groups</a>
+        </div>
+      </div>
+    </div>
+    <!-- Courses -->
+    <div class="col-md-6">
+      <div class="block">
+        <div th:if="${courses.size() == 0}" class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Courses</h2>
+            <p class="card-text">Nothing was found</p>
+          </div>
+        </div>
+
+        <div th:if="${courses.size() > 0}">
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <h4>Courses</h4>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="course : ${courses}">
+              <td>[[${course.getCourseName()}]]</td>
+              <td th:align="left">[[${course.getCourseDescription()}]]</td>
+              <td>
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                  <a th:href="@{'/courses/' + ${course.getCourseId()}}" type="button" class="btn btn-outline-primary">View</a>
+                  <a th:href="@{'/courses/delete/' + ${course.getCourseId()}}" type="button" class="btn btn-outline-primary">Delete</a>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <a th:href="@{/courses/}" class="btn btn-outline-primary">View all courses</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Lessons -->
+    <div class="col-md-6">
+      <div class="block">
+        <div th:if="${lessons.size() == 0}" class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Lessons</h2>
+            <p class="card-text">Nothing was found</p>
+          </div>
+        </div>
+
+        <div th:if="${lessons.size() > 0}">
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <h4>Lessons</h4>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="lesson : ${lessons}">
+              <td th:text="${lesson.getCourseName()}" />
+              <td th:text="${lesson.getGroupName()}" />
+              <td th:text="${lesson.getDate()}" />
+              <td th:text="${lesson.getStartTime()}" />
+              <td th:text="${lesson.getEndTime()}" />
+              <td>
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                  <a th:href="@{'/lessons/' + ${lesson.getLessonId()}}" type="button" class="btn btn-outline-primary">View</a>
+                  <a th:href="@{'/lessons/delete/' + ${lesson.getLessonId()}}" type="button" class="btn btn-outline-primary">Delete</a>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <a th:href="@{/lessons/}" class="btn btn-outline-primary">View all lessons</a>
+        </div>
+      </div>
+    </div>
+    <!-- Requests -->
+    <div class="col-md-6">
+      <div class="block">
+        <div class="card" style="width: 18rem;">
+          <img class="card-img-top"
+               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
+               alt="Card image cap">
+          <div class="card-body">
+            <h2>Requests</h2>
+            <p class="card-text">Still in progress</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+
+<footer>
+  <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+
+</html>

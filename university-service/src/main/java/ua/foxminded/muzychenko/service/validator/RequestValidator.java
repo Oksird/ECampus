@@ -2,19 +2,21 @@ package ua.foxminded.muzychenko.service.validator;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import ua.foxminded.muzychenko.config.Validator;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
+import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
 import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 import ua.foxminded.muzychenko.service.validator.exception.InvalidFieldException;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Validator
 @AllArgsConstructor
 public class RequestValidator {
 
-    private final PasswordValidator passwordValidator;
+    private PasswordEncoder passwordEncoder;
 
     private static final Pattern EMAIL_PATTERN =
         Pattern.compile("^[a-zA-Z0-9_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}$");
@@ -42,11 +44,16 @@ public class RequestValidator {
         }
     }
 
-    public void validateUserLoginRequest(UserLoginRequest userLoginRequest, String encodedPassword, String realEmail) {
-        String password = userLoginRequest.getPassword();
-        String email = userLoginRequest.getEmail();
-        passwordValidator.validateEnteredPassword(encodedPassword, password);
-        if (!email.equals(realEmail)) {
+    public void validatePasswordChangeRequest(PasswordChangeRequest passwordChangeRequest) {
+        if (!isPasswordValid(passwordChangeRequest.getNewPassword())) {
+            throw new InvalidFieldException("Impossible new password");
+        }
+
+        if (!Objects.equals(passwordChangeRequest.getNewPassword(), passwordChangeRequest.getRepeatedNewPassword())) {
+            throw new BadCredentialsException();
+        }
+
+        if (!passwordEncoder.matches(passwordChangeRequest.getOldPassword(), passwordChangeRequest.getEncodedRealPassword())) {
             throw new BadCredentialsException();
         }
     }

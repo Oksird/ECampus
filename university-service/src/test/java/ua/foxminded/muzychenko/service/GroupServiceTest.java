@@ -50,7 +50,7 @@ class GroupServiceTest {
         when(groupRepository.save(any(Group.class)))
              .thenReturn(new Group(UUID.randomUUID(), "gn"));
 
-        GroupInfo groupInfo = new GroupInfo(UUID.randomUUID().toString() ,"name");
+        GroupInfo groupInfo = new GroupInfo(UUID.randomUUID().toString() ,"name", 1);
 
         groupService.createGroup(groupInfo);
 
@@ -66,7 +66,7 @@ class GroupServiceTest {
         when(groupRepository.findByGroupName(any(String.class)))
             .thenReturn(Optional.of(group));
 
-        GroupInfo expectedGroupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName());
+        GroupInfo expectedGroupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName(), 1);
 
         when(groupInfoMapper.mapGroupEntityToGroupInfo(group))
             .thenReturn(expectedGroupInfo);
@@ -81,7 +81,7 @@ class GroupServiceTest {
         when(groupRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(group));
 
-        GroupInfo groupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName());
+        GroupInfo groupInfo = new GroupInfo(group.getGroupId().toString() ,group.getGroupName(), 1);
 
         when(groupInfoMapper.mapGroupEntityToGroupInfo(group))
             .thenReturn(groupInfo);
@@ -110,8 +110,8 @@ class GroupServiceTest {
         Group group1 = new Group(UUID.randomUUID(), "gn1");
         Group group2 = new Group(UUID.randomUUID(), "gn2");
 
-        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString() ,group1.getGroupName());
-        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString() ,group2.getGroupName());
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString() ,group1.getGroupName(), 1);
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString() ,group2.getGroupName(), 1);
 
         List<Group> expectedGroups = new ArrayList<>(List.of(group1, group2));
         List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
@@ -182,8 +182,8 @@ class GroupServiceTest {
         Group group1 = new Group(UUID.randomUUID(), "gn1");
         Group group2 = new Group(UUID.randomUUID(), "gn2");
 
-        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString(), group1.getGroupName());
-        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString(), group2.getGroupName());
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString(), group1.getGroupName(), 1);
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString(), group2.getGroupName(), 1);
 
         Set<Group> expectedGroups = new HashSet<>(List.of(group1, group2));
         List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
@@ -210,8 +210,8 @@ class GroupServiceTest {
         Group group1 = new Group(UUID.randomUUID(), "gn1");
         Group group2 = new Group(UUID.randomUUID(), "gn2");
 
-        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString(), group1.getGroupName());
-        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString(), group2.getGroupName());
+        GroupInfo groupInfo1 = new GroupInfo(group1.getGroupId().toString(), group1.getGroupName(), 1);
+        GroupInfo groupInfo2 = new GroupInfo(group2.getGroupId().toString(), group2.getGroupName(), 1);
 
         List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
 

@@ -24,7 +24,7 @@
         <java.version>17</java.version>
         <mockito.version>5.3.1</mockito.version>
         <maven.surefire.version>3.0.0-M7</maven.surefire.version>
-        <jacoco.version>0.8.10</jacoco.version>
+        <jacoco.version>0.8.11</jacoco.version>
         <project.info.reports.version>3.0.0</project.info.reports.version>
         <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
         <bootstrap.version>5.3.1</bootstrap.version>

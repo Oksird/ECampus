@@ -6,16 +6,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.foxminded.muzychenko.entity.Admin;
-import ua.foxminded.muzychenko.repository.AdminRepository;
-import ua.foxminded.muzychenko.exception.UserNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.dto.request.UserLoginRequest;
-import ua.foxminded.muzychenko.dto.request.UserRegistrationRequest;
+import ua.foxminded.muzychenko.entity.Admin;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
+import ua.foxminded.muzychenko.repository.AdminRepository;
 import ua.foxminded.muzychenko.service.mapper.AdminProfileMapper;
-import ua.foxminded.muzychenko.service.util.PasswordEncoder;
-import ua.foxminded.muzychenko.service.validator.PasswordValidator;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 
@@ -24,10 +20,8 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class AdminService {
-    private final AdminRepository adminRepository;
     private final RequestValidator requestValidator;
-    private final PasswordEncoder passwordEncoder;
-    private final PasswordValidator passwordValidator;
+    private final AdminRepository adminRepository;
     private final AdminProfileMapper adminProfileMapper;
 
     @Transactional(readOnly = true)
@@ -43,36 +37,13 @@ public class AdminService {
 
     @Transactional
     public void changePassword(PasswordChangeRequest passwordChangeRequest) {
-        Admin admin = adminRepository.findByEmail(passwordChangeRequest.getEmail()).orElseThrow(BadCredentialsException::new);
+        requestValidator.validatePasswordChangeRequest(passwordChangeRequest);
 
-        passwordValidator.validatePasswordChangeRequest(passwordChangeRequest);
+        Admin admin = adminRepository.findByEmail(passwordChangeRequest.getEmail()).orElseThrow(BadCredentialsException::new);
 
         admin.setPassword(passwordChangeRequest.getNewPassword());
 
         adminRepository.save(admin);
-    }
-
-    @Transactional
-    public AdminProfile login(UserLoginRequest userLoginRequest) {
-        String email = userLoginRequest.getEmail();
-
-        Admin admin = adminRepository.findByEmail(email).orElseThrow(BadCredentialsException::new);
-
-        return adminProfileMapper.mapAdminEntityToAdminProfile(admin);
-    }
-
-    @Transactional
-    public void register(UserRegistrationRequest userRegistrationRequest) {
-        requestValidator.validateUserRegistrationRequest(userRegistrationRequest);
-        adminRepository.save(
-            new Admin(
-                UUID.randomUUID(),
-                userRegistrationRequest.getFirstName(),
-                userRegistrationRequest.getLastName(),
-                userRegistrationRequest.getEmail(),
-                passwordEncoder.encode(userRegistrationRequest.getPassword())
-            )
-        );
     }
 
     @Transactional(readOnly = true)

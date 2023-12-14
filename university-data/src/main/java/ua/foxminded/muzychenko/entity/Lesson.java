@@ -7,56 +7,51 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.util.UUID;
 
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"group", "teacher"})
 @Table(name = "lessons")
-@ToString(exclude = {"group", "teacher"})
+@EqualsAndHashCode
+@Entity
+@ToString
 public class Lesson {
 
     @Id
-    @Column(name = "lesson_id", nullable = false, updatable = false, unique = true)
-    private UUID lessonId;
+    @Column(name = "id", nullable = false, updatable = false, unique = true)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "lesson_type_id", referencedColumnName = "id")
+    private LessonType lessonType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", referencedColumnName = "course_id")
     private Course course;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", referencedColumnName = "group_id")
     private Group group;
 
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private Teacher teacher;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_day_id", referencedColumnName = "id")
+    private StudyDay studyDay;
 
-    @Column(name = "date", nullable = false)
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    private Date date;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_week_id", referencedColumnName = "id")
+    private StudyWeek studyWeek;
 
-    @Column(name = "start_time", nullable = false)
-    @Temporal(TemporalType.TIME)
-    @DateTimeFormat(pattern = "hh:mm")
-    private Time startTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lesson_time_id", referencedColumnName = "id")
+    private LessonTime lessonTime;
 
-    @Column(name = "end_time", nullable = false)
-    @Temporal(TemporalType.TIME)
-    private Time endTime;
-
+    @Column(name = "additional_info")
+    private String additionalInfo;
 }

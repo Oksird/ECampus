@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+    <title>University - Pending users</title>
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css} "/>
+    <link th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/css/app.css}" rel="stylesheet" />
+    <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}" defer></script>
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<h1>Pending users</h1>
+
+<form action="/pending-users/" id="searchForm" class="form-inline">
+    <div class="form-group">
+        <label class="mr-2">Choose page size:</label>
+        <select name="size" th:value="${pageSize}" onchange="changePageSize()" class="custom-select">
+            <option th:each="s : ${ {5, 10, 15, 20} }" th:value="${s}" th:text="${s}" th:selected="${s == pageSize}"></option>
+        </select>
+    </div>
+</form>
+
+<div th:if="${pendingUsers.size() > 0}">
+    <table class="table table-hover table-responsive-xl">
+        <thead class="thead-light">
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">First Name</th>
+            <th scope="col">Last Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="pendingUser : ${pendingUsers}">
+            <th scope="row">[[${pendingUser.getUserId()}]]</th>
+            <td>[[${pendingUser.getFirstName()}]]</td>
+            <td>[[${pendingUser.getLastName()}]]</td>
+            <td>[[${pendingUser.getEmail()}]]</td>
+            <td>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" href="#">View</button>
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li>
+                            <form th:action="@{'/admins/change-user-role/' + ${pendingUser.getUserId()}}"
+                                  method="post">
+                                <input type="hidden" name="role" value="Student" />
+                                <button type="submit" class="dropdown-item">Student</button>
+                            </form>
+                        </li>
+                        <li>
+                            <form th:action="@{'/admins/change-user-role/' + ${pendingUser.getUserId()}}"
+                                  method="post">
+                                <input type="hidden" name="role" value="Teacher" />
+                                <button type="submit" class="dropdown-item">Teacher</button>
+                            </form>
+                        </li>
+                        <li>
+                            <form th:action="@{'/admins/change-user-role/' + ${pendingUser.getUserId()}}"
+                                  method="post">
+                                <input type="hidden" name="role" value="Staff" />
+                                <button type="submit" class="dropdown-item">Staff</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                <a th:href="@{'/pending-users/' + ${pendingUser.getUserId()}}" title="Edit this user">
+                    <button type="button" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </a>
+                <a th:href="@{'/pending-users/delete/' + ${pendingUser.getUserId()}}" th:email="${pendingUser.getEmail()}" id="btnDelete"
+                   title="Delete this user">
+                    <button type="button" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:unless="${pendingUsers.size() > 0}">
+    <span>No users found!</span>
+</div>
+
+<nav aria-label="Pagination" th:if="${totalPages > 0}">
+    <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/pending-users/' ,1, '<<', 'First Page')}"></a>
+        </li>
+        <li class="page-item font-weight-bold" th:classappend="${currentPage == 1} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/pending-users/' ,${currentPage - 1}, 'Prev', 'Previous Page')}"></a>
+        </li>
+        <li class="page-item disabled" th:if="${currentPage - 2 > 1}">
+            <a class="page-link" href="#">...</a>
+        </li>
+        <li class="page-item" th:classappend="${page == currentPage} ? 'active'"
+            th:each="page : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 1, currentPage + 2 < totalPages ? currentPage + 2 : totalPages)}">
+            <a th:replace="~{fragments/paging :: paging('/pending-users/' ,${page}, ${page}, 'Page ' + ${page})}"></a>
+        </li>
+        <li class="page-item disabled" th:if="${currentPage + 2 < totalPages}">
+            <a class="page-link" href="#">...</a>
+        </li>
+        <li class="page-item font-weight-bold" th:classappend="${currentPage == totalPages} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/pending-users/' ,${currentPage + 1},'Next', 'Next Page')}"></a>
+        </li>
+        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+            <a th:replace="~{fragments/paging :: paging('/pending-users/' ,${totalPages}, '>>', 'Last Page')}"></a>
+        </li>
+    </ul>
+</nav>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#btnClear").on("click", function (e) {
+            e.preventDefault();
+            $("#keyword").text("");
+            window.location = "[[@{/pending-users/}]]";
+        });
+    });
+
+    function changePageSize() {
+        $("#searchForm").submit();
+    }
+</script>
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.min.js}"></script>
+</body>
+
+<footer>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+
+</html>

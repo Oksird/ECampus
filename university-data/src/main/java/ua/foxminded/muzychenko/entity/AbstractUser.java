@@ -38,18 +38,27 @@ public abstract class AbstractUser {
     @Column(name = "last_name")
     protected String lastName;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true)
     protected String email;
 
     @Column(name = "password")
     protected String password;
 
-    protected AbstractUser(@NonNull UUID userId, @NonNull String role, String firstName, String lastName, String email, String password) {
+    @Column(name = "phone_number", nullable = false, unique = true)
+    protected String phoneNumber;
+
+    @Column(name = "address")
+    protected String address;
+
+    protected AbstractUser(@NonNull UUID userId, @NonNull String role, String firstName, String lastName,
+                           String email, String password, String phoneNumber, String address) {
         this.userId = userId;
         this.role = role;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
     }
 }

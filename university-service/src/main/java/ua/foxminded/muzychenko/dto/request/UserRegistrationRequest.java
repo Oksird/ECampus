@@ -13,4 +13,6 @@ public class UserRegistrationRequest {
     private final String repeatPassword;
     private final String firstName;
     private final String lastName;
+    private final String phoneNumber;
+    private final String address;
 }

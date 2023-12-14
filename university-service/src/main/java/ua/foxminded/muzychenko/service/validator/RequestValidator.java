@@ -24,6 +24,10 @@ public class RequestValidator {
         Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.{8,})[^ ]{8,}$");
     private static final Pattern NAME_PATTERN =
         Pattern.compile("^[a-zA-Z- ]{2,25}$");
+    private static final Pattern PHONE_PATTERN =
+        Pattern.compile("^380\\d{9}$");
+    private static final Pattern ADDRESS_PATTERN =
+        Pattern.compile("^[A-Za-z0-9,\\s]+(?: [A-Za-z0-9,\\s]+)*+$");
 
     public void validateUserRegistrationRequest(@NonNull UserRegistrationRequest userRegistrationRequest) {
 
@@ -41,6 +45,12 @@ public class RequestValidator {
         }
         if (!isLastNameValid(userRegistrationRequest.getLastName())) {
             throw new InvalidFieldException("Last name");
+        }
+        if (!isPhoneNumberValid(userRegistrationRequest.getPhoneNumber())) {
+            throw new InvalidFieldException("Phone number is wrong format");
+        }
+        if (!isAddressValid(userRegistrationRequest.getAddress())) {
+            throw new InvalidFieldException("Address is in wrong format");
         }
     }
 
@@ -72,5 +82,13 @@ public class RequestValidator {
 
     private boolean isLastNameValid(String lastName) {
         return NAME_PATTERN.matcher(lastName).matches();
+    }
+
+    private boolean isPhoneNumberValid(String phoneNumber) {
+        return PHONE_PATTERN.matcher(phoneNumber).matches();
+    }
+
+    private boolean isAddressValid(String address) {
+        return ADDRESS_PATTERN.matcher(address).matches();
     }
 }

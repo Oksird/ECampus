@@ -40,7 +40,9 @@ public class StaffService {
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
             pendingUser.getEmail(),
-            pendingUser.getPassword()
+            pendingUser.getPassword(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         staffRepository.save(staff);

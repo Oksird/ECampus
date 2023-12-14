@@ -52,7 +52,7 @@ class CourseServiceTest {
 
         CourseInfo courseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription());
 
-        courseService.createCourse(courseInfo);
+        courseService.createCourse(courseInfo, "email");
 
         verify(courseValidator).validateCourseInfo(courseInfo);
         verify(courseRepository).save(any(Course.class));

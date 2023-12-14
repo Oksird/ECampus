@@ -28,22 +28,17 @@ public class SecurityConfig {
                     .requestMatchers("/css/**").permitAll()
                     .requestMatchers("/js/**").permitAll()
                     .requestMatchers("/webjars/**").permitAll()
-                    .anyRequest().hasRole(ADMIN_ROLE)
                     .requestMatchers(HttpMethod.GET, "/register").permitAll()
                     .requestMatchers(HttpMethod.POST, "/register").permitAll()
-                    .requestMatchers("/courses/").authenticated()
-                    .requestMatchers("/logout").authenticated()
-                    .anyRequest().authenticated()
+                    .requestMatchers(HttpMethod.GET, "/pending-users/profile").hasRole("PENDING")
+                    .requestMatchers(HttpMethod.GET, "/students/profile").hasRole("STUDENT")
+                    .anyRequest().hasRole(ADMIN_ROLE)
             )
             .formLogin(login -> login
                 .loginPage("/login")
                 .permitAll()
                 .defaultSuccessUrl("/admins/cpanel", true)
                 .failureUrl("/login?error")
-            )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login")
             );
 
         return http.build();

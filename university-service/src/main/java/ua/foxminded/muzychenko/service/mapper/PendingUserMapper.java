@@ -11,7 +11,9 @@ public class PendingUserMapper {
             pendingUser.getUserId().toString(),
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
-            pendingUser.getEmail()
+            pendingUser.getEmail(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
     }
 }

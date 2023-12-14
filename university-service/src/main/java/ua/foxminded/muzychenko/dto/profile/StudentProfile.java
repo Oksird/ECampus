@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,10 +13,10 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 public class StudentProfile extends AbstractUserProfile {
     private GroupInfo groupInfo;
-    private Set<CourseInfo> coursesInfo;
-    public StudentProfile(String userId , String firstName, String lastName, String email, GroupInfo groupInfo, Set<CourseInfo> coursesInfo) {
-        super(userId ,firstName, lastName, email);
+    private List<CourseInfo> coursesInfo;
+    public StudentProfile(String userId , String firstName, String lastName, String email,
+                          GroupInfo groupInfo, String phoneNumber, String address) {
+        super(userId ,firstName, lastName, email, phoneNumber, address);
         this.groupInfo = groupInfo;
-        this.coursesInfo = coursesInfo;
     }
 }

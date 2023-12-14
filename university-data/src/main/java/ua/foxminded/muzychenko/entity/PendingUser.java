@@ -18,7 +18,8 @@ public class PendingUser extends AbstractUser {
 
     private static final String USER_ROLE = "ROLE_PENDING";
 
-    public PendingUser(@NonNull UUID pendingUserId , String firstName, String lastName, String email, String password) {
-        super(pendingUserId, USER_ROLE, firstName, lastName, email, password);
+    public PendingUser(@NonNull UUID pendingUserId , String firstName, String lastName, String email,
+                       String password, String phoneNumber, String address) {
+        super(pendingUserId, USER_ROLE, firstName, lastName, email, password, phoneNumber, address);
     }
 }

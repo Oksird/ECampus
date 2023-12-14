@@ -1,12 +1,9 @@
 package ua.foxminded.muzychenko.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,12 +11,10 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true, exclude = {"group", "courses"})
-@ToString(callSuper = true, exclude = {"group", "courses"})
+@EqualsAndHashCode(callSuper = true, exclude = {"group"})
+@ToString(callSuper = true, exclude = {"group"})
 @Data
 @Entity
 @NoArgsConstructor
@@ -31,21 +26,9 @@ public class Student extends AbstractUser {
     @JoinColumn(name = "group_id")
     private Group group;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-        name = "students_courses",
-        joinColumns = {
-            @JoinColumn(name = "student_id", referencedColumnName = "user_id")
-        },
-        inverseJoinColumns = {
-            @JoinColumn(name = "course_id", referencedColumnName = "course_id")
-        }
-    )
-    private Set<Course> courses = new HashSet<>();
-
     public Student(@NonNull UUID studentId , String firstName, String lastName, String email, String password,
-                   Group group) {
-        super(studentId, USER_ROLE, firstName, lastName, email, password);
+                   Group group, String phoneNumber, String address) {
+        super(studentId, USER_ROLE, firstName, lastName, email, password, phoneNumber, address);
         this.group = group;
     }
 }

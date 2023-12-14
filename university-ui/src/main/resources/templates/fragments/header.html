@@ -20,8 +20,9 @@
     </div>
     <div th:if="${#authorization.expression('isAuthenticated()')}" class="col-md-3 text-end">
       <a th:href="@{/#}" type="button" class="btn btn-outline-primary me-2">Profile</a>
-      <a th:href="@{/logout}" type="button" class="btn btn-primary">Log out</a>
-    </div>
+      <form th:action="@{/logout}" th:method="post" id="logoutForm" style="display: none;">
+      </form>
+      <a href="javascript:void(0);" onclick="document.getElementById('logoutForm').submit();" class="btn btn-primary">Log out</a>    </div>
   </header>
 </div>
 </html>

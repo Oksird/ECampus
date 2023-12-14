@@ -9,14 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.entity.Course;
-import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.PendingUser;
 import ua.foxminded.muzychenko.entity.Student;
-import ua.foxminded.muzychenko.exception.CourseNotFoundException;
 import ua.foxminded.muzychenko.exception.GroupNotFoundException;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
-import ua.foxminded.muzychenko.repository.CourseRepository;
 import ua.foxminded.muzychenko.repository.GroupRepository;
 import ua.foxminded.muzychenko.repository.PendingUserRepository;
 import ua.foxminded.muzychenko.repository.StudentRepository;
@@ -25,14 +21,12 @@ import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class StudentService {
     private final StudentRepository studentRepository;
-    private final CourseRepository courseRepository;
     private final GroupRepository groupRepository;
     private final StudentProfileMapper studentProfileMapper;
     private final PendingUserRepository pendingUserRepository;
@@ -52,7 +46,9 @@ public class StudentService {
             pendingUser.getLastName(),
             pendingUser.getEmail(),
             pendingUser.getPassword(),
-            null
+            null,
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         studentRepository.save(student);
@@ -61,15 +57,7 @@ public class StudentService {
     @Transactional(readOnly = true)
     public StudentProfile findStudentById(UUID id) {
         Student student = studentRepository.findById(id).orElseThrow(UserNotFoundException::new);
-        Group group = groupRepository.findUsersGroup(id).orElse(null);
-        Set<Course> courses = courseRepository.findUsersCourses(id);
-        return studentProfileMapper.mapStudentInfoToProfile(student, group, courses);
-    }
-
-    @Transactional(readOnly = true)
-    public List<StudentProfile> findStudentsByCourse(String nameOfCourse) {
-        List<Student> students = studentRepository.findByCourses_CourseName(nameOfCourse);
-        return getStudentProfiles(students);
+        return studentProfileMapper.mapStudentInfoToProfile(student);
     }
 
     @Transactional(readOnly = true)
@@ -104,23 +92,6 @@ public class StudentService {
     }
 
     @Transactional
-    public void excludeStudentFromCourse(String email, String nameOfCourse) {
-        Student student = studentRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-
-        student.getCourses().remove(courseRepository.findByCourseName(nameOfCourse).orElseThrow(CourseNotFoundException::new));
-
-        studentRepository.save(student);
-    }
-
-    @Transactional
-    public void addStudentToCourse(String email, String nameOfCourse) {
-        Student student = studentRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-        student.getCourses().add(courseRepository.findByCourseName(nameOfCourse).orElseThrow(CourseNotFoundException::new));
-
-        studentRepository.save(student);
-    }
-
-    @Transactional
     public void addStudentToGroup(String email, String nameOfGroup) {
         Student student = studentRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
@@ -132,23 +103,14 @@ public class StudentService {
     @Transactional(readOnly = true)
     public StudentProfile findStudentByEmail(String email) {
         Student student = studentRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-        Group group = groupRepository.findUsersGroup(student.getUserId()).orElseThrow(GroupNotFoundException::new);
-        Set<Course> courses = courseRepository.findUsersCourses(student.getUserId());
-        return studentProfileMapper.mapStudentInfoToProfile(student, group, courses);
+        return studentProfileMapper.mapStudentInfoToProfile(student);
     }
 
     @Transactional(readOnly = true)
     public Page<StudentProfile> findAll(Integer pageNumber, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
         Page<Student> studentPage = studentRepository.findAll(pageable);
-        return studentPage.map(
-            student -> studentProfileMapper
-                .mapStudentInfoToProfile(
-                    student,
-                    student.getGroup(),
-                    student.getCourses()
-                )
-        );
+        return studentPage.map(studentProfileMapper::mapStudentInfoToProfile);
     }
 
     private UUID getStudentIdByEmail(String email) {
@@ -160,11 +122,7 @@ public class StudentService {
 
         for (Student student : students) {
             studentProfiles.add(studentProfileMapper
-                .mapStudentInfoToProfile(
-                    student,
-                    groupRepository.findUsersGroup(student.getUserId()).orElse(null),
-                    courseRepository.findUsersCourses(student.getUserId())
-                )
+                .mapStudentInfoToProfile(student)
             );
         }
         return studentProfiles;

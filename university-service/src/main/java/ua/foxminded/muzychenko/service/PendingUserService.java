@@ -36,7 +36,9 @@ public class PendingUserService {
                 userRegistrationRequest.getFirstName(),
                 userRegistrationRequest.getLastName(),
                 userRegistrationRequest.getEmail(),
-                passwordEncoder.encode(userRegistrationRequest.getPassword())
+                passwordEncoder.encode(userRegistrationRequest.getPassword()),
+                userRegistrationRequest.getPhoneNumber(),
+                userRegistrationRequest.getAddress()
             )
         );
     }

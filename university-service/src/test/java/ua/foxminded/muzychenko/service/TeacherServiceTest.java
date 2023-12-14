@@ -221,7 +221,9 @@ class TeacherServiceTest {
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "asd",
+            "asd"
         );
 
         when(teacherRepository.findByEmail(any(String.class)))
@@ -253,7 +255,7 @@ class TeacherServiceTest {
         when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.of(new Course(UUID.randomUUID(), "cn", "cd")));
 
-        teacherService.excludeTeacherFromCourse(teacher.getEmail(), "cn");
+        teacherService.excludeTeacherFromCourse(teacher.getEmail());
 
         verify(teacherRepository).findByEmail(teacher.getEmail());
         verify(teacherRepository).save(any(Teacher.class));

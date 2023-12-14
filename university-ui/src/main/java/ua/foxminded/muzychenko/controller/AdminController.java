@@ -1,31 +1,16 @@
 package ua.foxminded.muzychenko.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import ua.foxminded.muzychenko.controller.validator.ParamValidator;
-import ua.foxminded.muzychenko.dto.profile.AdminProfile;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
-import ua.foxminded.muzychenko.dto.profile.GroupInfo;
-import ua.foxminded.muzychenko.dto.profile.LessonInfo;
-import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
-import ua.foxminded.muzychenko.dto.profile.StaffProfile;
-import ua.foxminded.muzychenko.dto.profile.StudentProfile;
-import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
-import ua.foxminded.muzychenko.service.AdminService;
-import ua.foxminded.muzychenko.service.CourseService;
-import ua.foxminded.muzychenko.service.GroupService;
-import ua.foxminded.muzychenko.service.LessonService;
-import ua.foxminded.muzychenko.service.PendingUserService;
-import ua.foxminded.muzychenko.service.StaffService;
-import ua.foxminded.muzychenko.service.StudentService;
-import ua.foxminded.muzychenko.service.TeacherService;
+import ua.foxminded.muzychenko.dto.profile.*;
+import ua.foxminded.muzychenko.service.*;
 
 import java.util.Map;
 import java.util.UUID;
@@ -43,7 +28,6 @@ public class AdminController {
     private final ParamValidator paramValidator;
     private final GroupService groupService;
     private final CourseService courseService;
-    private final LessonService lessonService;
 
     @GetMapping("/")
     public String index(@RequestParam(defaultValue = "1") String page,
@@ -77,7 +61,6 @@ public class AdminController {
         Page<StaffProfile> staffProfiles = staffService.findAll(pageCount, pageSize);
         Page<GroupInfo> groupInfos = groupService.findAll(pageCount, pageSize);
         Page<CourseInfo> courseInfos = courseService.findAll(pageCount, pageSize);
-        Page<LessonInfo> lessonInfos = lessonService.findAll(pageCount, pageSize);
 
         model.addAttribute("pendingUsers", pendingUserProfiles.getContent());
         model.addAttribute("students", studentProfiles.getContent());
@@ -85,14 +68,14 @@ public class AdminController {
         model.addAttribute("staffProfiles", staffProfiles.getContent());
         model.addAttribute("groups", groupInfos.getContent());
         model.addAttribute("courses", courseInfos.getContent());
-        model.addAttribute("lessons", lessonInfos.getContent());
         model.addAttribute("totalItems", pageSize);
 
         return "admin/cpanel";
     }
 
     @PostMapping("/change-user-role/{userId}")
-    public String changeUserRole(@RequestParam("role") String role, @PathVariable("userId") String userId) {
+    public String changeUserRole(@RequestParam("role") String role,
+                                 @PathVariable("userId") String userId, HttpServletRequest request) {
 
         PendingUserProfile profile = pendingUserService.findById(UUID.fromString(userId));
 
@@ -110,6 +93,26 @@ public class AdminController {
                 break;
         }
 
-        return "redirect:/admins/cpanel";
+        String currentURI = request.getRequestURI();
+
+        return "redirect:" + currentURI;
+    }
+
+    @GetMapping("/profile")
+    public String getProfile(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        AdminProfile adminProfile = adminService.findAdminByEmail(userDetails.getUsername());
+
+        model.addAttribute("profile", adminProfile);
+
+        return "admin/profile";
+    }
+
+    @GetMapping("/{userId}")
+    public String getProfileById(@PathVariable("userId") UUID id, Model model) {
+        AdminProfile profile = adminService.findAdminById(id);
+
+        model.addAttribute("profile", profile);
+
+        return "admin/profile";
     }
 }

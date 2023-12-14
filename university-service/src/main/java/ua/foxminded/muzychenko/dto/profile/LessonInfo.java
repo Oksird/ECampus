@@ -2,18 +2,20 @@ package ua.foxminded.muzychenko.dto.profile;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.sql.Date;
-import java.sql.Time;
+import ua.foxminded.muzychenko.enums.DayOfWeek;
+import ua.foxminded.muzychenko.enums.LessonNumber;
+import ua.foxminded.muzychenko.enums.TypeOfLesson;
+import ua.foxminded.muzychenko.enums.WeekNumber;
 
 @Data
 @AllArgsConstructor
 public class LessonInfo {
     private String lessonId;
-    private String courseName;
-    private TeacherProfile teacherProfile;
-    private String groupName;
-    private Date date;
-    private Time startTime;
-    private Time endTime;
+    private TypeOfLesson type;
+    private CourseInfo courseInfo;
+    private GroupInfo groupInfo;
+    private DayOfWeek dayOfWeek;
+    private WeekNumber weekNumber;
+    private LessonNumber lessonNumber;
+    private String additionalInfo;
 }

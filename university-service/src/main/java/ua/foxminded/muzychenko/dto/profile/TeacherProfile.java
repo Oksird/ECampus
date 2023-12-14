@@ -4,15 +4,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
-
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class TeacherProfile extends AbstractUserProfile {
-    private Set<CourseInfo> coursesInfo;
-    public TeacherProfile(String userId , String firstName, String lastName, String email, Set<CourseInfo> coursesInfo) {
-        super(userId ,firstName, lastName, email);
-        this.coursesInfo = coursesInfo;
+    public TeacherProfile(String userId , String firstName, String lastName, String email,
+                          String phoneNumber, String address) {
+        super(userId ,firstName, lastName, email, phoneNumber, address);
     }
 }

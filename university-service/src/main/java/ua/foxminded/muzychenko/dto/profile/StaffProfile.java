@@ -8,7 +8,8 @@ import lombok.ToString;
 @Data
 @ToString
 public class StaffProfile extends AbstractUserProfile {
-    public StaffProfile(String userId, String firstName, String lastName, String email) {
-        super(userId, firstName, lastName, email);
+    public StaffProfile(String userId, String firstName, String lastName,
+                        String email, String phoneNumber, String address) {
+        super(userId, firstName, lastName, email, phoneNumber, address);
     }
 }

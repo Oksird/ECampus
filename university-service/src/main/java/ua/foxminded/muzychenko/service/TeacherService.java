@@ -23,7 +23,6 @@ import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsExcepti
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -48,7 +47,9 @@ public class TeacherService {
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
             pendingUser.getEmail(),
-            pendingUser.getPassword()
+            pendingUser.getPassword(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         teacherRepository.save(teacher);
@@ -57,13 +58,15 @@ public class TeacherService {
     @Transactional(readOnly = true)
     public TeacherProfile findTeacherById(UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(UserNotFoundException::new);
-        Set<Course> courses = courseRepository.findUsersCourses(id);
-        return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
+        return teacherProfileMapper.mapTeacherEntityToProfile(teacher);
     }
 
     @Transactional(readOnly = true)
-    public List<TeacherProfile> findTeachersByCourse(String nameOfCourse) {
-        return getTeacherProfiles(teacherRepository.findByCourses_CourseName(nameOfCourse));
+    public TeacherProfile findTeacherByCourse(String nameOfCourse) {
+        Course course = courseRepository.findByCourseName(nameOfCourse)
+            .orElseThrow(CourseNotFoundException::new);
+
+        return teacherProfileMapper.mapTeacherEntityToProfile(course.getTeacher());
     }
 
     @Transactional
@@ -72,10 +75,10 @@ public class TeacherService {
     }
 
     @Transactional
-    public void excludeTeacherFromCourse(String email, String nameOfCourse) {
+    public void excludeTeacherFromCourse(String email) {
         Teacher teacher = teacherRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
-        teacher.getCourses().remove(courseRepository.findByCourseName(nameOfCourse).orElseThrow(CourseNotFoundException::new));
+        teacher.setCourse(null);
 
         teacherRepository.save(teacher);
     }
@@ -84,7 +87,7 @@ public class TeacherService {
     public void addTeacherToCourse(String email, String nameOfCourse) {
         Teacher teacher = teacherRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
-        teacher.getCourses().add(courseRepository.findByCourseName(nameOfCourse).orElseThrow(CourseNotFoundException::new));
+        teacher.setCourse(courseRepository.findByCourseName(nameOfCourse).orElseThrow(CourseNotFoundException::new));
 
         teacherRepository.save(teacher);
     }
@@ -103,15 +106,23 @@ public class TeacherService {
     @Transactional(readOnly = true)
     public TeacherProfile findTeacherByEmail(String email) {
         Teacher teacher = teacherRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-        Set<Course> courses = courseRepository.findUsersCourses(teacher.getUserId());
-        return teacherProfileMapper.mapTeacherEntityToProfile(teacher, courses);
+        return teacherProfileMapper.mapTeacherEntityToProfile(teacher);
     }
 
     @Transactional(readOnly = true)
     public Page<TeacherProfile> findAll(Integer pageNumber, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
         Page<Teacher> teacherPage = teacherRepository.findAll(pageable);
-        return teacherPage.map(teacher -> teacherProfileMapper.mapTeacherEntityToProfile(teacher, teacher.getCourses()));
+        return teacherPage.map(teacherProfileMapper::mapTeacherEntityToProfile);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Course> getTeacherCourses(String teacherEmail) {
+        return courseRepository.findByTeacher(
+            teacherRepository
+                .findByEmail(teacherEmail)
+                .orElseThrow(UserNotFoundException::new)
+        );
     }
 
     private UUID getTeacherIdByEmail(String email) {
@@ -122,11 +133,10 @@ public class TeacherService {
         List<TeacherProfile> teacherProfiles = new ArrayList<>();
 
         for (Teacher teacher : students) {
-            teacherProfiles.add(teacherProfileMapper.mapTeacherEntityToProfile(
-                teacher,
-                courseRepository.findUsersCourses(teacher.getUserId())
-            ));
+
+            teacherProfiles.add(teacherProfileMapper.mapTeacherEntityToProfile(teacher));
         }
+
         return teacherProfiles;
     }
 }

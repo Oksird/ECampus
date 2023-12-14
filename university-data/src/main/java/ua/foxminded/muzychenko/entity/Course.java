@@ -1,11 +1,12 @@
 package ua.foxminded.muzychenko.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,17 +14,18 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = {"students", "teachers", "lessons"})
-@ToString(exclude = {"students", "teachers", "lessons"})
+@EqualsAndHashCode(exclude = {"groups", "teacher"})
+@ToString(exclude = {"groups", "teacher"})
 @Table(name = "courses")
 @Entity
 public class Course {
+
     @Id
     @Column(name = "course_id", updatable = false, nullable = false)
     private UUID courseId;
@@ -34,14 +36,12 @@ public class Course {
     @Column(name = "course_description")
     private String courseDescription;
 
-    @ManyToMany(mappedBy = "courses", cascade = CascadeType.REMOVE)
-    private Set<Student> students = new HashSet<>();
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id", referencedColumnName = "user_id")
+    private Teacher teacher;
 
-    @ManyToMany(mappedBy = "courses", cascade = CascadeType.REMOVE)
-    private Set<Teacher> teachers = new HashSet<>();
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
-    private Set<Lesson> lessons = new HashSet<>();
+    @ManyToMany(mappedBy = "courses")
+    private List<Group> groups = new ArrayList<>();
 
     public Course(@NonNull UUID courseId , String courseName, String courseDescription) {
         this.courseId = courseId;

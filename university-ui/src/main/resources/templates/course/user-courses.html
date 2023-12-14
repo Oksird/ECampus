@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+  <title>University - Courses</title>
+
+  <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css} "/>
+  <script type="text/javascript" th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.min.js}"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<h1>Courses</h1>
+
+<div th:if="${courses.size() > 0}">
+  <table class="table table-hover table-responsive-xl">
+    <thead class="thead-light">
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="course : ${courses}">
+      <td>[[${course.getCourseName()}]]</td>
+      <td>[[${course.getCourseDescription()}]]</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div th:unless="${courses.size() > 0}">
+  <span>No courses found!</span>
+</div>
+
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.min.js}"></script>
+</body>
+
+<footer>
+  <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+
+</html>

@@ -14,7 +14,6 @@ import ua.foxminded.muzychenko.controller.validator.ParamValidator;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
-import ua.foxminded.muzychenko.dto.profile.LessonInfo;
 import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.StaffProfile;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
@@ -22,7 +21,6 @@ import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.service.AdminService;
 import ua.foxminded.muzychenko.service.CourseService;
 import ua.foxminded.muzychenko.service.GroupService;
-import ua.foxminded.muzychenko.service.LessonService;
 import ua.foxminded.muzychenko.service.PendingUserService;
 import ua.foxminded.muzychenko.service.StaffService;
 import ua.foxminded.muzychenko.service.StudentService;
@@ -67,8 +65,10 @@ class AdminControllerTest {
     private GroupService groupService;
     @MockBean
     private CourseService courseService;
+ /*
     @MockBean
     private LessonService lessonService;
+ */
 
 
     @Test
@@ -81,13 +81,17 @@ class AdminControllerTest {
             UUID.randomUUID().toString(),
             "fn1",
             "ln1",
-            "em1"
+            "em1",
+            "380",
+            "adr"
             );
         AdminProfile adminProfile2 = new AdminProfile(
             UUID.randomUUID().toString(),
             "fn2",
             "ln2",
-            "em2"
+            "em2",
+            "380",
+            "adr"
         );
 
         List<AdminProfile> adminProfiles = new ArrayList<>(List.of(adminProfile1, adminProfile2));
@@ -123,7 +127,9 @@ class AdminControllerTest {
             userId.toString(),
             "fn",
             "ln",
-            "em"
+            "em",
+            "380",
+            "adr"
         );
 
         when(pendingUserService.findById(userId)).thenReturn(profile);
@@ -151,7 +157,9 @@ class AdminControllerTest {
             userId.toString(),
             "fn",
             "ln",
-            "em"
+            "em",
+            "380",
+            "adr"
         );
 
         when(pendingUserService.findById(userId)).thenReturn(profile);
@@ -179,7 +187,9 @@ class AdminControllerTest {
             userId.toString(),
             "fn",
             "ln",
-            "em"
+            "em",
+            "380",
+            "adr"
         );
 
         when(pendingUserService.findById(userId)).thenReturn(profile);
@@ -210,7 +220,7 @@ class AdminControllerTest {
         Page<StaffProfile> staffProfiles = new PageImpl<>(new ArrayList<>());
         Page<GroupInfo> groupInfos = new PageImpl<>(new ArrayList<>());
         Page<CourseInfo> courseInfos = new PageImpl<>(new ArrayList<>());
-        Page<LessonInfo> lessonInfos = new PageImpl<>(new ArrayList<>());
+      //  Page<LessonInfo> lessonInfos = new PageImpl<>(new ArrayList<>());
 
         when(pendingUserService.findAll(pageCount, pageSize)).thenReturn(pendingUserProfiles);
         when(studentService.findAll(pageCount, pageSize)).thenReturn(studentProfiles);
@@ -218,7 +228,7 @@ class AdminControllerTest {
         when(staffService.findAll(pageCount, pageSize)).thenReturn(staffProfiles);
         when(groupService.findAll(pageCount, pageSize)).thenReturn(groupInfos);
         when(courseService.findAll(pageCount, pageSize)).thenReturn(courseInfos);
-        when(lessonService.findAll(pageCount, pageSize)).thenReturn(lessonInfos);
+     //   when(lessonService.findAll(pageCount, pageSize)).thenReturn(lessonInfos);
 
         mockMvc.perform(get("/admins/cpanel"))
             .andExpect(status().isOk())
@@ -230,7 +240,7 @@ class AdminControllerTest {
             .andExpect(model().attribute("staffProfiles", staffProfiles.getContent()))
             .andExpect(model().attribute("groups", groupInfos.getContent()))
             .andExpect(model().attribute("courses", courseInfos.getContent()))
-            .andExpect(model().attribute("lessons", lessonInfos.getContent()))
+          //  .andExpect(model().attribute("lessons", lessonInfos.getContent()))
             .andExpect(model().attribute("totalItems", pageSize));
     }
 }

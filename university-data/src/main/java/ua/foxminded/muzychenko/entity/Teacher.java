@@ -2,45 +2,30 @@ package ua.foxminded.muzychenko.entity;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true, exclude = {"courses", "lessons"})
-@ToString(callSuper = true, exclude = {"courses", "lessons"})
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Data
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("ROLE_TEACHER")
+
 public class Teacher extends AbstractUser {
     private static final String USER_ROLE = "ROLE_TEACHER";
 
-    @ManyToMany
-    @JoinTable(
-        name = "teachers_courses",
-        joinColumns = {
-            @JoinColumn(name = "teacher_id", referencedColumnName = "user_id")
-        },
-        inverseJoinColumns = {
-            @JoinColumn(name = "course_id", referencedColumnName = "course_id")
-        }
-    )
-    private Set<Course> courses = new HashSet<>();
+    @OneToOne(mappedBy = "teacher")
+    private Course course;
 
-    @OneToMany(mappedBy = "teacher")
-    private Set<Lesson> lessons;
-
-    public Teacher(@NonNull UUID teacherId, String firstName, String lastName, String email, String password) {
-        super(teacherId, USER_ROLE, firstName, lastName, email, password);
+    public Teacher(@NonNull UUID teacherId, String firstName, String lastName, String email,
+                   String password, String phoneNumber, String address) {
+        super(teacherId, USER_ROLE, firstName, lastName, email, password, phoneNumber, address);
     }
 }

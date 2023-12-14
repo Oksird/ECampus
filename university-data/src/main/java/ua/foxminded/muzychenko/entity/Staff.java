@@ -18,8 +18,9 @@ public class Staff extends AbstractUser {
 
     private static final String USER_ROLE = "ROLE_STAFF";
 
-    public Staff(@NonNull UUID staffId , String firstName, String lastName, String email, String password) {
-        super(staffId, USER_ROLE, firstName, lastName, email, password);
+    public Staff(@NonNull UUID staffId , String firstName, String lastName, String email,
+                 String password, String phoneNumber, String address) {
+        super(staffId, USER_ROLE, firstName, lastName, email, password, phoneNumber, address);
     }
 
 }

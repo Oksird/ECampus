@@ -5,13 +5,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import ua.foxminded.muzychenko.controller.validator.ParamValidator;
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
+import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.service.GroupService;
+import ua.foxminded.muzychenko.service.StudentService;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Controller
@@ -20,6 +27,7 @@ public class GroupController {
 
     private final GroupService groupService;
     private final ParamValidator paramValidator;
+    private final StudentService studentService;
 
     @GetMapping("/")
     public String index(@RequestParam(required = false) String keyword,
@@ -48,5 +56,36 @@ public class GroupController {
         model.addAttribute("pageSize", size);
 
         return "group/groups";
+    }
+
+    @GetMapping("/{groupId}")
+    public String getProfileById(@PathVariable("groupId") UUID id, Model model) {
+        GroupInfo groupInfo = groupService.findGroupById(id);
+        List<StudentProfile> students = studentService.findStudentsByGroup(groupInfo.getGroupName());
+
+        model.addAttribute("group", groupInfo);
+        model.addAttribute("students", students);
+
+        return "group/profile";
+    }
+
+    @GetMapping("/group{groupName}")
+    public String getProfileByName(@PathVariable("groupName") String groupName, Model model) {
+        GroupInfo groupInfo = groupService.findGroupByName(groupName);
+        List<StudentProfile> students = studentService.findStudentsByGroup(groupInfo.getGroupName());
+        List<CourseInfo> courses = groupService.findGroupCourses(groupName);
+
+        model.addAttribute("group", groupInfo);
+        model.addAttribute("students", students);
+        model.addAttribute("courses", courses);
+
+        return "group/profile";
+    }
+
+    @GetMapping("/get-courses-for-group")
+    @ResponseBody
+    public List<String> getCourseNamesForGroup(@RequestParam String groupName) {
+        GroupInfo groupInfo = groupService.findGroupByName(groupName);
+        return groupInfo.getCourses().stream().map(CourseInfo::getCourseName).toList();
     }
 }

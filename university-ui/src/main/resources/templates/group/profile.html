@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+  <title>Profile</title>
+
+  <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}" />
+  <link th:href="@{/css/app.css}" rel="stylesheet" />
+  <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}" defer></script>
+  <script th:src="@{/js/app.js}" defer></script>
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<section class="vh-100" style="background-color: #eee;">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-md-12 col-xl-4">
+
+        <div class="card" style="border-radius: 15px;">
+          <div class="card-body text-center">
+            <div class="mt-3 mb-4">
+              <img src="https://i0.wp.com/calmatters.org/wp-content/uploads/2021/08/class-size.jpg?w=2266&ssl=1"
+                   class="rounded img-fluid" style="width: 400px;" />
+            </div>
+            <h3>Group</h3>
+            <h4 th:text="${group.getGroupName()}" />
+
+            <div class="d-flex justify-content-between text-center mt-5 mb-2">
+              <div>
+              </div>
+              <div class="px-3">
+                <p class="mb-2 h5" th:text="${group.getCountOfStudents()}" />
+                <p class="text-muted mb-0">Count of students</p>
+              </div>
+              <div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container mt-4">
+          <h3>Students</h3>
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Phone number</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="student : ${students}">
+              <td th:text="${student.getFirstName()} + ' ' + ${student.getLastName()}"></td>
+              <td th:if="${student.getEmail() != null}" th:text="${student.getEmail()}"></td>
+              <td th:if="${student.getPhoneNumber() != null}" th:text="${student.getPhoneNumber()}"></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container mt-4">
+          <h3>Courses</h3>
+          <table class="table table-hover table-responsive-xl">
+            <thead class="thead-light">
+            <tr>
+              <th scope="col">Course</th>
+              <th scope="col">Teacher Name</th>
+              <th scope="col">Teacher Email</th>
+              <th scope="col">Teacher Phone</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="course : ${courses}">
+              <td th:text="${course.getCourseName()()}"></td>
+              <td th:text="${course.getTeacherProfile().getFirstName()} + ' ' + ${course.getTeacherProfile().getLastName()}"></td>
+              <td th:if="${course.getTeacherProfile().getEmail() != null}" th:text="${course.getTeacherProfile().getEmail()}"></td>
+              <td th:if="${course.getTeacherProfile().getPhoneNumber() != null}" th:text="${course.getTeacherProfile().getPhoneNumber()}"></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+<footer>
+  <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+</html>

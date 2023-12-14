@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+    <title>Create Schedule</title>
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}"/>
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}" defer></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<section class="vh-100">
+
+    <div class="container h-100">
+        <div class="card text-black" style="border-radius: 30px;">
+            <div class="card-body">
+
+                <p class="text-center h1 fw-bold mb-5">Create Lesson</p>
+
+                <form th:action="@{/schedule/}" th:method="POST" th:object="${lesson}" class="mx-auto"
+                      style="width: 50%;">
+
+                    <div class="mb-4">
+                        <label class="form-label" for="week_select">Week number</label>
+                        <select th:field="*{weekNumber}" class="form-select" id="week_select">
+                            <option th:each="week : ${weekNumbers}" th:value="${week}" th:text="${week.getDisplayValue()}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="day_select">Day of week</label>
+                        <select th:field="*{dayOfWeek}" class="form-select" id="day_select">
+                            <option th:each="day : ${daysOfWeek}" th:value="${day}" th:text="${day.getDisplayValue()}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="lesson_number_select">Lesson number</label>
+                        <select th:field="*{lessonNumber}" class="form-select" id="lesson_number_select">
+                            <option th:each="lNumber : ${lessonNumbers}" th:value="${lNumber}" th:text="${lNumber.getDisplayValue()}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="type_select">Type</label>
+                        <select th:field="*{type}" class="form-select" id="type_select">
+                            <option th:each="lType : ${types}" th:value="${lType}" th:text="${lType.getDisplayValue()}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="group_select">Group</label>
+                        <select th:field="*{groupName}" class="form-select" id="group_select">
+                            <option th:each="group : ${groups}" th:value="${group}" th:text="${group}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="course_select">Course</label>
+                        <select th:field="*{courseName}" class="form-select" id="course_select">
+                            <!-- Courses will be loaded here by AJAX -->
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="exampleFormControlInput1">Additional info</label>
+                        <input th:field="*{additionalInfo}" type="text" class="form-control" id="exampleFormControlInput1" placeholder="Zoom link">
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary btn-lg">Create</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    function loadCourses() {
+        let selectedGroupName = $('#group_select').val();
+        if (selectedGroupName) {
+            $.ajax({
+                url: '/groups/get-courses-for-group',
+                type: 'GET',
+                data: {groupName: selectedGroupName},
+                success: function(courses) {
+                    $('#course_select').empty();
+                    $.each(courses, function(index, courseName) {
+                        $('#course_select').append($('<option></option>').text(courseName));
+                    });
+                },
+                error: function() {
+                    alert('Error fetching courses for the selected group');
+                }
+            });
+        }
+    }
+
+    $(document).ready(function() {
+        loadCourses();
+
+        $('#group_select').change(function() {
+            loadCourses();
+        });
+    });
+</script>
+
+</body>
+<footer>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+</html>

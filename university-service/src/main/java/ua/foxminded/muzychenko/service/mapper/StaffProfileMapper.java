@@ -7,6 +7,7 @@ import ua.foxminded.muzychenko.entity.Staff;
 @Mapper
 public class StaffProfileMapper {
     public StaffProfile mapStaffEntityToProfile(Staff staff) {
-        return new StaffProfile(staff.getUserId().toString(), staff.getFirstName(), staff.getLastName(), staff.getEmail());
+        return new StaffProfile(staff.getUserId().toString(), staff.getFirstName(),
+            staff.getLastName(), staff.getEmail(), staff.getPhoneNumber(), staff.getAddress());
     }
 }

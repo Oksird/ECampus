@@ -6,11 +6,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.foxminded.muzychenko.repository.CourseRepository;
-import ua.foxminded.muzychenko.exception.CourseNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.entity.Teacher;
+import ua.foxminded.muzychenko.exception.CourseNotFoundException;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
+import ua.foxminded.muzychenko.repository.CourseRepository;
+import ua.foxminded.muzychenko.repository.TeacherRepository;
 import ua.foxminded.muzychenko.service.mapper.CourseInfoMapper;
+import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.validator.CourseValidator;
 
 import java.util.ArrayList;
@@ -21,13 +25,24 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CourseService {
     private final CourseRepository courseRepository;
+    private final TeacherRepository teacherRepository;
     private final CourseValidator courseValidator;
     private final CourseInfoMapper courseInfoMapper;
+    private final TeacherProfileMapper teacherProfileMapper;
 
     @Transactional
-    public void createCourse(CourseInfo courseInfo) {
+    public void createCourse(CourseInfo courseInfo, String teacherEmail) {
         courseValidator.validateCourseInfo(courseInfo);
-        courseRepository.save(new Course(UUID.randomUUID(), courseInfo.getCourseName(), courseInfo.getCourseDescription()));
+
+        Course course = new Course(
+            UUID.randomUUID(),
+            courseInfo.getCourseName(),
+            courseInfo.getCourseDescription()
+        );
+
+        course.setTeacher(teacherRepository.findByEmail(teacherEmail).orElseThrow(UserNotFoundException::new));
+
+        courseRepository.save(course);
     }
 
     @Transactional(readOnly = true)
@@ -79,7 +94,14 @@ public class CourseService {
             .orElseThrow(CourseNotFoundException::new);
         Course newCourse = new Course(oldCourse.getCourseId(), newCourseName, oldCourse.getCourseDescription());
 
-        courseValidator.validateCourseInfo(new CourseInfo(newCourse.getCourseId().toString() ,newCourse.getCourseName(), newCourse.getCourseDescription()));
+        courseValidator.validateCourseInfo(
+            new CourseInfo(
+                newCourse.getCourseId().toString(),
+                newCourse.getCourseName(),
+                newCourse.getCourseDescription(),
+                teacherProfileMapper.mapTeacherEntityToProfile(newCourse.getTeacher())
+            )
+        );
 
         courseRepository.save(newCourse);
     }
@@ -91,9 +113,26 @@ public class CourseService {
             .orElseThrow(CourseNotFoundException::new);
         Course newCourse = new Course(oldCourse.getCourseId(), oldCourse.getCourseName(), newCourseDescription);
 
-        courseValidator.validateCourseInfo(new CourseInfo(newCourse.getCourseId().toString() ,newCourse.getCourseName(), newCourse.getCourseDescription()));
+        courseValidator.validateCourseInfo(
+            new CourseInfo(
+                newCourse.getCourseId().toString(),
+                newCourse.getCourseName(),
+                newCourse.getCourseDescription(),
+                teacherProfileMapper.mapTeacherEntityToProfile(newCourse.getTeacher())
+            )
+        );
 
         courseRepository.save(newCourse);
+    }
+
+    @Transactional
+    public void changeCourseTeacher(String courseName, String teacherEmail) {
+        Course course = courseRepository.findByCourseName(courseName).orElseThrow(CourseNotFoundException::new);
+        Teacher teacher = teacherRepository.findByEmail(teacherEmail).orElseThrow(UserNotFoundException::new);
+
+        course.setTeacher(teacher);
+
+        courseRepository.save(course);
     }
 
     private UUID getCourseIdByName(String courseName) {

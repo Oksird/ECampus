@@ -16,7 +16,8 @@ import java.util.UUID;
 @DiscriminatorValue("ROLE_ADMIN")
 public class Admin extends AbstractUser {
     private static final String USER_ROLE = "ROLE_ADMIN";
-    public Admin(@NonNull UUID adminId , String firstName, String lastName, String email, String password) {
-        super(adminId, USER_ROLE, firstName, lastName, email, password);
+    public Admin(@NonNull UUID adminId , String firstName, String lastName, String email, String password,
+                 String phoneNumber, String address) {
+        super(adminId, USER_ROLE, firstName, lastName, email, password, phoneNumber, address);
     }
 }

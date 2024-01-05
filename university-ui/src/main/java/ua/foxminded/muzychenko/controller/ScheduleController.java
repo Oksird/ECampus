@@ -18,7 +18,6 @@ import ua.foxminded.muzychenko.enums.TypeOfLesson;
 import ua.foxminded.muzychenko.enums.WeekNumber;
 import ua.foxminded.muzychenko.service.CourseService;
 import ua.foxminded.muzychenko.service.GroupService;
-import ua.foxminded.muzychenko.service.LessonTimeService;
 import ua.foxminded.muzychenko.service.ScheduleService;
 
 import java.util.List;

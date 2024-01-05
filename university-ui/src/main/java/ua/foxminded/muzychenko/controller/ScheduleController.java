@@ -33,7 +33,6 @@ public class ScheduleController {
     private ScheduleService scheduleService;
     private GroupService groupService;
     private CourseService courseService;
-    private LessonTimeService lessonTimeService;
 
     @GetMapping("/new")
     public String getCreateLessonForm(Model model) {

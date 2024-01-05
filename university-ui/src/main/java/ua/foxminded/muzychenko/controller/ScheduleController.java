@@ -23,6 +23,7 @@ import ua.foxminded.muzychenko.service.ScheduleService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/schedule")
@@ -64,18 +65,31 @@ public class ScheduleController {
         return "redirect:/schedule/new";
     }
 
-    @GetMapping("/group/{group-name}")
-    public String getScheduleForGroup(@PathVariable("group-name") String groupName, Model model) {
-        Map<WeekNumber, Map<DayOfWeek, List<LessonInfo>>> scheduleMap = scheduleService.getScheduleForGroup(groupName)
+    @GetMapping("/group/{group-id}/{week-number}")
+    public String getScheduleForGroup(@PathVariable("group-id") String groupId,
+                                      @PathVariable("week-number") String weekNumber,
+                                      Model model) {
+
+        Map<WeekNumber, Map<DayOfWeek, List<LessonInfo>>> scheduleMap = scheduleService.getScheduleForGroup(
+            groupService.findGroupById(UUID.fromString(groupId))
+                .getGroupName()
+            )
             .getTwoWeeksSchedule();
 
-        model.addAttribute("weekNumbers", WeekNumber.values());
-        model.addAttribute("daysOfWeek", DayOfWeek.values());
-        model.addAttribute("lessonTimes", lessonTimeService.lessonTimes());
-        model.addAttribute("firstWeekLessons", scheduleMap.get(WeekNumber.FIRST));
-        model.addAttribute("secondWeekLessons", scheduleMap.get(WeekNumber.SECOND));
+        model.addAttribute("weekNumber", weekNumber);
+        model.addAttribute("days", DayOfWeek.values());
+        model.addAttribute("lessonNumbers", LessonNumber.values());
+        model.addAttribute("groups", groupService.findAll());
+        model.addAttribute("currentGroupId", groupId);
+        model.addAttribute("currentGroupName", groupService.findGroupById(UUID.fromString(groupId)).getGroupName());
+
+        if (weekNumber.equals("1")) {
+            model.addAttribute("weekSchedule", scheduleMap.get(WeekNumber.FIRST));
+        }
+        if (weekNumber.equals("2")) {
+            model.addAttribute("weekSchedule", scheduleMap.get(WeekNumber.SECOND));
+        }
 
         return "schedule/view_schedule";
     }
-
 }

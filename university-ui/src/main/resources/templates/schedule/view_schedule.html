@@ -8,35 +8,98 @@
     <link th:href="@{/css/app.css}" rel="stylesheet"/>
     <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}" defer></script>
     <script th:src="@{/js/app.js}" defer></script>
+    <style>
+        .lesson-block {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #f7f7f7;
+        }
+
+        .lesson-type {
+            display: inline-block;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #6c7ae0;
+            border-radius: 10px;
+            padding: 2px 6px;
+            margin-right: 5px;
+        }
+
+        .lesson-details {
+            margin-top: 5px;
+            font-size: 0.95em;
+        }
+
+        .teacher-name {
+            display: block; /* Or inline-block, depending on your layout */
+            font-weight: bold;
+            color: #333;
+        }
+
+        .lesson-room {
+            display: block; /* Or inline-block, depending on your layout */
+            color: #555;
+            font-size: 0.9em;
+        }
+
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
+
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px;">
+    <label>Select group
+        <div class="btn-group" style="width: 200px">
+            <button th:text="${currentGroupName}" type="button" class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown" aria-expanded="true" style="width: 250px">
+            </button>
+            <ul class="dropdown-menu">
+                <li th:each="group : ${groups}">
+                    <a class="dropdown-item" th:href="@{/schedule/group/{groupId}/{weekNumber}(groupId=${group.getGroupId()},weekNumber=${weekNumber})}" th:text="${group.getGroupName()}">Group Name</a>
+                </li>
+            </ul>
+        </div>
+    </label>
+
+    <div class="btn-group" role="group" aria-label="Basic example" style="margin-bottom: 10px;">
+        <a th:href="@{/schedule/group/{groupId}/{weekNumber}(groupId=${currentGroupId},weekNumber=1)}" class="btn btn-outline-primary" style="width: 375px;">First week</a>
+        <a th:href="@{/schedule/group/{groupId}/{weekNumber}(groupId=${currentGroupId},weekNumber=2)}" class="btn btn-outline-primary" style="width: 375px;">Second week</a>
+    </div>
+</div>
+
 <section class="vh-100">
     <div class="container h-100">
-        <table class="table">
-            <thead>
-            <tr th:each="day : ${daysOfWeek}">
-                <th scope="col"> </th>
-                <th scope="col" th:text="${day.getDisplayValue()}" />
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="time : ${lessonTimes}">
-                <th scope="row" th:text="${time.getStartTime().toString().substring(0,5)}" />
-            </tr>
+        <table class="table table-bordered">
             <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
+                <!-- Пустая ячейка для номеров уроков -->
+                <th></th>
+                <!-- Заголовки для дней недели -->
+                <th th:each="day : ${days}" th:text="${day.getDisplayValue()}"></th>
             </tr>
-            <tr>
-                <th scope="row">3</th>
-                <td colspan="2">Larry the Bird</td>
-                <td>@twitter</td>
+            <!-- Итерация по номерам уроков -->
+            <tr th:each="lessonNumber : ${lessonNumbers}">
+                <td th:text="${lessonNumber.getTimeValue()}"></td> <!-- Номер урока -->
+                <!-- Отображение уроков для каждого дня -->
+                <td th:each="day : ${days}">
+      <span th:each="lesson : ${weekSchedule.get(day)}">
+
+        <div th:if="${lesson.getLessonNumber() == lessonNumber}" class="lesson-block">
+            <span class="lesson-type" th:text="${lesson.getType().getDisplayValue()}"></span>
+                <div class="lesson-details">
+                    <span th:text="${lesson.getCourseInfo().getCourseName()}"></span>
+                    <span class="teacher-name"
+              th:text="${lesson.getCourseInfo().getTeacherProfile().getFirstName() + ' ' + lesson.getCourseInfo().getTeacherProfile().getLastName()}"></span>
+        <span class="lesson-room" th:if="${!lesson.getAdditionalInfo().equals('')}"
+              th:text="${lesson.getAdditionalInfo()}"></span>
+    </div>
+        </div>
+      </span>
+                </td>
             </tr>
-            </tbody>
         </table>
+
     </div>
 </section>
 </body>

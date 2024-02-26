@@ -21,11 +21,8 @@ import ua.foxminded.muzychenko.enums.WeekNumber;
 import ua.foxminded.muzychenko.exception.CourseNotFoundException;
 import ua.foxminded.muzychenko.exception.GroupNotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

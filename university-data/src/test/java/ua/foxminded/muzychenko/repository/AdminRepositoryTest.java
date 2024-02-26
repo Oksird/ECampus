@@ -10,10 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.DataConfiguration;
 import ua.foxminded.muzychenko.DataTestConfig;
 import ua.foxminded.muzychenko.entity.Admin;
-import ua.foxminded.muzychenko.entity.Lesson;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

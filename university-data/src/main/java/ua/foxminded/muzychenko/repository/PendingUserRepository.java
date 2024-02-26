@@ -6,8 +6,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.entity.PendingUser;
 
-import java.util.Optional;
-
 @Repository
 public interface PendingUserRepository extends UserRepository<PendingUser> {
     @Override

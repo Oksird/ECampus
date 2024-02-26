@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.DataConfiguration;
@@ -14,11 +13,9 @@ import ua.foxminded.muzychenko.entity.Teacher;
 import ua.foxminded.muzychenko.exception.CourseNotFoundException;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @ContextConfiguration(classes = DataConfiguration.class)

@@ -23,8 +23,4 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     Optional<Lesson> findByStudyWeekAndStudyDayAndLessonTime(StudyWeek studyWeek, StudyDay studyDay,
                                                              LessonTime lessonTime);
 
-    List<Lesson> findLessonsByStudyWeekAndStudyDay(StudyWeek studyWeek, StudyDay studyDay);
-
-    List<Lesson> findLessonsByStudyWeek(StudyWeek studyWeek);
-
 }

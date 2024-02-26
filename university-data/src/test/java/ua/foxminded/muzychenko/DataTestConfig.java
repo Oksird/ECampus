@@ -1,8 +1,9 @@
 package ua.foxminded.muzychenko;
 
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.flywaydb.core.Flyway;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -22,17 +23,21 @@ public class DataTestConfig {
         new PostgreSQLContainer<>("postgres:latest");
 
     static {
+        postgreSQLContainer.withReuse(true);
         postgreSQLContainer.start();
     }
 
     @Bean
     public DataSource dataSource() {
-        return DataSourceBuilder.create()
-            .driverClassName(org.postgresql.Driver.class.getName())
-            .url(postgreSQLContainer.getJdbcUrl())
-            .username(postgreSQLContainer.getUsername())
-            .password(postgreSQLContainer.getPassword())
-            .build();
+        HikariConfig config = new HikariConfig();
+
+        config.setDriverClassName(org.postgresql.Driver.class.getName());
+        config.setJdbcUrl(postgreSQLContainer.getJdbcUrl());
+        config.setUsername(postgreSQLContainer.getUsername());
+        config.setPassword(postgreSQLContainer.getPassword());
+        config.setMaximumPoolSize(2);
+
+        return new HikariDataSource(config);
     }
 
     @Bean(initMethod = "migrate")

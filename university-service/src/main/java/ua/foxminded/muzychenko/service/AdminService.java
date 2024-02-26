@@ -6,7 +6,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.foxminded.muzychenko.dto.UserRequestDTO;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
+import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
+import ua.foxminded.muzychenko.dto.profile.UserInfo;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
 import ua.foxminded.muzychenko.entity.Admin;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
@@ -23,6 +26,10 @@ public class AdminService {
     private final RequestValidator requestValidator;
     private final AdminRepository adminRepository;
     private final AdminProfileMapper adminProfileMapper;
+    private final UserRequestService userRequestService;
+    private final StudentService studentService;
+    private final TeacherService teacherService;
+    private final StaffService staffService;
 
     @Transactional(readOnly = true)
     public AdminProfile findAdminById(UUID id) {
@@ -57,6 +64,30 @@ public class AdminService {
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
         Page<Admin> adminPage = adminRepository.findAll(pageable);
         return adminPage.map(adminProfileMapper::mapAdminEntityToAdminProfile);
+    }
+
+    @Transactional
+    public void grantRoleOnRequest(UserRequestDTO userRequestDTO) {
+
+        UserInfo userInfo = userRequestDTO.getUserInfo();
+
+        PendingUserProfile pendingUserProfile = new PendingUserProfile(
+            userInfo.getId(),
+            userInfo.getFirstName(),
+            userInfo.getLastName(),
+            userInfo.getEmail(),
+            userInfo.getPhoneNumber(),
+            userInfo.getAddress()
+        );
+
+        switch (userRequestDTO.getRequestTypeDTO().getType()) {
+            case BECOME_STUDENT -> studentService.createStudentFromPendingUser(pendingUserProfile);
+            case BECOME_TEACHER -> teacherService.createTeacherFromPendingUser(pendingUserProfile);
+            case BECOME_STAFF -> staffService.createStaffFromPendingUser(pendingUserProfile);
+        }
+
+        userRequestService.approveRequest(userRequestDTO);
+
     }
 
     private UUID getAdminIdByEmail(String email) {

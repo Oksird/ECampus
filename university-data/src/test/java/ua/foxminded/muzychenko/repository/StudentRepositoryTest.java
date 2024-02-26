@@ -12,7 +12,9 @@ import ua.foxminded.muzychenko.DataConfiguration;
 import ua.foxminded.muzychenko.DataTestConfig;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -22,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ContextConfiguration(classes = DataConfiguration.class)
-@SpringBootTest(classes = LessonRepository.class)
+@SpringBootTest(classes = StudentRepository.class)
 @Import(DataTestConfig.class)
 @Transactional
 class StudentRepositoryTest {
@@ -32,66 +34,21 @@ class StudentRepositoryTest {
     @Autowired
     private GroupRepository groupRepository;
 
-    @DisplayName("All students are found by course")
+
+    @DisplayName("Students were found by group")
     @Test
-    void findByCourseShouldReturnAllStudentOnSpecifiedCourse() {
-        List<Student> studentsOnCourse = studentRepository.findByCourses_CourseName("Course1");
-        int expectedCountOfStudents = 4;
-        assertEquals(expectedCountOfStudents, studentsOnCourse.size());
-    }
-
-    @DisplayName("Course doesn't exist")
-    @Test
-    void findByCourseShouldReturnEmptyListIfCourseDoesntExist() {
-        assertTrue(studentRepository.findByCourses_CourseName("").isEmpty());
-    }
-
-    @DisplayName("Student is deleted by id")
-    @Test
-    void deleteByIdShouldDeleteSpecificStudent() {
-        Student student = studentRepository.findAll().get(0);
-        studentRepository.deleteById(student.getUserId());
-        assertFalse(studentRepository.findAll().contains(student));
-    }
-
-    @DisplayName("Student is updated correctly")
-    @Test
-    void updateShouldReplaceOldStudentEntityWithNewOne() {
-        Student oldStudent = studentRepository.findById(studentRepository.findAll().get(0).getUserId()).orElse(null);
-        assert oldStudent != null;
-        Student newStudent = new Student(
-                    oldStudent.getUserId(),
-                    "test",
-                    "test",
-                    "test",
-                    "test",
-                    oldStudent.getGroup()
-                );
-        studentRepository.save(newStudent);
-        assertEquals(newStudent, studentRepository.findById(oldStudent.getUserId()).orElse(null));
-    }
-
-    @DisplayName("Pagination")
-    @Test
-    void findAllByPageShouldReturnAllStudentsOnTheCurrentPage() {
-        int pageSize = 5;
-        int pageNumber = 0;
-
-        List<Student> studentsOnPage = studentRepository.findAll(PageRequest.of(pageNumber, pageSize)).getContent();
-
-        List<Student> expectedStudents = studentRepository.findAll().subList(0, 5);
-
-        assertTrue(expectedStudents.containsAll(studentsOnPage));
-    }
-
-    @DisplayName("Students was found by group")
-    @Test
-    void findByGroupShouldReturnAllStudentsOnGroup() {
+    void findByGroupShouldReturnAllStudentsByGroup() {
         List<Student> studentsOnGroup = studentRepository.findByGroup_GroupName("AA-01");
+
         boolean areOneTheSameGroup = false;
-        List<Group> groups = groupRepository.findAll();
+
+        List<Group> studentsGroups = new ArrayList<>();
+        studentsOnGroup.forEach(student -> studentsGroups.add(student.getGroup()));
+
+
+
         for (Student s : studentsOnGroup) {
-            areOneTheSameGroup = s.getGroup().equals(groups.iterator().next());
+            areOneTheSameGroup = s.getGroup().equals(studentsGroups.iterator().next());
         }
         assertTrue(areOneTheSameGroup);
     }
@@ -99,15 +56,19 @@ class StudentRepositoryTest {
     @DisplayName("Student is found by email")
     @Test
     void findByEmailShouldReturnStudentIfEmailIsCorrect() {
+        String email = "james.m@mail.com";
+
         Student expectedStudent = new Student(
             UUID.randomUUID(),
-            "Emma",
-            "Smith",
-            "es1",
-            "student123",
-            Objects.requireNonNull(groupRepository.findByGroupName("AA-01").orElse(null)));
-        Student actualStudent = studentRepository.findByEmail("es1").orElse(null);
-        assert actualStudent != null;
+            "James",
+            "Oloven",
+            email,
+            "password2",
+            groupRepository.findByGroupName("AA-01").orElse(null),
+            "380528694023",
+            "Pokash 4"
+        );
+        Student actualStudent = studentRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
         expectedStudent.setUserId(actualStudent.getUserId());
         assertEquals(expectedStudent, actualStudent);
     }

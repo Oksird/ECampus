@@ -16,7 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ContextConfiguration(classes = DataConfiguration.class)
-@SpringBootTest(classes = PendingUserRepository.class)
+@SpringBootTest(classes = StaffRepository.class)
 @Import(DataTestConfig.class)
 @Transactional
 class StaffRepositoryTest {
@@ -26,16 +26,18 @@ class StaffRepositoryTest {
 
     @Test
     void findByEmailShouldReturnOptionalOfPendingUserWithCorrectEmail() {
-        String email = "esf1@gmail.com";
+        String email = "zemail@mail.com";
 
         Staff expectedUser = new Staff(
             UUID.randomUUID(),
-            "Max",
-            "Pop",
+            "Lim",
+            "Simos",
             email,
-            "student1223"
-
+            "password10",
+            "380786623455",
+            "Tasmowa 99"
         );
+
         Staff actualUser = staffRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
         expectedUser.setUserId(actualUser.getUserId());

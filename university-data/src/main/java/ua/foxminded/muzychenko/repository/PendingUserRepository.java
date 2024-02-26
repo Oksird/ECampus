@@ -10,8 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface PendingUserRepository extends UserRepository<PendingUser> {
-    Optional<PendingUser> findByEmail(String email);
-
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     void delete(@NonNull PendingUser entity);

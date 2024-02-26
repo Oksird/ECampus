@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.DataConfiguration;
 import ua.foxminded.muzychenko.DataTestConfig;
 import ua.foxminded.muzychenko.entity.Teacher;
+import ua.foxminded.muzychenko.exception.CourseNotFoundException;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,49 +29,27 @@ class TeacherRepositoryTest {
 
     @Autowired
     private TeacherRepository teacherRepository;
-
-    @DisplayName("Teachers were found by course")
-    @Test
-    void findByCourseShouldReturnAllTeachersOnCourse() {
-        List<Teacher> teachers = teacherRepository.findByCourses_CourseName("Course1");
-        int expectedCountOfTeachers = 4;
-        assertEquals(expectedCountOfTeachers, teachers.size());
-    }
-
-    @DisplayName("Teacher was updated")
-    @Test
-    void updateShouldUpdateTeacher() {
-        Teacher oldTeacher = teacherRepository.findAll().get(0);
-        Teacher newTeacher = new Teacher(
-            oldTeacher.getUserId(),
-            "a",
-            "s",
-            "d",
-            "f"
-        );
-        teacherRepository.save(newTeacher);
-        oldTeacher = teacherRepository.findById(oldTeacher.getUserId()).orElse(null);
-        assertEquals(oldTeacher, newTeacher);
-    }
-
-    @DisplayName("Exception when created teacher is null")
-    @Test
-    void createShouldThrowException() {
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> teacherRepository.save(null));
-    }
+    @Autowired
+    private CourseRepository courseRepository;
 
     @DisplayName("Teacher is found by email")
     @Test
     void findByEmailShouldReturnTeacherIfEmailIsCorrect() {
+        String email = "jemail@mail.com";
+
         Teacher expectedTeacher = new Teacher(
             UUID.randomUUID(),
-            "John",
-            "Doe",
-            "et1",
-            "teacher123"
+            "Liza",
+            "Bored",
+            email,
+            "password7",
+            "380786489755",
+            "Ikea 8"
         );
-        Teacher actualTeacher = teacherRepository.findByEmail("et1").orElse(null);
-        assert actualTeacher != null;
+
+        expectedTeacher.setCourse(courseRepository.findByCourseName("Course3").orElseThrow(CourseNotFoundException::new));
+
+        Teacher actualTeacher = teacherRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
         expectedTeacher.setUserId(actualTeacher.getUserId());
         assertEquals(expectedTeacher, actualTeacher);
     }

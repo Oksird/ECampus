@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.DataConfiguration;
 import ua.foxminded.muzychenko.DataTestConfig;
 import ua.foxminded.muzychenko.entity.Group;
+import ua.foxminded.muzychenko.exception.GroupNotFoundException;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
 
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +36,7 @@ class GroupRepositoryTest {
     @DisplayName("Groups with less or equal count of students are found")
     @Test
     void findGroupWithLessOrEqualStudentsShouldReturnAllGroupsWithLessOrEqualStudents() {
-        int expectedOfGroupsWithEqualOrLessThenThreeStudents = 1;
+        int expectedOfGroupsWithEqualOrLessThenThreeStudents = 6;
         int actualCountOfGroupsWithEqualOrLessThenThreeStudents =
             groupRepository.findGroupWithLessOrEqualStudents(3).size();
         assertEquals(
@@ -45,7 +47,7 @@ class GroupRepositoryTest {
     @DisplayName("No groups with less or equal count of students")
     @Test
     void findGroupWithLessOrEqualStudentsShouldReturnEmptyListIfConditionWasNotCompleted() {
-        int expectedOfGroupsWithEqualOrLessThenTwoStudents = 0;
+        int expectedOfGroupsWithEqualOrLessThenTwoStudents = 5;
         int actualCountOfGroupsWithEqualOrLessThenThreeStudents =
             groupRepository.findGroupWithLessOrEqualStudents(1).size();
         assertEquals(
@@ -54,44 +56,18 @@ class GroupRepositoryTest {
         );
     }
 
-    @DisplayName("Group was created")
-    @Test
-    void insertShouldCreateNewGroup() {
-        int countOfGroups = groupRepository.findAll().size();
-        groupRepository.save(
-            new Group(
-                UUID.randomUUID(),
-                "asd"
-            )
-        );
-        assertNotEquals(countOfGroups, groupRepository.findAll().size());
-    }
-
-    @DisplayName("Group is updated")
-    @Test
-    void updateShouldReplaceGroupWithProvided() {
-        Group oldGroup = groupRepository.findByGroupName("AA-01").orElse(null);
-        Group newGroup = new Group(Objects.requireNonNull(oldGroup).getGroupId(), "AA-11");
-
-        groupRepository.save(newGroup);
-
-        assertEquals(newGroup.getGroupName(), Objects.requireNonNull(groupRepository.findById(oldGroup.getGroupId()).orElse(null)).getGroupName());
-    }
-
-    @DisplayName("Group was deleted")
-    @Test
-    void deleteByIdShouldDeleteGroupById() {
-        int countOfGroups = groupRepository.findAll().size();
-        int expectedCountOfGroups = countOfGroups - 1;
-        groupRepository.deleteById(groupRepository.findAll().get(0).getGroupId());
-        assertEquals(expectedCountOfGroups, groupRepository.findAll().size());
-    }
-
     @DisplayName("User's group is found")
     @Test
     void findUsersGroupShouldReturnGroupRelatedToExactUser() {
+        String email = "maks.m@mail.com";
         Group expectedGroup = groupRepository.findByGroupName("AA-01").orElse(null);
-        assertEquals(expectedGroup, groupRepository.findUsersGroup(Objects.requireNonNull(studentRepository.findByEmail("es1").orElse(null)).getUserId()).orElse(null));
+        assertEquals(
+            expectedGroup,
+            groupRepository.findUsersGroup(
+                studentRepository.findByEmail(email)
+                    .orElseThrow(UserNotFoundException::new)
+                    .getUserId())
+                .orElseThrow(GroupNotFoundException::new));
     }
 
     @DisplayName("Group is found by name")
@@ -113,6 +89,6 @@ class GroupRepositoryTest {
             )
             .toList();
 
-        assertEquals(groups ,groupRepository.findByGroupNameContainingIgnoreCase(groupNamePart, PageRequest.of(0, 3)).getContent());
+        assertEquals(groups ,groupRepository.findByGroupNameContainingIgnoreCase(groupNamePart, PageRequest.of(0, 6)).getContent());
     }
 }

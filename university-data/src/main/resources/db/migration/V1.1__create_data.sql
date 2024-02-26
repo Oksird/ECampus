@@ -6,15 +6,6 @@ VALUES (uuid_generate_v4(), 'AB-35'),
        (uuid_generate_v4(), 'QA-01'),
        (uuid_generate_v4(), 'JS-52');
 
-INSERT INTO courses (course_id, course_name, course_description, teacher_id)
-VALUES (uuid_generate_v4(), 'Mathematics', 'Algebra and Geometry', 'df96df75-f2c9-485d-a01f-36baf0cfa07e'),
-       (uuid_generate_v4(), 'Science', 'Physics and Chemistry', 'b0ff90c2-4db2-4aa8-8d75-4036197923eb');
-
-
-INSERT INTO groups_courses (group_id, course_id)
-VALUES ((SELECT group_id FROM groups WHERE group_name='AB-35'), (SELECT course_id FROM courses WHERE course_name='Mathematics')),
-       ((SELECT group_id FROM groups WHERE group_name='QA-01'), (SELECT course_id FROM courses WHERE course_name='Science'));
-
 INSERT INTO lesson_times (id, lesson_number, start_time)
 VALUES (uuid_generate_v4(), 'FIRST', '08:30:00'),
        (uuid_generate_v4(), 'SECOND', '10:25:00'),
@@ -43,3 +34,13 @@ VALUES (uuid_generate_v4(), 'MONDAY'),
 INSERT INTO study_weeks (id, week_number)
 VALUES (uuid_generate_v4(), 'FIRST'),
        (uuid_generate_v4(), 'SECOND');
+
+INSERT INTO request_types (id, type)
+VALUES (uuid_generate_v4(), 'BECOME_STUDENT'),
+       (uuid_generate_v4(), 'BECOME_TEACHER'),
+       (uuid_generate_v4(), 'BECOME_STAFF');
+
+INSERT INTO request_statuses (id, status)
+VALUES (uuid_generate_v4(), 'PENDING'),
+       (uuid_generate_v4(), 'APPROVED'),
+       (uuid_generate_v4(), 'REJECTED');

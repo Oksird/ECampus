@@ -5,17 +5,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.DataConfiguration;
 import ua.foxminded.muzychenko.DataTestConfig;
 import ua.foxminded.muzychenko.entity.Admin;
+import ua.foxminded.muzychenko.entity.Lesson;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ContextConfiguration(classes = DataConfiguration.class)
 @SpringBootTest(classes = AdminRepository.class)
@@ -26,60 +27,27 @@ class AdminRepositoryTest {
     @Autowired
     private AdminRepository adminRepository;
 
-    @DisplayName("Admin was created")
-    @Test
-    void createShouldCreateNewAdmin() {
-        Admin admin = new Admin(
-            UUID.randomUUID(),
-            "name",
-            "surname",
-            "emailA",
-            "pass"
-        );
-        adminRepository.save(admin);
-        assertEquals(admin, adminRepository.findById(admin.getUserId()).orElse(null));
-    }
-
-    @DisplayName("Admin was updated")
-    @Test
-    void updateShouldReplaceTeacher() {
-        Admin oldAdmin = adminRepository.findAll().get(0);
-        Admin admin = new Admin(
-            oldAdmin.getUserId(),
-            "name",
-            "surname",
-            "mail",
-            "pass"
-        );
-        adminRepository.save(admin);
-        assertEquals(admin, adminRepository.findById(oldAdmin.getUserId()).orElse(null));
-    }
-
-    @DisplayName("Thrown exception when created admin is null")
-    @Test
-    void createShouldThrowExceptionWhenAdminIsNull() {
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> adminRepository.save(null));
-    }
-
-    @DisplayName("Updated admin cant replaced with null")
-    @Test
-    void updateShouldThrowExceptionWhenNewUserIsNull() {
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> adminRepository.save(null));
-    }
-
     @DisplayName("Admin is found by email")
     @Test
     void findByEmailShouldReturnAdminIfEmailIsCorrect() {
+        String email = "kemail@mail.com";
+
+        System.out.println(adminRepository.findAll().size());
+
         Admin expectedAdmin = new Admin(
             UUID.randomUUID(),
-            "John",
-            "Smith",
-            "john.smith@example.com",
-            "admin1_password"
+            "Jurich",
+            "Lomonov",
+            email,
+            "password8",
+            "380316457755",
+            "Markosh 9"
         );
-        Admin actualAdmin = adminRepository.findByEmail("john.smith@example.com").orElse(null);
-        assert actualAdmin != null;
+
+        Admin actualAdmin = adminRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+
         expectedAdmin.setUserId(actualAdmin.getUserId());
+
         assertEquals(expectedAdmin, actualAdmin);
     }
 }

@@ -26,16 +26,18 @@ class PendingUserRepositoryTest {
 
     @Test
     void findByEmailShouldReturnOptionalOfPendingUserWithCorrectEmail() {
-        String email = "eps1@gmail.com";
+        String email = "xemail@mail.com";
 
         PendingUser expectedUser = new PendingUser(
             UUID.randomUUID(),
-            "Lee",
-            "Martinez",
+            "Luca",
+            "Pekao",
             email,
-            "student101"
-
+            "password11",
+            "380786682755",
+            "Tasmowa 23"
         );
+
         PendingUser actualUser = pendingUserRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
         expectedUser.setUserId(actualUser.getUserId());

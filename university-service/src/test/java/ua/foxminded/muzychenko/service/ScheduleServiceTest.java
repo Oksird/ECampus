@@ -82,9 +82,6 @@ public class ScheduleServiceTest {
     private LessonType lessonType;
     private Lesson lesson;
     private Teacher teacher;
-    private TeacherProfile teacherProfile;
-    private CourseInfo courseInfo;
-    private GroupInfo groupInfo;
     private LessonInfo lessonInfo;
     private LessonCreationDto lessonCreationDto;
 
@@ -98,9 +95,9 @@ public class ScheduleServiceTest {
         lessonType = new LessonType(UUID.randomUUID(), TypeOfLesson.LECTURE);
         lesson = new Lesson(UUID.randomUUID(), lessonType, course, group, studyDay, studyWeek, lessonTime, "info");
         teacher = new Teacher(UUID.randomUUID(), "fn", "ln", "em", "pas", "pn", "adr");
-        teacherProfile = new TeacherProfile(UUID.randomUUID().toString(), teacher.getFirstName(), teacher.getLastName(), teacher.getEmail(), teacher.getPhoneNumber(), teacher.getAddress());
-        courseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription(), teacherProfile);
-        groupInfo = new GroupInfo(group.getGroupId().toString(), group.getGroupName(), 0, Collections.singletonList(courseInfo));
+        TeacherProfile teacherProfile = new TeacherProfile(UUID.randomUUID().toString(), teacher.getFirstName(), teacher.getLastName(), teacher.getEmail(), teacher.getPhoneNumber(), teacher.getAddress());
+        CourseInfo courseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription(), teacherProfile);
+        GroupInfo groupInfo = new GroupInfo(group.getGroupId().toString(), group.getGroupName(), 0, Collections.singletonList(courseInfo));
         lessonInfo = new LessonInfo(lesson.getId().toString(), lessonType.getType(), courseInfo, groupInfo, studyDay.getDayOfWeek(), studyWeek.getWeekNumber(), lessonTime.getLessonNumber(), "info");
         lessonCreationDto= new LessonCreationDto(
             WeekNumber.FIRST,

@@ -3,7 +3,6 @@ package ua.foxminded.muzychenko.service.mapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.entity.Course;
@@ -45,8 +44,6 @@ class StudentProfileMapperTest {
         );
 
         course.setTeacher(teacher);
-
-        CourseInfo courseInfo = courseInfoMapper.mapCourseEntityToCourseInfo(course);
 
         Group group = new Group(
             UUID.randomUUID(),
@@ -101,8 +98,6 @@ class StudentProfileMapperTest {
         );
 
         course.setTeacher(teacher);
-
-        CourseInfo courseInfo = courseInfoMapper.mapCourseEntityToCourseInfo(course);
 
         Student student = new Student(
             UUID.randomUUID(),

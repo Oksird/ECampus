@@ -3,7 +3,6 @@ package ua.foxminded.muzychenko.service.mapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
@@ -39,8 +38,6 @@ class TeacherProfileMapperTest {
         );
 
         course.setTeacher(teacher);
-
-        CourseInfo courseInfo = courseInfoMapper.mapCourseEntityToCourseInfo(course);
 
         TeacherProfile expectedTeacherProfile = new TeacherProfile(
             teacher.getUserId().toString(),

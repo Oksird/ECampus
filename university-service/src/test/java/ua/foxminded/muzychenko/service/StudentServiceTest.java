@@ -10,7 +10,6 @@ import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
-import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.PendingUser;
 import ua.foxminded.muzychenko.entity.Student;
@@ -23,10 +22,8 @@ import ua.foxminded.muzychenko.service.mapper.StudentProfileMapper;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -138,8 +135,6 @@ class StudentServiceTest {
             "address"
         );
 
-        Set<Course> courseList = new HashSet<>();
-
         List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
 
         when(studentRepository.findAll(any(Pageable.class)))
@@ -206,8 +201,6 @@ class StudentServiceTest {
         );
 
         List<StudentProfile> studentProfileList = new ArrayList<>(List.of(studentProfile1, studentProfile2));
-
-        Set<Course> courseList = new HashSet<>();
 
         when(studentRepository.findByGroup_GroupName(any(String.class)))
             .thenReturn(studentList);
@@ -421,7 +414,7 @@ class StudentServiceTest {
 
         studentService.createStudentFromPendingUser(pendingUserProfile);
 
-        assertEquals(pendingUserRepository.findById(UUID.randomUUID()).get(), pendingUser);
+        assertEquals(pendingUserRepository.findById(UUID.randomUUID()).orElseThrow(UserNotFoundException::new), pendingUser);
         verify(pendingUserRepository).delete(pendingUser);
         assertEquals(studentRepository.save(student), student);
     }

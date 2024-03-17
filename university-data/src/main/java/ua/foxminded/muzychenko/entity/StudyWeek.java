@@ -7,20 +7,18 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import ua.foxminded.muzychenko.enums.WeekNumber;
 
 import java.util.UUID;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "study_weeks")
-@EqualsAndHashCode
 @Entity
-@ToString
 public class StudyWeek {
 
     @Id

@@ -9,18 +9,21 @@ import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Group;
 import ua.foxminded.muzychenko.entity.Student;
+import ua.foxminded.muzychenko.entity.Teacher;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = StudentProfileMapper.class)
+@SpringBootTest(classes = {StudentProfileMapper.class, CourseInfoMapper.class, GroupInfoMapper.class})
 class StudentProfileMapperTest {
 
     @Autowired
-    private StudentProfileMapper mapper;
+    private StudentProfileMapper studentProfileMapper;
+    @Autowired
+    private CourseInfoMapper courseInfoMapper;
+    @Autowired
+    private GroupInfoMapper groupInfoMapper;
 
     @Test
     void mapStudentInfoToProfileShouldReturnStudentProfileBasedOnStudentEntity() {
@@ -31,22 +34,26 @@ class StudentProfileMapperTest {
             "cd"
         );
 
-        CourseInfo courseInfo = new CourseInfo(
-            course.getCourseId().toString(),
-            course.getCourseName(),
-            course.getCourseDescription()
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            "380228883399",
+            "address"
         );
+
+        course.setTeacher(teacher);
+
+        CourseInfo courseInfo = courseInfoMapper.mapCourseEntityToCourseInfo(course);
 
         Group group = new Group(
             UUID.randomUUID(),
             "gn"
         );
 
-        GroupInfo groupInfo = new GroupInfo(
-            group.getGroupId().toString(),
-            group.getGroupName(),
-            0
-        );
+        GroupInfo groupInfo = groupInfoMapper.mapGroupEntityToGroupInfo(group);
 
         Student student = new Student(
             UUID.randomUUID(),
@@ -54,7 +61,9 @@ class StudentProfileMapperTest {
             "ln",
             "em",
             "pass",
-            group
+            group,
+            "380273827733",
+            "address"
         );
 
         StudentProfile expectedStudentProfile = new StudentProfile(
@@ -63,12 +72,13 @@ class StudentProfileMapperTest {
             student.getLastName(),
             student.getEmail(),
             groupInfo,
-            new HashSet<>(Collections.singleton(courseInfo))
+            student.getPhoneNumber(),
+            student.getAddress()
         );
 
         assertEquals(
             expectedStudentProfile ,
-            mapper.mapStudentInfoToProfile(student, group, new HashSet<>(Collections.singleton(course))));
+            studentProfileMapper.mapStudentInfoToProfile(student));
     }
 
     @Test
@@ -80,11 +90,19 @@ class StudentProfileMapperTest {
             "cd"
         );
 
-        CourseInfo courseInfo = new CourseInfo(
-            course.getCourseId().toString(),
-            course.getCourseName(),
-            course.getCourseDescription()
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            "380228883399",
+            "address"
         );
+
+        course.setTeacher(teacher);
+
+        CourseInfo courseInfo = courseInfoMapper.mapCourseEntityToCourseInfo(course);
 
         Student student = new Student(
             UUID.randomUUID(),
@@ -92,7 +110,9 @@ class StudentProfileMapperTest {
             "ln",
             "em",
             "pass",
-            null
+            null,
+            "380672883366",
+            "address"
         );
 
         StudentProfile expectedStudentProfile = new StudentProfile(
@@ -101,11 +121,12 @@ class StudentProfileMapperTest {
             student.getLastName(),
             student.getEmail(),
             null,
-            new HashSet<>(Collections.singleton(courseInfo))
+            student.getPhoneNumber(),
+            student.getAddress()
         );
 
         assertEquals(
             expectedStudentProfile ,
-            mapper.mapStudentInfoToProfile(student, null, new HashSet<>(Collections.singleton(course))));
+            studentProfileMapper.mapStudentInfoToProfile(student));
     }
 }

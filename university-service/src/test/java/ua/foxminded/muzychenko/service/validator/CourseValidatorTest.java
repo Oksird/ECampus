@@ -8,7 +8,8 @@ import ua.foxminded.muzychenko.service.validator.exception.InvalidFieldException
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = CourseValidator.class)
 class CourseValidatorTest {
@@ -24,7 +25,8 @@ class CourseValidatorTest {
         CourseInfo courseInfo = new CourseInfo(
             UUID.randomUUID().toString(),
             invalidCourseName,
-            validCourseDescription
+            validCourseDescription,
+            null
         );
 
         assertThrows(
@@ -43,7 +45,8 @@ class CourseValidatorTest {
         CourseInfo courseInfo = new CourseInfo(
             UUID.randomUUID().toString(),
             validCourseName,
-            emptyCourseDescription
+            emptyCourseDescription,
+            null
         );
 
         assertThrows(
@@ -62,7 +65,8 @@ class CourseValidatorTest {
         CourseInfo courseInfo = new CourseInfo(
             UUID.randomUUID().toString(),
             validCourseName,
-            validCourseDescription
+            validCourseDescription,
+            null
         );
 
         assertDoesNotThrow(() -> validator.validateCourseInfo(courseInfo));

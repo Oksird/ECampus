@@ -46,12 +46,14 @@ class GroupControllerTest {
         GroupInfo groupInfo1 = new GroupInfo(
             UUID.randomUUID().toString(),
             "gn1",
-            1
+            1,
+            null
         );
         GroupInfo groupInfo2 = new GroupInfo(
             UUID.randomUUID().toString(),
             "gn2",
-            1
+            1,
+            null
         );
 
         List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));
@@ -83,12 +85,14 @@ class GroupControllerTest {
         GroupInfo groupInfo1 = new GroupInfo(
             UUID.randomUUID().toString(),
             "gn1",
-            1
+            1,
+            null
         );
         GroupInfo groupInfo2 = new GroupInfo(
             UUID.randomUUID().toString(),
             "gn2",
-            1
+            1,
+            null
         );
 
         List<GroupInfo> groupInfoList = new ArrayList<>(List.of(groupInfo1, groupInfo2));

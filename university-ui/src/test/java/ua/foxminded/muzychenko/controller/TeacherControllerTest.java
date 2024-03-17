@@ -11,13 +11,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import ua.foxminded.muzychenko.UniversityApplication;
 import ua.foxminded.muzychenko.controller.validator.ParamValidator;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.service.TeacherService;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -45,25 +42,21 @@ class TeacherControllerTest {
         int page = 1;
         int size = 5;
 
-        CourseInfo courseInfo = new CourseInfo(
-            "id",
-            "cn",
-            "cd"
-        );
-
         TeacherProfile teacherProfile1 = new TeacherProfile(
             "id1",
             "fN1",
             "lN1",
             "em1",
-            new HashSet<>(Collections.singleton(courseInfo))
+            "pn",
+            "addr"
         );
         TeacherProfile teacherProfile2 = new TeacherProfile(
             "id2",
             "fN2",
             "lN2",
             "em2",
-            new HashSet<>(Collections.singleton(courseInfo))
+            "pn",
+            "addr"
         );
 
         List<TeacherProfile> teacherProfiles = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));

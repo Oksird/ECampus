@@ -46,12 +46,14 @@ class CourseControllerTest {
         CourseInfo courseInfo1 = new CourseInfo(
             UUID.randomUUID().toString(),
             "cn1",
-            "cd1"
+            "cd1",
+            null
         );
         CourseInfo courseInfo2 = new CourseInfo(
             UUID.randomUUID().toString(),
             "cn2",
-            "cd2"
+            "cd2",
+            null
         );
 
         List<CourseInfo> courseInfoList = new ArrayList<>(List.of(courseInfo1, courseInfo2));
@@ -83,12 +85,14 @@ class CourseControllerTest {
         CourseInfo courseInfo1 = new CourseInfo(
             UUID.randomUUID().toString(),
             "cn1",
-            "cd1"
+            "cd1",
+            null
         );
         CourseInfo courseInfo2 = new CourseInfo(
             UUID.randomUUID().toString(),
             "cn2",
-            "cd2"
+            "cd2",
+            null
         );
 
         List<CourseInfo> courseInfoList = new ArrayList<>(List.of(courseInfo1, courseInfo2));

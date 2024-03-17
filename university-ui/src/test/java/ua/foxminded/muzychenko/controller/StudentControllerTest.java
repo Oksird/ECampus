@@ -11,14 +11,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import ua.foxminded.muzychenko.UniversityApplication;
 import ua.foxminded.muzychenko.controller.validator.ParamValidator;
-import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.dto.profile.StudentProfile;
 import ua.foxminded.muzychenko.service.StudentService;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -73,13 +70,8 @@ class StudentControllerTest {
         GroupInfo groupInfo = new GroupInfo(
             "id",
             "gn",
-            1
-        );
-
-        CourseInfo courseInfo = new CourseInfo(
-            "id",
-            "cn",
-            "cd"
+            1,
+            null
         );
 
         StudentProfile studentProfile1 = new StudentProfile(
@@ -88,7 +80,8 @@ class StudentControllerTest {
             "lN1",
             "em1",
             groupInfo,
-            new HashSet<>(Collections.singleton(courseInfo))
+            "38066",
+            "addr"
         );
 
         StudentProfile studentProfile2 = new StudentProfile(
@@ -97,10 +90,10 @@ class StudentControllerTest {
             "lN2",
             "em2",
             groupInfo,
-            new HashSet<>(Collections.singleton(courseInfo))
+            "38066",
+            "addr"
         );
 
-        List<StudentProfile> studentProfiles = new ArrayList<>(List.of(studentProfile1, studentProfile2));
-        return studentProfiles;
+        return new ArrayList<>(List.of(studentProfile1, studentProfile2));
     }
 }

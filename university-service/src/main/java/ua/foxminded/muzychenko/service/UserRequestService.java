@@ -8,12 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.dto.UserRequestDTO;
-import ua.foxminded.muzychenko.dto.profile.UserInfo;
+import ua.foxminded.muzychenko.dto.profile.ShortUserInfo;
 import ua.foxminded.muzychenko.entity.AbstractUser;
 import ua.foxminded.muzychenko.entity.UserRequest;
 import ua.foxminded.muzychenko.enums.RequestStatusEnum;
 import ua.foxminded.muzychenko.enums.RequestTypeEnum;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
+import ua.foxminded.muzychenko.repository.PendingUserRepository;
 import ua.foxminded.muzychenko.repository.RequestStatusRepository;
 import ua.foxminded.muzychenko.repository.RequestTypeRepository;
 import ua.foxminded.muzychenko.repository.StaffRepository;
@@ -34,24 +35,23 @@ public class UserRequestService {
     private final StudentRepository studentRepository;
     private final StaffRepository staffRepository;
     private final TeacherRepository teacherRepository;
+    private final PendingUserRepository pendingUserRepository;
     private final RequestTypeRepository requestTypeRepository;
     private final RequestStatusRepository requestStatusRepository;
 
     @Transactional
-    public void createRequest(RequestTypeEnum requestTypeEnum, UserInfo userInfo) {
-        AbstractUser abstractUser;
-
-        switch (userInfo.getRole()) {
-            case "STUDENT":
-                abstractUser = studentRepository.findByEmail(userInfo.getEmail()).orElseThrow(UserNotFoundException::new);
-                break;
-            case "TEACHER":
-                abstractUser = teacherRepository.findByEmail(userInfo.getEmail()).orElseThrow(UserNotFoundException::new);
-            case "STAFF":
-                abstractUser = staffRepository.findByEmail(userInfo.getEmail()).orElseThrow(UserNotFoundException::new);
-            default:
-                abstractUser = null;
-        }
+    public void createRequest(RequestTypeEnum requestTypeEnum, ShortUserInfo shortUserInfo) {
+        AbstractUser abstractUser = switch (shortUserInfo.getRole()) {
+            case "ROLE_STUDENT" ->
+                    studentRepository.findById(UUID.fromString(shortUserInfo.getId())).orElseThrow(UserNotFoundException::new);
+            case "ROLE_TEACHER" ->
+                    teacherRepository.findById(UUID.fromString(shortUserInfo.getId())).orElseThrow(UserNotFoundException::new);
+            case "ROLE_STAFF" ->
+                    staffRepository.findById(UUID.fromString(shortUserInfo.getId())).orElseThrow(UserNotFoundException::new);
+            case "ROLE_PENDING" ->
+                    pendingUserRepository.findById(UUID.fromString(shortUserInfo.getId())).orElseThrow(UserNotFoundException::new);
+            default -> throw new IllegalArgumentException("User role is incorrect");
+        };
 
         UserRequest request = new UserRequest(
             UUID.randomUUID(),

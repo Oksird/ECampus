@@ -8,11 +8,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import ua.foxminded.muzychenko.repository.CourseRepository;
-import ua.foxminded.muzychenko.exception.CourseNotFoundException;
 import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.entity.Course;
+import ua.foxminded.muzychenko.entity.Teacher;
+import ua.foxminded.muzychenko.exception.CourseNotFoundException;
+import ua.foxminded.muzychenko.exception.UserNotFoundException;
+import ua.foxminded.muzychenko.repository.CourseRepository;
+import ua.foxminded.muzychenko.repository.TeacherRepository;
 import ua.foxminded.muzychenko.service.mapper.CourseInfoMapper;
+import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.validator.CourseValidator;
 
 import java.util.ArrayList;
@@ -37,6 +41,10 @@ class CourseServiceTest {
     private CourseValidator courseValidator;
     @MockBean
     private CourseInfoMapper courseInfoMapper;
+    @MockBean
+    private TeacherRepository teacherRepository;
+    @MockBean
+    private TeacherProfileMapper teacherProfileMapper;
     @Autowired
     private CourseService courseService;
 
@@ -50,9 +58,27 @@ class CourseServiceTest {
         when(courseRepository.save(any(Course.class)))
              .thenReturn(course);
 
-        CourseInfo courseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription());
+        CourseInfo courseInfo = new CourseInfo(
+            course.getCourseId().toString(),
+            course.getCourseName(),
+            course.getCourseDescription(),
+            null
+        );
 
-        courseService.createCourse(courseInfo, "email");
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            "num",
+            "address"
+        );
+
+        when(teacherRepository.findByEmail(any(String.class)))
+            .thenReturn(Optional.of(teacher));
+
+        courseService.createCourse(courseInfo, "gemail@mail.com");
 
         verify(courseValidator).validateCourseInfo(courseInfo);
         verify(courseRepository).save(any(Course.class));
@@ -66,7 +92,12 @@ class CourseServiceTest {
         when(courseRepository.findByCourseName(any(String.class)))
             .thenReturn(Optional.of(course));
 
-        CourseInfo expectedCourseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription());
+        CourseInfo expectedCourseInfo = new CourseInfo(
+            course.getCourseId().toString(),
+            course.getCourseName(),
+            course.getCourseDescription(),
+            null
+        );
 
         when(courseInfoMapper.mapCourseEntityToCourseInfo(course))
             .thenReturn(expectedCourseInfo);
@@ -81,7 +112,12 @@ class CourseServiceTest {
         when(courseRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(course));
 
-        CourseInfo courseInfo = new CourseInfo(course.getCourseId().toString(), course.getCourseName(), course.getCourseDescription());
+        CourseInfo courseInfo = new CourseInfo(
+            course.getCourseId().toString(),
+            course.getCourseName(),
+            course.getCourseDescription(),
+            null
+        );
 
         when(courseInfoMapper.mapCourseEntityToCourseInfo(course))
             .thenReturn(courseInfo);
@@ -120,7 +156,12 @@ class CourseServiceTest {
         when(courseInfoMapper.mapCourseEntityToCourseInfo(any())).thenAnswer(
             invocation -> {
                 Course courseEntity = invocation.getArgument(0);
-                return new CourseInfo(courseEntity.getCourseId().toString(), courseEntity.getCourseName(), courseEntity.getCourseDescription());
+                return new CourseInfo(
+                    courseEntity.getCourseId().toString(),
+                    courseEntity.getCourseName(),
+                    courseEntity.getCourseDescription(),
+                    null
+                );
             });
 
         Page<CourseInfo> result = courseService.findAll(1, 10);
@@ -222,12 +263,14 @@ class CourseServiceTest {
         CourseInfo courseInfo1 = new CourseInfo(
             course1.getCourseId().toString(),
             course1.getCourseName(),
-            course1.getCourseDescription()
+            course1.getCourseDescription(),
+            null
         );
         CourseInfo courseInfo2 = new CourseInfo(
             course2.getCourseId().toString(),
             course2.getCourseName(),
-            course2.getCourseDescription()
+            course2.getCourseDescription(),
+            null
         );
 
         when(courseRepository.findAll())
@@ -253,11 +296,13 @@ class CourseServiceTest {
             course1.getCourseId().toString(),
             course1.getCourseName(),
             course1.getCourseDescription()
+            ,null
         );
         CourseInfo courseInfo2 = new CourseInfo(
             course2.getCourseId().toString(),
             course2.getCourseName(),
-            course2.getCourseDescription()
+            course2.getCourseDescription(),
+            null
         );
 
         when(courseRepository.findByCourseNameContainingIgnoreCase(any(String.class), any(Pageable.class)))
@@ -273,6 +318,43 @@ class CourseServiceTest {
             new PageImpl<>(List.of(courseInfo1, courseInfo2)),
             courseService.findCoursesPagesByNamePart("asd", 1, 1)
         );
+    }
 
+    @Test
+    void changeCourseTeacherShouldChangeFieldTeacherInCourseEntity() {
+        Course course = new Course(
+            UUID.randomUUID(),
+            "Cname",
+            "Cdesc"
+        );
+
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            "num",
+            "address"
+        );
+
+        when(courseRepository.findByCourseName(any(String.class)))
+            .thenReturn(Optional.of(course));
+        when(teacherRepository.findByEmail(any(String.class)))
+            .thenReturn(Optional.of(teacher));
+
+        when(courseRepository.save(any(Course.class)))
+            .thenReturn(course);
+
+        courseService.changeCourseTeacher("cn", "tn");
+
+        assertEquals(courseRepository.findByCourseName("cn").orElseThrow(CourseNotFoundException::new), course);
+
+        assertEquals(teacherRepository.findByEmail("em").orElseThrow(UserNotFoundException::new), teacher);
+
+        assertEquals(
+            courseRepository.findByCourseName("cn").orElseThrow(CourseNotFoundException::new).getTeacher(),
+            teacher
+        );
     }
 }

@@ -24,14 +24,18 @@ class StaffProfileMapperTest {
             "name",
             "last name",
             "email",
-            "pass"
+            "pass",
+            "387027362777",
+            "address"
         );
 
         StaffProfile expectedStaffProfile = new StaffProfile(
             staff.getUserId().toString(),
             staff.getFirstName(),
             staff.getLastName(),
-            staff.getEmail()
+            staff.getEmail(),
+            staff.getPhoneNumber(),
+            staff.getAddress()
         );
 
         assertEquals(expectedStaffProfile, mapper.mapStaffEntityToProfile(staff));

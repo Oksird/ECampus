@@ -8,20 +8,29 @@ import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = TeacherProfileMapper.class)
+@SpringBootTest(classes = {TeacherProfileMapper.class, CourseInfoMapper.class})
 class TeacherProfileMapperTest {
 
     @Autowired
     private TeacherProfileMapper mapper;
+    @Autowired
+    private CourseInfoMapper courseInfoMapper;
 
     @Test
     void mapTeacherEntityToProfile() {
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            "380267773322",
+            "address"
+        );
 
         Course course = new Course(
             UUID.randomUUID(),
@@ -29,28 +38,19 @@ class TeacherProfileMapperTest {
             "cd"
         );
 
-        CourseInfo courseInfo = new CourseInfo(
-            course.getCourseId().toString(),
-            course.getCourseName(),
-            course.getCourseDescription()
-        );
+        course.setTeacher(teacher);
 
-        Teacher teacher = new Teacher(
-            UUID.randomUUID(),
-            "fn",
-            "ln",
-            "em",
-            "pass"
-        );
+        CourseInfo courseInfo = courseInfoMapper.mapCourseEntityToCourseInfo(course);
 
         TeacherProfile expectedTeacherProfile = new TeacherProfile(
             teacher.getUserId().toString(),
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new HashSet<>(Collections.singleton(courseInfo))
+            teacher.getPhoneNumber(),
+            teacher.getAddress()
         );
 
-        assertEquals(expectedTeacherProfile, mapper.mapTeacherEntityToProfile(teacher, new HashSet<>(Collections.singleton(course))));
+        assertEquals(expectedTeacherProfile, mapper.mapTeacherEntityToProfile(teacher));
     }
 }

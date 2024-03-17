@@ -23,7 +23,8 @@ class GroupValidatorTest {
         GroupInfo groupInfo = new GroupInfo(
             UUID.randomUUID().toString(),
             invalidGroupName,
-            1
+            1,
+            null
         );
 
         assertThrows(GroupNotFoundException.class, () -> validator.validateGroupName(groupInfo));
@@ -35,7 +36,8 @@ class GroupValidatorTest {
         GroupInfo groupInfo = new GroupInfo(
             UUID.randomUUID().toString(),
             validGroupName,
-            0
+            0,
+            null
         );
 
         assertDoesNotThrow(() -> validator.validateGroupName(groupInfo));

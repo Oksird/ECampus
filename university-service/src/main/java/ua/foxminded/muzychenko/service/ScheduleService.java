@@ -38,15 +38,15 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ScheduleService {
 
-    private LessonRepository lessonRepository;
-    private GroupRepository groupRepository;
-    private CourseRepository courseRepository;
-    private StudyDayRepository studyDayRepository;
-    private StudyWeekRepository studyWeekRepository;
-    private LessonTypeRepository lessonTypeRepository;
-    private LessonTimeRepository lessonTimeRepository;
-    private TeacherRepository teacherRepository;
-    private LessonInfoMapper lessonInfoMapper;
+    private final LessonRepository lessonRepository;
+    private final GroupRepository groupRepository;
+    private final CourseRepository courseRepository;
+    private final StudyDayRepository studyDayRepository;
+    private final StudyWeekRepository studyWeekRepository;
+    private final LessonTypeRepository lessonTypeRepository;
+    private final LessonTimeRepository lessonTimeRepository;
+    private final TeacherRepository teacherRepository;
+    private final LessonInfoMapper lessonInfoMapper;
 
     @Transactional
     public void createLesson(LessonCreationDto lessonCreationDto) {
@@ -111,12 +111,12 @@ public class ScheduleService {
         Map<WeekNumber, Map<DayOfWeek, List<LessonInfo>>> twoWeeksSchedule =
             lessons.stream()
                 .collect(Collectors.groupingBy(
-                    lesson -> lesson.getStudyWeek().getWeekNumber(), // First level of grouping by WeekNumber
+                    lesson -> lesson.getStudyWeek().getWeekNumber(),
                     Collectors.groupingBy(
-                        lesson -> lesson.getStudyDay().getDayOfWeek(), // Second level of grouping by DayOfWeek
+                        lesson -> lesson.getStudyDay().getDayOfWeek(),
                         Collectors.mapping(
-                            lesson -> lessonInfoMapper.mapEntityToDTO(lesson), // Convert Lesson to LessonInfo using mapper
-                            Collectors.toList() // Collect LessonInfo objects into a List
+                                lessonInfoMapper::mapEntityToDTO,
+                            Collectors.toList()
                         )
                     )
                 ));
@@ -124,16 +124,4 @@ public class ScheduleService {
         return new Schedule(twoWeeksSchedule);
     }
 
-    private Lesson convertInfoToEntity(LessonInfo lessonInfo) {
-        return new Lesson(
-            UUID.fromString(lessonInfo.getLessonId()),
-            lessonTypeRepository.findLessonTypeByType(lessonInfo.getType()).orElseThrow(EntityNotFoundException::new),
-            courseRepository.findByCourseName(lessonInfo.getCourseInfo().getCourseName()).orElseThrow(CourseNotFoundException::new),
-            groupRepository.findByGroupName(lessonInfo.getGroupInfo().getGroupName()).orElseThrow(GroupNotFoundException::new),
-            studyDayRepository.findStudyDayByDayOfWeek(lessonInfo.getDayOfWeek()).orElseThrow(EntityNotFoundException::new),
-            studyWeekRepository.findStudyWeekByWeekNumber(lessonInfo.getWeekNumber()).orElseThrow(EntityNotFoundException::new),
-            lessonTimeRepository.findLessonTimeByLessonNumber(lessonInfo.getLessonNumber()).orElseThrow(EntityNotFoundException::new),
-            lessonInfo.getAdditionalInfo()
-        );
-    }
 }

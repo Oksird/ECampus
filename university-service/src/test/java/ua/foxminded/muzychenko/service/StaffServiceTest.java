@@ -52,7 +52,9 @@ class StaffServiceTest {
             "fn",
             "ln",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         Staff staff = new Staff(
@@ -60,14 +62,18 @@ class StaffServiceTest {
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
             pendingUser.getEmail(),
-            pendingUser.getPassword()
+            pendingUser.getPassword(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         PendingUserProfile pendingUserProfile = new PendingUserProfile(
             pendingUser.getUserId().toString(),
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
-            pendingUser.getEmail()
+            pendingUser.getEmail(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         when(pendingUserRepository.findById(any(UUID.class)))
@@ -90,14 +96,18 @@ class StaffServiceTest {
             "fn",
             "ln",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         StaffProfile staffProfile = new StaffProfile(
             staff.getUserId().toString(),
             staff.getFirstName(),
             staff.getLastName(),
-            staff.getEmail()
+            staff.getEmail(),
+            staff.getPhoneNumber(),
+            staff.getAddress()
         );
 
         when(staffRepository.findById(any(UUID.class)))
@@ -117,22 +127,41 @@ class StaffServiceTest {
                 "fn",
                 "ln",
                 "em",
-                "pass"
+                "pass",
+                "380227738888",
+                "address"
             ),
             new Staff(
                 UUID.randomUUID(),
                 "fn2",
                 "ln2",
                 "em2",
-                "pass2"
+                "pass2",
+                "380227738888",
+                "address"
             )
         ));
 
         Staff staff1 = staffList.get(0);
         Staff staff2 = staffList.get(1);
 
-        StaffProfile staffProfile1 = new StaffProfile(staff1.getUserId().toString() ,staff1.getFirstName(), staff1.getLastName(), staff1.getEmail());
-        StaffProfile staffProfile2 = new StaffProfile(staff2.getUserId().toString() ,staff2.getFirstName(), staff2.getLastName(), staff2.getEmail());
+        StaffProfile staffProfile1 = new StaffProfile(
+            staff1.getUserId().toString(),
+            staff1.getFirstName(),
+            staff1.getLastName(),
+            staff1.getEmail(),
+            staff1.getPhoneNumber(),
+            staff1.getAddress()
+        );
+
+        StaffProfile staffProfile2 = new StaffProfile(
+            staff2.getUserId().toString(),
+            staff2.getFirstName(),
+            staff2.getLastName(),
+            staff2.getEmail(),
+            staff2.getPhoneNumber(),
+            staff2.getAddress()
+        );
 
         List<StaffProfile> staffProfiles = new ArrayList<>(List.of(staffProfile1, staffProfile2));
 
@@ -156,7 +185,9 @@ class StaffServiceTest {
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         when(staffRepository.findByEmail(any(String.class)))
@@ -191,7 +222,9 @@ class StaffServiceTest {
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         when(staffRepository.findByEmail(any(String.class)))
@@ -208,8 +241,25 @@ class StaffServiceTest {
 
     @Test
     void findStaffByEmailShouldReturnCorrectStaffProfile() {
-        Staff staff = new Staff(UUID.randomUUID(), "fn", "ln", "em", "pas");
-        StaffProfile staffProfile = new StaffProfile(staff.getUserId().toString() ,staff.getFirstName(), staff.getLastName(), staff.getEmail());
+        Staff staff = new Staff(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pas",
+            "380227738888",
+            "address"
+        );
+
+        StaffProfile staffProfile = new StaffProfile(
+            staff.getUserId().toString(),
+            staff.getFirstName(),
+            staff.getLastName(),
+            staff.getEmail(),
+            staff.getPhoneNumber(),
+            staff.getAddress()
+        );
+
         when(staffRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(staff));
         when(staffProfileMapper.mapStaffEntityToProfile(staff))

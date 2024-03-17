@@ -19,7 +19,7 @@ import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,7 +54,9 @@ class TeacherServiceTest {
             "fn",
             "ln",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         TeacherProfile teacherProfile = new TeacherProfile(
@@ -62,15 +64,14 @@ class TeacherServiceTest {
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new HashSet<>());
-
-        when(courseRepository.findUsersCourses(any(UUID.class)))
-            .thenReturn(new HashSet<>());
+            teacher.getPhoneNumber(),
+            teacher.getAddress()
+        );
 
         when(teacherRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(teacher));
 
-        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher), any()))
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher)))
             .thenReturn(teacherProfile);
 
         assertEquals(teacherProfile, teacherService.findTeacherById(UUID.randomUUID()));
@@ -84,14 +85,18 @@ class TeacherServiceTest {
                 "fn",
                 "ln",
                 "em",
-                "pass"
+                "pass",
+                "380227738888",
+                "address"
             ),
             new Teacher(
                 UUID.randomUUID(),
                 "fn2",
                 "ln2",
                 "em2",
-                "pass2"
+                "pass2",
+                "380227738888",
+                "address"
             )
         ));
 
@@ -103,25 +108,24 @@ class TeacherServiceTest {
             teacher1.getFirstName(),
             teacher1.getLastName(),
             teacher1.getEmail(),
-            new HashSet<>()
+            "380227738888",
+            "address"
         );
         TeacherProfile teacherProfile2 = new TeacherProfile(
             teacher2.getUserId().toString(),
             teacher2.getFirstName(),
             teacher2.getLastName(),
             teacher2.getEmail(),
-            new HashSet<>()
+            "380227738888",
+            "address"
         );
 
         List<TeacherProfile> teacherProfileList = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));
 
-        when(courseRepository.findUsersCourses(any(UUID.class)))
-            .thenReturn(new HashSet<>());
-
-        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1), any()))
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1)))
             .thenReturn(teacherProfile1);
 
-        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher2), any()))
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher2)))
             .thenReturn(teacherProfile2);
 
         when(teacherRepository.findAll(any(Pageable.class)))
@@ -131,67 +135,15 @@ class TeacherServiceTest {
     }
 
     @Test
-    void findTeachersByCourseShouldReturnAllTeachersRelatedToCourse() {
-        List<Teacher> teacherList = new ArrayList<>(List.of(
-            new Teacher(
-                UUID.randomUUID(),
-                "fn",
-                "ln",
-                "em",
-                "pass"
-            ),
-            new Teacher(
-                UUID.randomUUID(),
-                "fn2",
-                "ln2",
-                "em2",
-                "pass2"
-            )
-        ));
-
-        Teacher teacher1 = teacherList.get(0);
-        Teacher teacher2 = teacherList.get(1);
-
-        TeacherProfile teacherProfile1 = new TeacherProfile(
-            teacher1.getUserId().toString(),
-            teacher1.getFirstName(),
-            teacher1.getLastName(),
-            teacher1.getEmail(),
-            new HashSet<>()
-        );
-        TeacherProfile teacherProfile2 = new TeacherProfile(
-            teacher2.getUserId().toString(),
-            teacher2.getFirstName(),
-            teacher2.getLastName(),
-            teacher2.getEmail(),
-            new HashSet<>()
-        );
-
-        List<TeacherProfile> teacherProfileList = new ArrayList<>(List.of(teacherProfile1, teacherProfile2));
-
-        when(teacherRepository.findByCourses_CourseName(any(String.class)))
-            .thenReturn(teacherList);
-
-        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher1), any()))
-            .thenReturn(teacherProfile1);
-
-        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher2), any()))
-            .thenReturn(teacherProfile2);
-
-        when(teacherRepository.findAll(any(Pageable.class)))
-            .thenReturn(new PageImpl<>(teacherList));
-
-        assertEquals(teacherProfileList, teacherService.findTeachersByCourse("cn"));
-    }
-
-    @Test
     void changePasswordShouldUpdatePasswordFieldOfTeacherInDataBase() {
         Teacher teacher = new Teacher(
             UUID.randomUUID(),
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         when(teacherRepository.findByEmail(any(String.class)))
@@ -246,7 +198,9 @@ class TeacherServiceTest {
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         when(teacherRepository.findByEmail(any(String.class)))
@@ -268,7 +222,9 @@ class TeacherServiceTest {
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         when(teacherRepository.findByEmail(any(String.class)))
@@ -290,7 +246,9 @@ class TeacherServiceTest {
             "fn",
             "ln",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         TeacherProfile teacherProfile = new TeacherProfile(
@@ -298,13 +256,14 @@ class TeacherServiceTest {
             teacher.getFirstName(),
             teacher.getLastName(),
             teacher.getEmail(),
-            new HashSet<>()
+            teacher.getPhoneNumber(),
+            teacher.getAddress()
         );
 
         when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
 
-        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher), any()))
+        when(teacherProfileMapper.mapTeacherEntityToProfile(eq(teacher)))
             .thenReturn(teacherProfile);
 
         assertEquals(teacherProfile, teacherService.findTeacherByEmail("email"));
@@ -317,14 +276,18 @@ class TeacherServiceTest {
             "fn",
             "ln",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         PendingUserProfile pendingUserProfile = new PendingUserProfile(
             pendingUser.getUserId().toString(),
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
-            pendingUser.getEmail()
+            pendingUser.getEmail(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         Teacher teacher = new Teacher(
@@ -332,7 +295,9 @@ class TeacherServiceTest {
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
             pendingUser.getEmail(),
-            pendingUser.getPassword()
+            pendingUser.getPassword(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         when(pendingUserRepository.findById(any(UUID.class)))
@@ -344,8 +309,73 @@ class TeacherServiceTest {
 
         teacherService.createTeacherFromPendingUser(pendingUserProfile);
 
-        assertEquals(pendingUserRepository.findById(UUID.randomUUID()).get(), pendingUser);
+        assertEquals(pendingUserRepository.findById(UUID.randomUUID()).orElse(null), pendingUser);
         verify(pendingUserRepository).delete(pendingUser);
         assertEquals(teacherRepository.save(teacher), teacher);
+    }
+
+    @Test
+    void getTeacherCoursesShouldReturnCoursesRelatedToTeacher() {
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            "phN",
+            "address"
+        );
+
+        Course course = new Course(
+            UUID.randomUUID(),
+            "CourseName",
+            "Course desc"
+        );
+
+        when(teacherRepository.findByEmail(any(String.class)))
+            .thenReturn(Optional.of(teacher));
+        when(courseRepository.findByTeacher(any(Teacher.class)))
+            .thenReturn(Collections.singletonList(course));
+
+        assertEquals(teacherService.getTeacherCourses(teacher.getEmail()), Collections.singletonList(course));
+    }
+
+    @Test
+    void findTeacherByCourseShouldReturnCorrectTeacherRelatedToSpecificCourse() {
+        Teacher teacher = new Teacher(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pass",
+            "phN",
+            "address"
+        );
+
+        Course course = new Course(
+            UUID.randomUUID(),
+            "CourseName",
+            "Course desc"
+        );
+
+        teacher.setCourse(course);
+        course.setTeacher(teacher);
+
+        TeacherProfile teacherProfile = new TeacherProfile(
+            teacher.getUserId().toString(),
+            teacher.getFirstName(),
+            teacher.getLastName(),
+            teacher.getEmail(),
+            teacher.getPhoneNumber(),
+            teacher.getAddress()
+        );
+
+        when(courseRepository.findByCourseName(any(String.class)))
+            .thenReturn(Optional.of(course));
+
+        when(teacherProfileMapper.mapTeacherEntityToProfile(any(Teacher.class)))
+            .thenReturn(teacherProfile);
+
+        assertEquals(teacherProfile, teacherService.findTeacherByCourse("course"));
     }
 }

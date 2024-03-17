@@ -24,14 +24,18 @@ class AdminProfileMapperTest {
             "fn",
             "ln",
             "em",
-            "pass"
+            "pass",
+            "380773216622",
+            "address"
         );
 
         AdminProfile expectedAdminProfile = new AdminProfile(
             admin.getUserId().toString(),
             admin.getFirstName(),
             admin.getLastName(),
-            admin.getEmail()
+            admin.getEmail(),
+            admin.getPhoneNumber(),
+            admin.getAddress()
         );
 
         assertEquals(expectedAdminProfile, mapper.mapAdminEntityToAdminProfile(admin));

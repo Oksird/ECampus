@@ -6,10 +6,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import ua.foxminded.muzychenko.enums.LessonNumber;
 
 import java.time.LocalTime;
@@ -17,10 +16,9 @@ import java.util.UUID;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "lesson_times")
-@EqualsAndHashCode
 @Entity
-@ToString
 public class LessonTime {
 
     @Id

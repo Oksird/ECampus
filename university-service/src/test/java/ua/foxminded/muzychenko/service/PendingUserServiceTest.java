@@ -49,7 +49,9 @@ class PendingUserServiceTest {
             "fn",
             "ln",
             "em",
-            "encryptedPass"
+            "encryptedPass",
+            "380227738888",
+            "address"
         );
 
         doNothing().when(requestValidator).validateUserRegistrationRequest(any(UserRegistrationRequest.class));
@@ -64,7 +66,9 @@ class PendingUserServiceTest {
             "pass",
             "pass",
             "fn",
-            "ln"
+            "ln",
+            "380227738888",
+            "address"
         ));
 
         verify(requestValidator).validateUserRegistrationRequest(any(UserRegistrationRequest.class));
@@ -79,14 +83,18 @@ class PendingUserServiceTest {
             "fn",
             "ln",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         PendingUserProfile pendingUserProfile = new PendingUserProfile(
             pendingUser.getUserId().toString(),
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
-            pendingUser.getEmail()
+            pendingUser.getEmail(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         when(pendingUserRepository.findById(any(UUID.class)))
@@ -106,22 +114,41 @@ class PendingUserServiceTest {
                 "fn",
                 "ln",
                 "em",
-                "pass"
+                "pass",
+                "380227738888",
+                "address"
             ),
             new PendingUser(
                 UUID.randomUUID(),
                 "fn2",
                 "ln2",
                 "em2",
-                "pass2"
+                "pass2",
+                "380227738888",
+                "address"
             )
         ));
 
         PendingUser pendingUser1 = pendingUsers.get(0);
         PendingUser pendingUser2 = pendingUsers.get(1);
 
-        PendingUserProfile pendingUserProfile1 = new PendingUserProfile(pendingUser1.getUserId().toString() ,pendingUser1.getFirstName(), pendingUser1.getLastName(), pendingUser1.getEmail());
-        PendingUserProfile pendingUserProfile2 = new PendingUserProfile(pendingUser2.getUserId().toString() ,pendingUser2.getFirstName(), pendingUser2.getLastName(), pendingUser2.getEmail());
+        PendingUserProfile pendingUserProfile1 = new PendingUserProfile(
+            pendingUser1.getUserId().toString(),
+            pendingUser1.getFirstName(),
+            pendingUser1.getLastName(),
+            pendingUser1.getEmail(),
+            pendingUser1.getPhoneNumber(),
+            pendingUser1.getAddress()
+        );
+
+        PendingUserProfile pendingUserProfile2 = new PendingUserProfile(
+            pendingUser2.getUserId().toString(),
+            pendingUser2.getFirstName(),
+            pendingUser2.getLastName(),
+            pendingUser2.getEmail(),
+            pendingUser2.getPhoneNumber(),
+            pendingUser2.getAddress()
+        );
 
         List<PendingUserProfile> pendingUserProfiles = new ArrayList<>(List.of(pendingUserProfile1, pendingUserProfile2));
 
@@ -145,7 +172,9 @@ class PendingUserServiceTest {
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         when(pendingUserRepository.findByEmail(any(String.class)))
@@ -180,7 +209,9 @@ class PendingUserServiceTest {
             "fN",
             "lN",
             "em",
-            "pass"
+            "pass",
+            "380227738888",
+            "address"
         );
 
         doNothing()
@@ -194,8 +225,24 @@ class PendingUserServiceTest {
 
     @Test
     void findPUserByEmailShouldReturnCorrectPUserProfile() {
-        PendingUser pendingUser = new PendingUser(UUID.randomUUID(), "fn", "ln", "em", "pas");
-        PendingUserProfile pendingUserProfile = new PendingUserProfile(pendingUser.getUserId().toString() ,pendingUser.getFirstName(), pendingUser.getLastName(), pendingUser.getEmail());
+        PendingUser pendingUser = new PendingUser(
+            UUID.randomUUID(),
+            "fn",
+            "ln",
+            "em",
+            "pas",
+            "380227738888",
+            "address"
+        );
+        PendingUserProfile pendingUserProfile = new PendingUserProfile(
+            pendingUser.getUserId().toString(),
+            pendingUser.getFirstName(),
+            pendingUser.getLastName(),
+            pendingUser.getEmail(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
+        );
+
         when(pendingUserRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(pendingUser));
         when(pendingUserMapper.mapPendingUserEntityToProfile(pendingUser))

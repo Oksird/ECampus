@@ -24,14 +24,18 @@ class PendingUserMapperTest {
             "name",
             "last name",
             "email",
-            "pass"
+            "pass",
+            "123123123",
+            "address"
         );
 
         PendingUserProfile expectedPendingUserProfile = new PendingUserProfile(
             pendingUser.getUserId().toString(),
             pendingUser.getFirstName(),
             pendingUser.getLastName(),
-            pendingUser.getEmail()
+            pendingUser.getEmail(),
+            pendingUser.getPhoneNumber(),
+            pendingUser.getAddress()
         );
 
         assertEquals(expectedPendingUserProfile, mapper.mapPendingUserEntityToProfile(pendingUser));

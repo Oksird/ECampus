@@ -21,7 +21,6 @@ import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -127,16 +126,5 @@ public class TeacherService {
 
     private UUID getTeacherIdByEmail(String email) {
         return teacherRepository.findByEmail(email).orElseThrow(UserNotFoundException::new).getUserId();
-    }
-
-    private List<TeacherProfile> getTeacherProfiles(List<Teacher> students) {
-        List<TeacherProfile> teacherProfiles = new ArrayList<>();
-
-        for (Teacher teacher : students) {
-
-            teacherProfiles.add(teacherProfileMapper.mapTeacherEntityToProfile(teacher));
-        }
-
-        return teacherProfiles;
     }
 }

@@ -3,10 +3,12 @@ package ua.foxminded.muzychenko.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString
 public class UserRegistrationRequest {
     private final String email;
     private final String password;

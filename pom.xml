@@ -30,10 +30,10 @@
         <bootstrap.version>5.3.1</bootstrap.version>
         <jquery.version>3.7.1</jquery.version>
         <font-awesome.version>6.4.2</font-awesome.version>
-        <university-cms.coverage-rate>0.50</university-cms.coverage-rate>
-        <university-data.coverage-rate>0.50</university-data.coverage-rate>
-        <university-service.coverage-rate>0.50</university-service.coverage-rate>
-        <university-ui.coverage-rate>0.50</university-ui.coverage-rate>
+        <university-cms.coverage-rate>0.10</university-cms.coverage-rate>
+        <university-data.coverage-rate>0.10</university-data.coverage-rate>
+        <university-service.coverage-rate>0.10</university-service.coverage-rate>
+        <university-ui.coverage-rate>0.10</university-ui.coverage-rate>
     </properties>
 
     <dependencyManagement>

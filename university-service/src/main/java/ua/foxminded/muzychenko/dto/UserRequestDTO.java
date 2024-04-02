@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import ua.foxminded.muzychenko.dto.profile.UserInfo;
 
 @Data
 @EqualsAndHashCode
@@ -12,7 +11,8 @@ import ua.foxminded.muzychenko.dto.profile.UserInfo;
 @AllArgsConstructor
 public class UserRequestDTO {
     private String id;
-    private UserInfo userInfo;
+    private String userId;
+    private String userRole;
     private RequestTypeDTO requestTypeDTO;
     private RequestStatusDTO requestStatusDTO;
 }

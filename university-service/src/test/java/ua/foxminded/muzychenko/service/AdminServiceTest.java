@@ -50,6 +50,8 @@ class AdminServiceTest {
     private TeacherService teacherService;
     @MockBean
     private StaffService staffService;
+    @MockBean
+    private PendingUserService pendingUserService;
     @Autowired
     private AdminService adminService;
 
@@ -272,11 +274,21 @@ class AdminServiceTest {
 
         UserRequestDTO userRequestDTO = new UserRequestDTO(
             UUID.randomUUID().toString(),
-            userInfo,
+            "123",
+            null,
             null,
             requestStatusDTO
         );
 
+        when(pendingUserService.findById(any(UUID.class)))
+            .thenReturn(new PendingUserProfile(
+                UUID.randomUUID().toString(),
+                null,
+                null,
+                null,
+                null,
+                null
+            ));
 
         doNothing()
             .when(studentService)
@@ -290,7 +302,7 @@ class AdminServiceTest {
 
         doNothing()
             .when(userRequestService)
-            .approveRequest(any(UserRequestDTO.class));
+            .approveRequest(any(UUID.class));
 
         userRequestDTO.setRequestTypeDTO(requestTypeStudent);
         adminService.grantRoleOnRequest(userRequestDTO);
@@ -308,6 +320,6 @@ class AdminServiceTest {
             .createStaffFromPendingUser(any(PendingUserProfile.class));
 
         verify(userRequestService, times(3))
-            .approveRequest(any(UserRequestDTO.class));
+            .approveRequest(any(UUID.class));
     }
 }

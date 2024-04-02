@@ -5,7 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -80,6 +82,21 @@ public class GroupController {
         model.addAttribute("courses", courses);
 
         return "group/profile";
+    }
+
+    @GetMapping("/new")
+    public String createGroup(Model model) {
+        GroupInfo groupInfo = new GroupInfo();
+
+        model.addAttribute("groupInfo", groupInfo);
+
+        return "group/create_group";
+    }
+
+    @PostMapping("/")
+    public String createGroup(@ModelAttribute GroupInfo groupInfo) {
+        groupService.createGroup(groupInfo);
+        return "redirect:/groups/new";
     }
 
     @GetMapping("/get-courses-for-group")

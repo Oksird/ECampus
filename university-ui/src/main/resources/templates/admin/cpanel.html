@@ -292,47 +292,6 @@
   </div>
 
   <div class="row">
-    <!-- Lessons -->
-    <div class="col-md-6">
-      <div class="block">
-        <div th:if="${lessons.size() == 0}" class="card" style="width: 18rem;">
-          <img class="card-img-top"
-               src="https://cdn.dribbble.com/users/83302/screenshots/2729366/media/30a0f965b0e6102d4c31e27b149d6841.png?resize=400x0"
-               alt="Card image cap">
-          <div class="card-body">
-            <h2>Lessons</h2>
-            <p class="card-text">Nothing was found</p>
-          </div>
-        </div>
-
-        <div th:if="${lessons.size() > 0}">
-          <table class="table table-hover table-responsive-xl">
-            <thead class="thead-light">
-            <tr>
-              <h4>Lessons</h4>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="lesson : ${lessons}">
-              <td th:text="${lesson.getCourseName()}" />
-              <td th:text="${lesson.getGroupName()}" />
-              <td th:text="${lesson.getDate()}" />
-              <td th:text="${lesson.getStartTime()}" />
-              <td th:text="${lesson.getEndTime()}" />
-              <td>
-                <div class="btn-group" role="group" aria-label="Basic outlined example">
-                  <a th:href="@{'/lessons/' + ${lesson.getLessonId()}}" type="button" class="btn btn-outline-primary">View</a>
-                  <a th:href="@{'/lessons/delete/' + ${lesson.getLessonId()}}" type="button" class="btn btn-outline-primary">Delete</a>
-                </div>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-          <a th:href="@{/lessons/}" class="btn btn-outline-primary">View all lessons</a>
-        </div>
-      </div>
-    </div>
-    <!-- Requests -->
     <div class="col-md-6">
       <div class="block">
         <div class="card" style="width: 18rem;">

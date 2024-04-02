@@ -28,6 +28,7 @@ public class AdminController {
     private final ParamValidator paramValidator;
     private final GroupService groupService;
     private final CourseService courseService;
+    private final ScheduleService scheduleService;
 
     @GetMapping("/")
     public String index(@RequestParam(defaultValue = "1") String page,

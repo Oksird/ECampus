@@ -5,7 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ua.foxminded.muzychenko.controller.validator.ParamValidator;
@@ -14,6 +16,7 @@ import ua.foxminded.muzychenko.dto.profile.GroupInfo;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.service.CourseService;
 import ua.foxminded.muzychenko.service.GroupService;
+import ua.foxminded.muzychenko.service.TeacherService;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,7 @@ public class CourseController {
     private final CourseService courseService;
     private final ParamValidator paramValidator;
     private final GroupService groupService;
+    private final TeacherService teacherService;
 
     @GetMapping("/")
     public String index(@RequestParam(required = false) String keyword,
@@ -69,6 +73,28 @@ public class CourseController {
         CourseInfo courseInfo = courseService.findCourseByName(courseName);
 
         return getCourseProfileView(model, courseInfo);
+    }
+
+    @GetMapping("/new")
+    public String createCourse(Model model) {
+        List<TeacherProfile> teacherProfiles = teacherService.findAll();
+
+        model.addAttribute("teachers", teacherProfiles);
+        model.addAttribute("courseInfo", new CourseInfo());
+
+        return "course/create_course";
+    }
+
+    @PostMapping("/")
+    private String createCourse(@ModelAttribute CourseInfo courseInfo) {
+        UUID teacherId = UUID.fromString(courseInfo.getTeacherProfile().getUserId());
+
+        TeacherProfile teacherProfile = teacherService.findTeacherById(teacherId);
+
+        courseInfo.setTeacherProfile(teacherProfile);
+
+        courseService.createCourse(courseInfo, teacherProfile.getEmail());
+        return "redirect:/courses/new";
     }
 
     private String getCourseProfileView(Model model, CourseInfo courseInfo) {

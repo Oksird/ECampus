@@ -7,7 +7,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import ua.foxminded.muzychenko.dto.RequestStatusDTO;
 import ua.foxminded.muzychenko.dto.UserRequestDTO;
 import ua.foxminded.muzychenko.dto.profile.ShortUserInfo;
 import ua.foxminded.muzychenko.entity.PendingUser;
@@ -171,19 +170,12 @@ class UserRequestServiceTest {
             RequestStatusEnum.APPROVED
         );
 
-        UserRequestDTO userRequestDTO = new UserRequestDTO(
-            userRequest.getId().toString(),
-            null,
-            null,
-            new RequestStatusDTO(status.getId().toString(), status.getStatus())
-        );
-
         when(userRequestRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(userRequest));
         when(requestStatusRepository.findByStatus(RequestStatusEnum.APPROVED))
             .thenReturn(Optional.of(status));
 
-        userRequestService.approveRequest(userRequestDTO);
+        userRequestService.approveRequest(userRequest.getId());
         assertEquals(userRequestRepository.findById(UUID.randomUUID()), Optional.of(userRequest));
         assertEquals(requestStatusRepository.findByStatus(RequestStatusEnum.APPROVED), Optional.of(status));
         verify(userRequestRepository).save(userRequest);
@@ -203,19 +195,12 @@ class UserRequestServiceTest {
             RequestStatusEnum.REJECTED
         );
 
-        UserRequestDTO userRequestDTO = new UserRequestDTO(
-            userRequest.getId().toString(),
-            null,
-            null,
-            new RequestStatusDTO(status.getId().toString(), status.getStatus())
-        );
-
         when(userRequestRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(userRequest));
         when(requestStatusRepository.findByStatus(RequestStatusEnum.REJECTED))
             .thenReturn(Optional.of(status));
 
-        userRequestService.rejectRequest(userRequestDTO);
+        userRequestService.rejectRequest(userRequest.getId());
         assertEquals(userRequestRepository.findById(UUID.randomUUID()), Optional.of(userRequest));
         assertEquals(requestStatusRepository.findByStatus(RequestStatusEnum.REJECTED), Optional.of(status));
         verify(userRequestRepository).save(userRequest);
@@ -289,6 +274,7 @@ class UserRequestServiceTest {
     void deleteRequestShouldDeleteUserRequest() {
         UserRequestDTO requestDTO = new UserRequestDTO(
             UUID.randomUUID().toString(),
+            null,
             null,
             null,
             null

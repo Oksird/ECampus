@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
@@ -15,11 +16,11 @@ import ua.foxminded.muzychenko.entity.Teacher;
 import ua.foxminded.muzychenko.repository.CourseRepository;
 import ua.foxminded.muzychenko.repository.PendingUserRepository;
 import ua.foxminded.muzychenko.repository.TeacherRepository;
+import ua.foxminded.muzychenko.service.mapper.CourseInfoMapper;
 import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +45,8 @@ class TeacherServiceTest {
     private PendingUserRepository pendingUserRepository;
     @MockBean
     private TeacherProfileMapper teacherProfileMapper;
+    @MockBean
+    private CourseInfoMapper courseInfoMapper;
     @Autowired
     private TeacherService teacherService;
 
@@ -332,12 +335,21 @@ class TeacherServiceTest {
             "Course desc"
         );
 
+        CourseInfo courseInfo = new CourseInfo(
+            course.getCourseId().toString(),
+            course.getCourseName(),
+            course.getCourseDescription(),
+            null
+        );
+
         when(teacherRepository.findByEmail(any(String.class)))
             .thenReturn(Optional.of(teacher));
         when(courseRepository.findByTeacher(any(Teacher.class)))
-            .thenReturn(Collections.singletonList(course));
+            .thenReturn(Optional.of(course));
+        when(courseInfoMapper.mapCourseEntityToCourseInfo(course))
+            .thenReturn(courseInfo);
 
-        assertEquals(teacherService.getTeacherCourses(teacher.getEmail()), Collections.singletonList(course));
+        assertEquals(teacherService.getTeachersCourse(teacher.getEmail()), courseInfo);
     }
 
     @Test
@@ -377,5 +389,58 @@ class TeacherServiceTest {
             .thenReturn(teacherProfile);
 
         assertEquals(teacherProfile, teacherService.findTeacherByCourse("course"));
+    }
+
+    @Test
+    void findAllShouldReturnListOfAllTeacherProfiles() {
+        Teacher teacher1 = new Teacher(
+            UUID.randomUUID(),
+            "fn1",
+            "ln1",
+            "em1",
+            "pass1",
+            "pn1",
+            "addr1"
+        );
+
+        Teacher teacher2 =  new Teacher(
+            UUID.randomUUID(),
+            "fn2",
+            "ln2",
+            "em2",
+            "pass2",
+            "pn2",
+            "addr2"
+        );
+
+        TeacherProfile teacherProfile1 = new TeacherProfile(
+            teacher1.getUserId().toString(),
+            teacher1.getFirstName(),
+            teacher1.getLastName(),
+            teacher1.getEmail(),
+            teacher1.getPhoneNumber(),
+            teacher1.getAddress()
+        );
+        TeacherProfile teacherProfile2 = new TeacherProfile(
+            teacher2.getUserId().toString(),
+            teacher2.getFirstName(),
+            teacher2.getLastName(),
+            teacher2.getEmail(),
+            teacher2.getPhoneNumber(),
+            teacher2.getAddress()
+        );
+
+        when(teacherRepository.findAll())
+            .thenReturn(List.of(teacher1, teacher2));
+        when(teacherProfileMapper.mapTeacherEntityToProfile(teacher1))
+            .thenReturn(teacherProfile1);
+        when(teacherProfileMapper.mapTeacherEntityToProfile(teacher2))
+            .thenReturn(teacherProfile2);
+
+        List<TeacherProfile> actualTeacherProfiles = teacherService.findAll();
+
+        assertEquals(2, actualTeacherProfiles.size());
+        assertEquals(teacherProfile1, actualTeacherProfiles.get(0));
+        assertEquals(teacherProfile2, actualTeacherProfiles.get(1));
     }
 }

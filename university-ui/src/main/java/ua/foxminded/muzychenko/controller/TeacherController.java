@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ua.foxminded.muzychenko.controller.validator.ParamValidator;
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
+import ua.foxminded.muzychenko.service.CourseService;
 import ua.foxminded.muzychenko.service.TeacherService;
 
 import java.util.Map;
@@ -24,6 +26,7 @@ public class TeacherController {
 
     private final TeacherService teacherService;
     private final ParamValidator paramValidator;
+    private final CourseService courseService;
 
     @GetMapping("/")
     public String index(@RequestParam(defaultValue = "1") String page,
@@ -49,8 +52,9 @@ public class TeacherController {
     @GetMapping("/profile")
     public String getProfile(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         TeacherProfile teacherProfile = teacherService.findTeacherByEmail(userDetails.getUsername());
-
+        CourseInfo courseInfo = teacherService.getTeachersCourse(teacherProfile.getEmail());
         model.addAttribute("profile", teacherProfile);
+        model.addAttribute("course", courseInfo);
 
         return "teacher/profile";
     }
@@ -68,7 +72,7 @@ public class TeacherController {
     public String getMyCourses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         TeacherProfile teacherProfile = teacherService.findTeacherByEmail(userDetails.getUsername());
 
-        model.addAttribute("courses", teacherService.getTeacherCourses(teacherProfile.getEmail()));
+        model.addAttribute("course", teacherService.getTeachersCourse(teacherProfile.getEmail()));
 
         return "course/user-courses";
     }
@@ -77,7 +81,7 @@ public class TeacherController {
     public String getCoursesByTeacherId(@PathVariable("userId") UUID id, Model model) {
         TeacherProfile teacherProfile = teacherService.findTeacherById(id);
 
-        model.addAttribute("courses", teacherService.getTeacherCourses(teacherProfile.getEmail()));
+        model.addAttribute("courses", teacherService.getTeachersCourse(teacherProfile.getEmail()));
         //TODO: change teacher profile - add course info
         return "course/user-courses";
     }

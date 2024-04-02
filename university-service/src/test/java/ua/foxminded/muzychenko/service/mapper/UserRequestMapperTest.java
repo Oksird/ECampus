@@ -7,7 +7,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import ua.foxminded.muzychenko.dto.RequestStatusDTO;
 import ua.foxminded.muzychenko.dto.RequestTypeDTO;
 import ua.foxminded.muzychenko.dto.UserRequestDTO;
-import ua.foxminded.muzychenko.dto.profile.UserInfo;
 import ua.foxminded.muzychenko.entity.AbstractUser;
 import ua.foxminded.muzychenko.entity.RequestStatus;
 import ua.foxminded.muzychenko.entity.RequestType;
@@ -25,8 +24,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
     classes = UserRequestMapper.class)
 public class UserRequestMapperTest {
-    @MockBean
-    private UserInfoMapper userInfoMapper;
     @MockBean
     private RequestStatusMapper requestStatusMapper;
     @MockBean
@@ -63,16 +60,6 @@ public class UserRequestMapperTest {
             requestStatus
         );
 
-        UserInfo userInfo = new UserInfo(
-            abstractUser.getUserId().toString(),
-            abstractUser.getEmail(),
-            abstractUser.getFirstName(),
-            abstractUser.getLastName(),
-            abstractUser.getPhoneNumber(),
-            abstractUser.getRole(),
-            abstractUser.getAddress()
-        );
-
         RequestTypeDTO requestTypeDTO = new RequestTypeDTO(
             requestType.getId().toString(),
             requestType.getType()
@@ -85,13 +72,12 @@ public class UserRequestMapperTest {
 
         UserRequestDTO userRequestDTO = new UserRequestDTO(
             userRequest.getId().toString(),
-            userInfo,
+            userRequest.getUser().getUserId().toString(),
+            userRequest.getUser().getRole(),
             requestTypeDTO,
             requestStatusDTO
         );
 
-        when(userInfoMapper.mapUserToDTO(any()))
-            .thenReturn(userInfo);
         when(requestTypeMapper.mapRequestTypeToDTO(any(RequestType.class)))
             .thenReturn(requestTypeDTO);
         when(requestStatusMapper.mapRequestStatusToDTO(any(RequestStatus.class)))

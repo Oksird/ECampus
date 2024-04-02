@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+    <title>Create Course</title>
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}"/>
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}" defer></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<section class="vh-100">
+
+    <div class="container h-100">
+        <div class="card text-black" style="border-radius: 30px;">
+            <div class="card-body">
+
+                <p class="text-center h1 fw-bold mb-5">Create Course</p>
+
+                <form th:action="@{/courses/}" th:method="POST" th:object="${courseInfo}" class="mx-auto"
+                      style="width: 50%;">
+
+                    <div class="mb-4">
+                        <label for="courseName">Course name</label>
+                        <input th:field="*{courseName}" type="text" class="form-control" id="courseName" placeholder="Course name ( Math, Science etc. ) ">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="courseDescription">Course description</label>
+                        <input th:field="*{courseDescription}" type="text" class="form-control" id="courseDescription" placeholder="Description">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="teacherSelect">Teacher</label>
+                        <select class="form-select" id="teacherSelect" th:field="*{teacherProfile.userId}">
+                            <option th:each="teacher : ${teachers}" th:value="${teacher.userId}" th:text="${teacher.firstName + ' ' + teacher.lastName}"></option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg">Create</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+<footer>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</footer>
+</html>

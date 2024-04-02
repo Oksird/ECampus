@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import ua.foxminded.muzychenko.entity.Course;
 import ua.foxminded.muzychenko.entity.Teacher;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,5 +16,5 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 
     Page<Course> findByCourseNameContainingIgnoreCase(String courseNamePart, Pageable pageable);
 
-    List<Course> findByTeacher(Teacher teacher);
+    Optional<Course> findByTeacher(Teacher teacher);
 }

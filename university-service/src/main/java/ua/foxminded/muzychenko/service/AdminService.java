@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.foxminded.muzychenko.dto.UserRequestDTO;
 import ua.foxminded.muzychenko.dto.profile.AdminProfile;
 import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
-import ua.foxminded.muzychenko.dto.profile.UserInfo;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
 import ua.foxminded.muzychenko.entity.Admin;
 import ua.foxminded.muzychenko.exception.UserNotFoundException;
@@ -30,6 +29,7 @@ public class AdminService {
     private final StudentService studentService;
     private final TeacherService teacherService;
     private final StaffService staffService;
+    private final PendingUserService pendingUserService;
 
     @Transactional(readOnly = true)
     public AdminProfile findAdminById(UUID id) {
@@ -69,16 +69,7 @@ public class AdminService {
     @Transactional
     public void grantRoleOnRequest(UserRequestDTO userRequestDTO) {
 
-        UserInfo userInfo = userRequestDTO.getUserInfo();
-
-        PendingUserProfile pendingUserProfile = new PendingUserProfile(
-            userInfo.getId(),
-            userInfo.getFirstName(),
-            userInfo.getLastName(),
-            userInfo.getEmail(),
-            userInfo.getPhoneNumber(),
-            userInfo.getAddress()
-        );
+        PendingUserProfile pendingUserProfile = pendingUserService.findById(UUID.fromString(userRequestDTO.getId()));
 
         switch (userRequestDTO.getRequestTypeDTO().getType()) {
             case BECOME_STUDENT -> studentService.createStudentFromPendingUser(pendingUserProfile);
@@ -86,7 +77,7 @@ public class AdminService {
             case BECOME_STAFF -> staffService.createStaffFromPendingUser(pendingUserProfile);
         }
 
-        userRequestService.approveRequest(userRequestDTO);
+        userRequestService.approveRequest(UUID.fromString(userRequestDTO.getId()));
 
     }
 

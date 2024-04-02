@@ -9,14 +9,14 @@ import ua.foxminded.muzychenko.entity.UserRequest;
 @AllArgsConstructor
 public class UserRequestMapper {
 
-    private final UserInfoMapper userInfoMapper;
     private final RequestStatusMapper requestStatusMapper;
     private final RequestTypeMapper requestTypeMapper;
 
     public UserRequestDTO mapUserRequestToDTO(UserRequest userRequest) {
         return new UserRequestDTO(
             userRequest.getId().toString(),
-            userInfoMapper.mapUserToDTO(userRequest.getUser()),
+            userRequest.getUser().getUserId().toString(),
+            userRequest.getUser().getRole(),
             requestTypeMapper.mapRequestTypeToDTO(userRequest.getType()),
             requestStatusMapper.mapRequestStatusToDTO(userRequest.getStatus())
         );

@@ -64,8 +64,8 @@ public class UserRequestService {
     }
 
     @Transactional
-    public void approveRequest(UserRequestDTO requestDTO) {
-        UserRequest request = userRequestRepository.findById(UUID.fromString(requestDTO.getId()))
+    public void approveRequest(UUID requestId) {
+        UserRequest request = userRequestRepository.findById(requestId)
             .orElseThrow(EntityNotFoundException::new);
 
         request.setStatus(
@@ -77,8 +77,8 @@ public class UserRequestService {
     }
 
     @Transactional
-    public void rejectRequest(UserRequestDTO requestDTO) {
-        UserRequest request = userRequestRepository.findById(UUID.fromString(requestDTO.getId()))
+    public void rejectRequest(UUID requestId) {
+        UserRequest request = userRequestRepository.findById(requestId)
             .orElseThrow(EntityNotFoundException::new);
 
         request.setStatus(
@@ -118,6 +118,14 @@ public class UserRequestService {
             .stream()
             .map(userRequestMapper::mapUserRequestToDTO)
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public UserRequestDTO findById(UUID id) {
+        return userRequestMapper.mapUserRequestToDTO(userRequestRepository.findById(id)
+            .orElseThrow(EntityNotFoundException::new
+            )
+        );
     }
 
     @Transactional

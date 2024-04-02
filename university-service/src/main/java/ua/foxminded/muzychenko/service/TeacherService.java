@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.foxminded.muzychenko.dto.profile.CourseInfo;
 import ua.foxminded.muzychenko.dto.profile.PendingUserProfile;
 import ua.foxminded.muzychenko.dto.profile.TeacherProfile;
 import ua.foxminded.muzychenko.dto.request.PasswordChangeRequest;
@@ -17,10 +18,12 @@ import ua.foxminded.muzychenko.exception.UserNotFoundException;
 import ua.foxminded.muzychenko.repository.CourseRepository;
 import ua.foxminded.muzychenko.repository.PendingUserRepository;
 import ua.foxminded.muzychenko.repository.TeacherRepository;
+import ua.foxminded.muzychenko.service.mapper.CourseInfoMapper;
 import ua.foxminded.muzychenko.service.mapper.TeacherProfileMapper;
 import ua.foxminded.muzychenko.service.validator.RequestValidator;
 import ua.foxminded.muzychenko.service.validator.exception.BadCredentialsException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +35,7 @@ public class TeacherService {
     private final TeacherProfileMapper teacherProfileMapper;
     private final PendingUserRepository pendingUserRepository;
     private final RequestValidator requestValidator;
+    private final CourseInfoMapper courseInfoMapper;
 
     @Transactional
     public void createTeacherFromPendingUser(PendingUserProfile pendingUserProfile) {
@@ -116,12 +120,22 @@ public class TeacherService {
     }
 
     @Transactional(readOnly = true)
-    public List<Course> getTeacherCourses(String teacherEmail) {
-        return courseRepository.findByTeacher(
-            teacherRepository
-                .findByEmail(teacherEmail)
-                .orElseThrow(UserNotFoundException::new)
-        );
+    public CourseInfo getTeachersCourse(String teacherEmail) {
+        Teacher teacher = teacherRepository.findByEmail(teacherEmail)
+            .orElseThrow(UserNotFoundException::new);
+
+        Course course = courseRepository.findByTeacher(teacher)
+            .orElseThrow(CourseNotFoundException::new);
+
+        return courseInfoMapper.mapCourseEntityToCourseInfo(course);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeacherProfile> findAll() {
+        List<Teacher> teachers = teacherRepository.findAll();
+        List<TeacherProfile> teacherProfiles = new ArrayList<>();
+        teachers.forEach(teacher -> teacherProfiles.add(teacherProfileMapper.mapTeacherEntityToProfile(teacher)));
+        return teacherProfiles;
     }
 
     private UUID getTeacherIdByEmail(String email) {
